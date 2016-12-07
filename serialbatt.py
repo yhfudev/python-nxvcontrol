@@ -21,6 +21,7 @@ parser.add_argument('-b', '--baudrate', type=int, dest='baudrate', default=11520
 parser.add_argument('-p', '--port', type=str, dest='port', default="/dev/ttyACM0", help='the path to serial port')
 parser.add_argument('-i', '--interval', type=int, dest='interval', default=0.5, help='the interval between log records')
 parser.add_argument('-t', '--time', type=int, dest='time', default=0, help='the second time length of log records')
+parser.add_argument('-d', '--drain', type=int, dest='draintime', default=0, help='the second time length of draining the battery(start fan motor)')
 args = parser.parse_args()
 
 if args.fnout == "/dev/stdout":
@@ -69,7 +70,7 @@ if ser.isOpen():
         ser.flushOutput()
 
         # clean the input/output
-        ser.write("help\n".encode('ASCII'))
+        ser.write("Help\n".encode('ASCII'))
         ser.flush()
         while True:
             response = ser.readline()
@@ -79,6 +80,15 @@ if ser.isOpen():
             response = response.decode('ASCII').strip()
             if len(response) < 1:
                 break
+
+        if args.draintime > 0:
+            ser.write("TestMode On\n".encode('ASCII'))
+            ser.write("SetMotor VacuumOn\n".encode('ASCII'))
+            ser.flush()
+            time.sleep(args.draintime)
+            ser.write("SetMotor VacuumOff\n".encode('ASCII'))
+            ser.write("TestMode Off\n".encode('ASCII'))
+            ser.flush()
 
         list_commands = (
             'GetCharger',
@@ -156,9 +166,8 @@ if ser.isOpen():
             linedata = ""
             for val in list_keys:
                 if val in data:
-                    linedata += data[val] + ", "
-                else:
-                    linedata += " ,"
+                    linedata += data[val]
+                linedata += ", "
             fmt0="%d.%06d" + ", " + linedata
 
             L.debug("fmt=" + fmt0)
