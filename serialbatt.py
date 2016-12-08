@@ -171,7 +171,7 @@ if ser.isOpen():
             fmt0="%d.%06d" + ", " + linedata
 
             L.debug("fmt=" + fmt0)
-            print (fmt0 %(delta.seconds, delta.microseconds))
+            print (fmt0 %(delta.days * 86400 + delta.seconds, delta.microseconds)) # (24*60*60)=86400
             sys.stdout.flush()
 
         ser.close()
