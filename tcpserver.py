@@ -110,23 +110,24 @@ class MyTkAppFrame(ttk.Notebook):
                 MAXIUM_SIZE = BUFFER_SIZE * 5
                 data = ""
                 L.info("server connectd by client: " + str(self.client_address))
+                cli_log_head = "CLI" + str(self.client_address)
                 while 1:
                     recvdat = self.request.recv(BUFFER_SIZE)
                     if not recvdat:
                         # EOF, client closed, just return
-                        L.info("client disconnected: " + str(self.client_address))
+                        L.info(cli_log_head + " disconnected: " + str(self.client_address))
                         return
                     data += str(recvdat, 'ascii')
-                    L.debug('all of data: ' + data)
+                    L.debug(cli_log_head + " all of data: " + data)
                     cntdata = data.count('\n')
-                    L.debug('the # of newline: %d'%cntdata)
+                    L.debug(cli_log_head + " the # of newline: %d"%cntdata)
                     if (cntdata < 1):
-                        L.debug('not receive newline, skip: ' + data)
+                        L.debug(cli_log_head + " not receive newline, skip: " + data)
                         continue
                     requests = data.split('\n')
                     for i in range(0, cntdata):
                         request = requests[i].strip()
-                        L.info("process request [" + str(i) + "/" + str(cntdata) + "]" + request)
+                        L.info(cli_log_head + " request [" + str(i+1) + "/" + str(cntdata) + "]" + request)
                         response = nsim.fake_respose(request)
                         if response != "":
                             self.request.sendall(response)
