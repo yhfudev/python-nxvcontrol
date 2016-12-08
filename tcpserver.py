@@ -110,6 +110,7 @@ class MyTkAppFrame(ttk.Notebook):
                 MAXIUM_SIZE = BUFFER_SIZE * 5
                 data = ""
                 L.info("server connectd by client: " + str(self.client_address))
+
                 cli_log_head = "CLI" + str(self.client_address)
                 while 1:
                     recvdat = self.request.recv(BUFFER_SIZE)
@@ -127,10 +128,12 @@ class MyTkAppFrame(ttk.Notebook):
                     requests = data.split('\n')
                     for i in range(0, cntdata):
                         request = requests[i].strip()
-                        L.info(cli_log_head + " request [" + str(i+1) + "/" + str(cntdata) + "]" + request)
+                        L.info(cli_log_head + " request [" + str(i+1) + "/" + str(cntdata) + "] '" + request + "'")
                         response = nsim.fake_respose(request)
                         if response != "":
-                            self.request.sendall(response)
+                            L.debug(cli_log_head + 'send data back: sz=' + str(len(response)))
+                            self.request.sendall(bytes(response, 'ascii'))
+
                     data = requests[-1]
 
         class ThreadedTCPServer(ss.ThreadingMixIn, ss.TCPServer):

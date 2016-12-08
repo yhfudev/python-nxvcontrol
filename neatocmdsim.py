@@ -2,7 +2,7 @@
 def fake_respose(request="Help"):
     response = ""
     if request == "GetAnalogSensors":
-        response = bytes("""SensorName,Value
+        response = """SensorName,Value
 WallSensorInMM,60,
 BatteryVoltageInmV,14056,
 LeftDropInMM,0,
@@ -20,9 +20,9 @@ VoltageReferenceInmV,1224,
 AccelXInmG,20,
 AccelYInmG,-16,
 AccelZInmG,1028,
-""", 'ascii')
+"""
     elif request == "GetAnalogSensors stats":
-        response = bytes("""SensorName,Mean,Max,Min,Cnt,Dev
+        response = """SensorName,Mean,Max,Min,Cnt,Dev
 WallSensorInMM,0,0,0,50,0
 BatteryVoltageInmV,2574,2574,2574,50,0
 LeftDropInMM,3296,3296,3296,50,0
@@ -39,9 +39,9 @@ NotConnected2,0,0,0,50,0
 CurrentInmA,992,992,992,50,0
 NotConnected3,0,0,0,50,0
 BatteryTemp0InC,1759,1759,1759,50,0
-""", 'ascii')
+"""
     elif request == "GetAnalogSensors raw":
-        response = bytes("""SensorName,SignalVoltageInmV
+        response = """SensorName,SignalVoltageInmV
 WallSensorInMM,0
 BatteryVoltageInmV,2574
 LeftDropInMM,3296
@@ -58,17 +58,17 @@ NotConnected2,0
 CurrentInmA,992
 NotConnected3,0
 BatteryTemp0InC,1759
-""", 'ascii')
+"""
     elif request == "GetButtons":
-        response = bytes("""Button Name,Pressed
+        response = """Button Name,Pressed
 BTN_SOFT_KEY,0
 BTN_SCROLL_UP,0
 BTN_START,0
 BTN_BACK,0
 BTN_SCROLL_DOWN,0
-""", 'ascii')
+"""
     elif request == "GetCalInfo":
-        response = bytes("""Parameter,Value
+        response = """Parameter,Value
 Parameter,Value
 LDSOffset,0
 XAccel,0
@@ -91,9 +91,9 @@ CleaningTestHardSpeed,200
 CleaningTestCarpetSpeed,100
 CleaningTestHardDistance,1200
 CleaningTestCarpetDistance,1200
-""", 'ascii')
+"""
     elif request == "GetCharger":
-        response = bytes("""GetCharger
+        response = """GetCharger
 Label,Value
 FuelPercent,19
 BatteryOverTemp,0
@@ -111,9 +111,9 @@ BattTempCAvg[1],16
 VBattV,14.33
 VExtV,0.00
 Charger_mAH,0
-""", 'ascii')
+"""
     elif request == "GetDigitalSensors":
-        response = bytes("""Digital Sensor Name, Value
+        response = """Digital Sensor Name, Value
 SNSR_DC_JACK_CONNECT,0
 SNSR_DUSTBIN_IS_IN,1
 SNSR_LEFT_WHEEL_EXTENDED,0
@@ -122,12 +122,12 @@ LSIDEBIT,0
 LFRONTBIT,0
 RSIDEBIT,0
 RFRONTBIT,0
-""", 'ascii')
+"""
     elif request == "GetErr":
-        response = bytes("""21
-""", 'ascii')
+        response = """21
+"""
     elif request == "GetMotors":
-        response = bytes("""Parameter,Value
+        response = """Parameter,Value
 Brush_RPM,0
 Brush_mA,0
 Vacuum_RPM,0
@@ -142,9 +142,9 @@ RightWheel_PositionInMM,0
 RightWheel_Speed,0
 Charger_mAH, 0
 SideBrush_mA,0
-""", 'ascii')
+"""
     elif request == "GetSchedule":
-        response = bytes("""Schedule is Enabled
+        response = """Schedule is Enabled
 Sun 00:00 - None -
 Mon 00:00 - None -
 Tue 00:00 R
@@ -152,12 +152,12 @@ Wed 00:00 R
 Thu 00:00 R
 Fri 00:00 H
 Sat 00:00 H
-""", 'ascii')
+"""
     elif request == "GetTime":
-        response = bytes("""Sunday 13:57:09
-""", 'ascii')
+        response = """Sunday 13:57:09
+"""
     elif request == "GetVersion":
-        response = bytes("""Component,Major,Minor,Build
+        response = """Component,Major,Minor,Build
 ModelID,-1,XV21,
 ConfigID,2,,
 Serial Number,AAAnnnnnAA,0000000,D
@@ -183,12 +183,12 @@ MainBoard Boot,16219,
 MainBoard Version,4,0,
 ChassisRev,2,,
 UIPanelRev,1,,
-""", 'ascii')
+"""
     elif request == "GetWarranty":
-        response = bytes("""00000000 0000 962d3a58
-""", 'ascii')
+        response = """00000000 0000 962d3a58
+"""
     elif request == "Help":
-        response = bytes("""Help Strlen = 1840
+        response = """Help Strlen = 1840
 Help - Without any argument, this prints a list of all possible cmds.
 With a command name, it prints the help for that particular command
 Clean - Starts a cleaning by simulating press of start button.
@@ -219,48 +219,48 @@ SetSchedule - Modify Cleaning Schedule.
 SetSystemMode - Set the operation mode of the robot. (TestMode Only)
 TestMode - Sets TestMode on or off. Some commands can only be run in TestMode.
 Upload - Uploads new program to the robot.
-""", 'ascii')
+"""
     elif request == "GetAccel":
-        response = bytes("""Label,Value
+        response = """Label,Value
 PitchInDegrees,0.00
 RollInDegrees,0.00
 XInG,0.000
 YInG,0.000
 ZInG,0.000
 SumInG,0.000
-""", 'ascii')
+"""
     elif request == "PlaySound":
-        response = bytes('\n', 'ascii')
+        response = '\n'
     elif request == "TestMode":
-        response = bytes('\n', 'ascii')
+        response = '\n'
     elif request == "RestoreDefaults":
-        response = bytes('\n', 'ascii')
+        response = '\n'
     elif request == "SetDistanceCal":
-        response = bytes('\n', 'ascii')
+        response = '\n'
     elif request == "SetFuelGauge":
-        response = bytes('\n', 'ascii')
+        response = '\n'
     elif request == "SetIEC":
-        response = bytes('\n', 'ascii')
+        response = '\n'
     elif request == "SetLCD":
-        response = bytes('\n', 'ascii')
+        response = '\n'
     elif request == "SetLDSRotation":
-        response = bytes('\n', 'ascii')
+        response = '\n'
     elif request == "SetLED":
-        response = bytes('\n', 'ascii')
+        response = '\n'
     elif request == "SetMotor":
-        response = bytes('\n', 'ascii')
+        response = '\n'
     elif request == "SetSchedule":
-        response = bytes('\n', 'ascii')
+        response = '\n'
     elif request == "SetSystemMode":
-        response = bytes('\n', 'ascii')
+        response = '\n'
     elif request == "SetTime":
-        response = bytes('\n', 'ascii')
+        response = '\n'
     elif request == "SetWallFollower":
-        response = bytes('\n', 'ascii')
+        response = '\n'
     elif request == "Upload":
-        response = bytes('\n', 'ascii')
+        response = '\n'
     elif request == "GetLDSScan":
-        response = bytes("""AngleInDegrees,DistInMM,Intensity,ErrorCodeHEX
+        response = """AngleInDegrees,DistInMM,Intensity,ErrorCodeHEX
 0,1545,53,0
 1,1548,29,0
 2,1560,17,0
@@ -622,9 +622,9 @@ SumInG,0.000
 358,1538,137,0
 359,1540,89,0
 ROTATION_SPEED,5.02
-""", 'ascii')
+"""
     elif request == "GetLifeStatLog":
-        response = bytes("""runID,statID,count,Min,Max,Sum,SumV*2
+        response = """runID,statID,count,Min,Max,Sum,SumV*2
 351,LS_A2D0,80,73,74,0x00000000000016e3,0x0000000000068c39
 351,LS_A2D1,101,1018,1447,0x000000000001e0a1,0x0000000009060c15
 351,LS_A2D2,80,290,293,0x0000000000005b0e,0x000000000067a364
@@ -4726,6 +4726,6 @@ ROTATION_SPEED,5.02
 552,LS_A2D13,50,470,549,0x00000000000065db,0x0000000000cf94b7
 552,LS_A2D15,50,-13,-13,0xfffffffffffffd76,0x0000000000002102
 552,LS_LDROP_MM,50,60,60,0x0000000000000bb8,0x000000000002bf20
-""", 'ascii')
+"""
     return response
 
