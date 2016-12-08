@@ -237,7 +237,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         line += 1
         lbl_battstat_conn = tk.Label(self.frame_status, text="Version:")
         lbl_battstat_conn.grid(row=line, column=0, padx=5)
-        self.text_version = ScrolledText(self.frame_status, height=10)
+        self.text_version = ScrolledText(self.frame_status, wrap=tk.WORD, height=10)
         self.text_version.configure(state='disabled')
         #self.text_version.pack(expand=True, fill="both", side="top")
         self.text_version.grid(row=line, column=1, columnspan=2, padx=5)
@@ -282,7 +282,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         frame_top.pack(side="top", fill="both", expand=True)
         frame_bottom.pack(side="bottom", fill="x", expand=False)
 
-        text_command = ScrolledText(frame_top)
+        text_command = ScrolledText(frame_top, wrap=tk.WORD)
         text_command.insert(tk.END, "Some Text\ntest 1\ntest 2\n")
         text_command.configure(state='disabled')
         text_command.pack(expand=True, fill="both", side="top")
@@ -355,7 +355,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         lbl_statlog_head = tk.Label(page_statlog, text="LifeStatLog", font=LARGE_FONT)
         lbl_statlog_head.pack(side="top", fill="x", pady=10)
 
-        text_statlog = ScrolledText(page_statlog)
+        text_statlog = ScrolledText(page_statlog, wrap=tk.WORD)
         text_statlog.insert(tk.END, "Some Text\ntest 1\ntest 2\n")
         text_statlog.configure(state='disabled')
         text_statlog.pack(expand=True, fill="both", side="top")

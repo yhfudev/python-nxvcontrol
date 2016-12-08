@@ -31,7 +31,7 @@ set autoscale x
 #set autoscale x2
 set autoscale y
 #set autoscale y2
-set yrange [-300<*:*<2000]
+set yrange [-400<*:*<2500]
 set y2range [0<*:10<*<100]
 EOF
 
@@ -43,7 +43,7 @@ EOF
 
     cat << EOF >> "${FN_GPOUT}.gp"
 #set xtics 0,.5,10
-set ytics -300,100,2000
+set ytics -400,100,2500
 set y2tics
 set grid x y y2
 
@@ -99,14 +99,15 @@ LIST_DATA=(
     "serialbatt-data-charging-new-1,1,new battery first charging"
     "serialbatt-data-charging-new-2,1,new battery second charging"
     "serialbatt-data-charging-new-3,1,new battery third charging, after refresh with neatoctrl (deep recharge), there's a dust box install at the middle of charging"
+    "serialbatt-data-charging-new-4,1,new battery 4th charging"
     "serialbatt-data-standby-new-2,1,new battery standby after second charging"
     "serialbatt-data-charging-old-1,0,old battery first charging"
     "serialbatt-data-charging-old-2,0,old battery second charging"
     "serialbatt-data-charging-old-3,0,old battery third charging"
     #"serialbatt-data-standby-old-1,0,new battery standby after first charging"
     )
-LIST_DATA1=(
-    "serialbatt-data-charging-new-3,1,new battery third charging, after refresh with neatoctrl (deep recharge)"
+LIST_DATA=(
+    "serialbatt-data-charging-new-4,1,new battery 4th charging"
     #"serialbatt-data-charging-old-1,0,old battery first charging"
     #"serialbatt-data-charging-old-2,0,old battery second charging"
     #"serialbatt-data-charging-old-3,0,old battery third charging"

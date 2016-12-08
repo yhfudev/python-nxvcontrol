@@ -1,7 +1,27 @@
 
 def fake_respose(request="Help"):
     response = ""
-    if request == "GetAnalogSensors":
+    if request == "GetCharger":
+        response = """GetCharger
+Label,Value
+FuelPercent,19
+BatteryOverTemp,0
+ChargingActive,0
+ChargingEnabled,1
+ConfidentOnFuel,0
+OnReservedFuel,0
+EmptyFuel,0
+BatteryFailure,0
+ExtPwrPresent,0
+ThermistorPresent[0],1
+ThermistorPresent[1],1
+BattTempCAvg[0],15
+BattTempCAvg[1],16
+VBattV,14.33
+VExtV,0.00
+Charger_mAH,0
+"""
+    elif request == "GetAnalogSensors":
         response = """SensorName,Value
 WallSensorInMM,60,
 BatteryVoltageInmV,14056,
@@ -91,26 +111,6 @@ CleaningTestHardSpeed,200
 CleaningTestCarpetSpeed,100
 CleaningTestHardDistance,1200
 CleaningTestCarpetDistance,1200
-"""
-    elif request == "GetCharger":
-        response = """GetCharger
-Label,Value
-FuelPercent,19
-BatteryOverTemp,0
-ChargingActive,0
-ChargingEnabled,1
-ConfidentOnFuel,0
-OnReservedFuel,0
-EmptyFuel,0
-BatteryFailure,0
-ExtPwrPresent,0
-ThermistorPresent[0],1
-ThermistorPresent[1],1
-BattTempCAvg[0],15
-BattTempCAvg[1],16
-VBattV,14.33
-VExtV,0.00
-Charger_mAH,0
 """
     elif request == "GetDigitalSensors":
         response = """Digital Sensor Name, Value

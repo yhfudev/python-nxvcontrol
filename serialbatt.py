@@ -95,13 +95,13 @@ if ser.isOpen():
             'GetAnalogSensors',
             )
         list_keys = (
-            # GetAnalogSensors
+            # GetAnalogSensors:
             'CurrentInmA',
             'BatteryVoltageInmV',
             'BatteryTemp0InC',
             'BatteryTemp1InC',
             'ChargeVoltInmV',
-            # GetCharger
+            # GetCharger:
             'VBattV',
             'VExtV',
             'FuelPercent',
