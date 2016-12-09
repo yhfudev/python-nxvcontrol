@@ -96,21 +96,18 @@ EOF
 
 LIST_DATA=(
     # <prefix>, <1: plot VBattV*400/%>,  <comments>
-    "serialbatt-data-charging-new-1,1,new battery first charging"
-    "serialbatt-data-charging-new-2,1,new battery second charging"
-    "serialbatt-data-charging-new-3,1,new battery third charging, after refresh with neatoctrl (deep recharge), there's a dust box install at the middle of charging"
-    "serialbatt-data-charging-new-4,1,new battery 4th charging"
-    "serialbatt-data-standby-new-2,1,new battery standby after second charging"
-    "serialbatt-data-charging-old-1,0,old battery first charging"
-    "serialbatt-data-charging-old-2,0,old battery second charging"
-    "serialbatt-data-charging-old-3,0,old battery third charging"
+    "serialbatt-data-charging-powerextra-r1-1,1,powerextra battery-round1-first charging"
+    "serialbatt-data-charging-powerextra-r1-2,1,powerextra battery-round1-second charging"
+    "serialbatt-data-charging-powerextra-r1-3,1,powerextra battery-round1-third charging, after refresh with neatoctrl (deep recharge), there's a dust box install at the middle of charging"
+    "serialbatt-data-charging-powerextra-r1-4,1,powerextra battery-round1-4th charging-can only last 5min?"
+    "serialbatt-data-standby-powerextra-r1-2,1,powerextra battery-round1-standby after second charging"
+    "serialbatt-data-charging-mcnair-old-1,0,McNair battery old-in the machine-first charging"
+    "serialbatt-data-charging-mcnair-old-2,0,McNair battery old-in the machine-second charging"
+    "serialbatt-data-charging-mcnair-old-3,0,McNair battery old-in the machine-third charging"
     #"serialbatt-data-standby-old-1,0,new battery standby after first charging"
     )
-LIST_DATA=(
-    "serialbatt-data-charging-new-4,1,new battery 4th charging"
-    #"serialbatt-data-charging-old-1,0,old battery first charging"
-    #"serialbatt-data-charging-old-2,0,old battery second charging"
-    #"serialbatt-data-charging-old-3,0,old battery third charging"
+LIST_DATA1=(
+    "serialbatt-data-charging-powerextra-r1-4,1,powerextra battery-round1-4th charging-can only last 5min?"
     )
 function do_work() {
     local i=0
