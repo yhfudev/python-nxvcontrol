@@ -34,8 +34,10 @@ set output "${FN_GPOUT}.png"
 
 #set key left bottom
 #set key center bottom
-set key right bottom
+#set key right bottom
 #set key center
+#set key right top
+set key center top
 
 set autoscale x
 #set autoscale x2
@@ -109,7 +111,7 @@ set y2tics 0,1,50 nomirror #textcolor rgb "red"
 
 set xlabel 'Time (seconds)'
 set ylabel 'Current (mA)'
-set y2label 'Voltage (V), %, Temp (°C)'
+set y2label 'Voltage (V), %/10, Temp (°C)'
 
 EOF
 
@@ -120,7 +122,7 @@ EOF
 # y2 -- temperature, voltage, %, voltage/%
 plot '${FN_DATA}' using 1:7           title 'VBattV' with lines axes x1y2 \
    , '${FN_DATA}' using 1:8           title 'VExtV'  with lines axes x1y2 \
-   , '${FN_DATA}' using 1:(\$2/-1)    title 'Battery Current' with lines axes x1y1 \
+   , '${FN_DATA}' using 1:(\$2/-1)    title 'Battery Current (mA)' with lines axes x1y1 \
    , '${FN_DATA}' using 1:(\$9/10)    title 'FuelPercent (%/10)' with lines axes x1y2 \
    , '${FN_DATA}' using 1:4           title 'BatteryTemp0InC (°C)' with lines axes x1y2 \
    , '${FN_DATA}' using 1:5           title 'BatteryTemp1InC (°C)' with lines axes x1y2 \
@@ -133,7 +135,7 @@ EOF
 # y2 -- temperature, voltage, %, voltage/%
 plot '${FN_DATA}' using 1:7           title 'VBattV' with lines axes x1y2 \
    , '${FN_DATA}' using 1:8           title 'VExtV'  with lines axes x1y2 \
-   , '${FN_DATA}' using 1:(\$2/-1)    title 'Battery Current' with lines axes x1y1 \
+   , '${FN_DATA}' using 1:(\$2/-1)    title 'Battery Current (mA)' with lines axes x1y1 \
    , '${FN_DATA}' using 1:(\$9/10)    title 'FuelPercent (%/10)' with lines axes x1y2 \
    , '${FN_DATA}' using 1:4           title 'BatteryTemp0InC (°C)' with lines axes x1y2 \
    , '${FN_DATA}' using 1:5           title 'BatteryTemp1InC (°C)' with lines axes x1y2
@@ -159,15 +161,15 @@ EOF
 
 LIST_DATA=(
     # <prefix>, <1: plot VBattV*400/%>, <brand>, <serial>, <comments>
+    "serialbatt-data-charging-mcnair-old-1,0,McNair Ni-MH 7.2V 3200mAh for Neato XV x2,1,McNair battery old-in the machine-first charging-machine1-firmware 3.1"
+    "serialbatt-data-charging-mcnair-old-2,0,McNair Ni-MH 7.2V 3200mAh for Neato XV x2,1,McNair battery old-in the machine-second charging-machine1-firmware 3.1"
+    "serialbatt-data-charging-mcnair-old-3,0,McNair Ni-MH 7.2V 3200mAh for Neato XV x2,1,McNair battery old-in the machine-third charging-machine1-firmware 3.4"
+    "serialbatt-data-charging-oem-1,1,OEM Ni-MH 7.2V 3200mAh for Neato XV x2,1,OEM battery old-in the machine-first charging-machine2-firmware 3.1"
     "serialbatt-data-charging-powerextra-r1-1,1,Powerextra Ni-MH 7.2V 4000mAh for Neato XV x2,1,powerextra battery-round1-first charging-machine1-firmware 3.1"
     "serialbatt-data-charging-powerextra-r1-2,1,Powerextra Ni-MH 7.2V 4000mAh for Neato XV x2,1,powerextra battery-round1-second charging-machine1-firmware 3.4"
     "serialbatt-data-charging-powerextra-r1-3,1,Powerextra Ni-MH 7.2V 4000mAh for Neato XV x2,1,powerextra battery-round1-third charging-machine1-firmware 3.4-after refresh with neatoctrl (deep recharge), there's a dust box install at the middle of charging"
     "serialbatt-data-charging-powerextra-r1-4,1,Powerextra Ni-MH 7.2V 4000mAh for Neato XV x2,1,powerextra battery-round1-4th charging-machine1-firmware 3.4-can only last 5min?"
     "serialbatt-data-standby-powerextra-r1-2,1,Powerextra Ni-MH 7.2V 4000mAh for Neato XV x2,1,powerextra battery-round1-standby after second charging-machine1-firmware 3.4"
-    "serialbatt-data-charging-mcnair-old-1,0,McNair Ni-MH 7.2V 3200mAh for Neato XV x2,1,McNair battery old-in the machine-first charging-machine1-firmware 3.1"
-    "serialbatt-data-charging-mcnair-old-2,0,McNair Ni-MH 7.2V 3200mAh for Neato XV x2,1,McNair battery old-in the machine-second charging-machine1-firmware 3.1"
-    "serialbatt-data-charging-mcnair-old-3,0,McNair Ni-MH 7.2V 3200mAh for Neato XV x2,1,McNair battery old-in the machine-third charging-machine1-firmware 3.4"
-    "serialbatt-data-charging-oem-1,1,OEM Ni-MH 7.2V 3200mAh for Neato XV x2,1,OEM battery old-in the machine-first charging-machine2-firmware 3.1"
     )
 LIST_DATA1=(
     "serialbatt-data-charging-oem-1,1,OEM Ni-MH 7.2V 3200mAh for Neato XV x2,1,OEM battery old-in the machine-first charging-machine2-firmware 3.1"
