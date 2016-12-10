@@ -7,12 +7,22 @@ PNGSIZE="1800,900"
 EPSSIZE="8,4"
 
 function plot_charging() {
+    # the data file name prefix
     local PARAM_PREFIX=$1
     shift
+    # 1 -- if draw VBattV*200/%
     local PARAM_VBATRAT=$1
     shift
+    # set the x range
     local PARAM_XRANGE=$1
     shift
+    # fig title
+    local PARAM_TITLE=$1
+    shift
+    # fig comments
+    local PARAM_COMMENTS=$1
+    shift
+
 
     FN_DATA="${PARAM_PREFIX}.txt"
     # figure -- charging current, voltage/% and tempreture
@@ -24,15 +34,52 @@ set output "${FN_GPOUT}.png"
 
 #set key left bottom
 #set key center bottom
-#set key right bottom
-set key center
+set key right bottom
+#set key center
 
 set autoscale x
 #set autoscale x2
 set autoscale y
 #set autoscale y2
-set yrange [-400<*:*<2500]
-set y2range [0<*:10<*<100]
+#set yrange [-500<*:*<2500]
+set yrange [-500:2000]
+#set y2range [0<*:10<*<50]
+set y2range [0:50]
+
+# On both the x and y axes split each space in half and put a minor tic there
+set mxtics 2
+set mytics 2
+set my2tics 2
+
+# Line style for axes
+# Define a line style (we're calling it 80) and set 
+# lt = linetype to 0 (dashed line)
+# lc = linecolor to a gray defined by that number
+set style line 80 lt 0 lc rgb "#808080"
+
+# Set the border using the linestyle 80 that we defined
+# 3 = 1 + 2 (1 = plot the bottom line and 2 = plot the left line)
+# back means the border should be behind anything else drawn
+set border 3 back ls 80 
+
+# Line style for grid
+# Define a new linestyle (81)
+# linetype = 0 (dashed line)
+# linecolor = gray
+# lw = lineweight, make it half as wide as the axes lines
+set style line 81 lt 0 lc rgb "#808080" lw 0.5
+
+# Draw the grid lines for both the major and minor tics
+#set grid x y y2
+set grid xtics
+set grid ytics
+set grid y2tics
+set grid mxtics
+#set grid mytics
+#set grid my2tics
+
+# Put the grid behind anything drawn and use the linestyle 81
+set grid back ls 81
 EOF
 
     if [ ! "${PARAM_XRANGE}" = "" ]; then
@@ -41,11 +88,24 @@ set xrange [${PARAM_XRANGE}]
 EOF
     fi
 
+
+    if [ ! "${PARAM_TITLE}" = "" ]; then
+        cat << EOF >> "${FN_GPOUT}.gp"
+set title "${PARAM_TITLE}"
+EOF
+    fi
+
+    if [ ! "${PARAM_COMMENTS}" = "" ]; then
+        cat << EOF >> "${FN_GPOUT}.gp"
+set label "${PARAM_COMMENTS}" at graph 1.05,-.065 right #first -1
+#set label "${PARAM_COMMENTS}" at 2.5,0.5 tc rgb "white" font ",30" front
+EOF
+    fi
+
     cat << EOF >> "${FN_GPOUT}.gp"
 #set xtics 0,.5,10
-set ytics -400,100,2500
-set y2tics
-set grid x y y2
+set ytics -500,50,2000 nomirror
+set y2tics 0,1,50 nomirror #textcolor rgb "red"
 
 set xlabel 'Time (seconds)'
 set ylabel 'Current (mA)'
@@ -58,23 +118,23 @@ EOF
 # x -- time
 # y -- current
 # y2 -- temperature, voltage, %, voltage/%
-plot '${FN_DATA}' using 1:(\$7*3)     title 'VBattV*3' with lines axes x1y2 \
-   , '${FN_DATA}' using 1:(\$8*3)     title 'VExtV*3'  with lines axes x1y2 \
+plot '${FN_DATA}' using 1:7           title 'VBattV' with lines axes x1y2 \
+   , '${FN_DATA}' using 1:8           title 'VExtV'  with lines axes x1y2 \
    , '${FN_DATA}' using 1:(\$2/-1)    title 'Battery Current' with lines axes x1y1 \
-   , '${FN_DATA}' using 1:9           title 'FuelPercent (%)' with lines axes x1y2 \
+   , '${FN_DATA}' using 1:(\$9/10)    title 'FuelPercent (%/10)' with lines axes x1y2 \
    , '${FN_DATA}' using 1:4           title 'BatteryTemp0InC (°C)' with lines axes x1y2 \
    , '${FN_DATA}' using 1:5           title 'BatteryTemp1InC (°C)' with lines axes x1y2 \
-   , '${FN_DATA}' using 1:(\$7*400/\$9) title 'VBattV*400/%'  with lines axes x1y2
+   , '${FN_DATA}' using 1:(\$7*200/\$9) title 'VBattV*200/%'  with lines axes x1y2
 EOF
     else
         cat << EOF >> "${FN_GPOUT}.gp"
 # x -- time
 # y -- current
 # y2 -- temperature, voltage, %, voltage/%
-plot '${FN_DATA}' using 1:(\$7*3)     title 'VBattV*3' with lines axes x1y2 \
-   , '${FN_DATA}' using 1:(\$8*3)     title 'VExtV*3'  with lines axes x1y2 \
+plot '${FN_DATA}' using 1:7           title 'VBattV' with lines axes x1y2 \
+   , '${FN_DATA}' using 1:8           title 'VExtV'  with lines axes x1y2 \
    , '${FN_DATA}' using 1:(\$2/-1)    title 'Battery Current' with lines axes x1y1 \
-   , '${FN_DATA}' using 1:9           title 'FuelPercent (%)' with lines axes x1y2 \
+   , '${FN_DATA}' using 1:(\$9/10)    title 'FuelPercent (%/10)' with lines axes x1y2 \
    , '${FN_DATA}' using 1:4           title 'BatteryTemp0InC (°C)' with lines axes x1y2 \
    , '${FN_DATA}' using 1:5           title 'BatteryTemp1InC (°C)' with lines axes x1y2
 EOF
@@ -94,20 +154,23 @@ EOF
     gnuplot "${FN_GPOUT}.gp"
 }
 
+
+
+
 LIST_DATA=(
-    # <prefix>, <1: plot VBattV*400/%>,  <comments>
-    "serialbatt-data-charging-powerextra-r1-1,1,powerextra battery-round1-first charging"
-    "serialbatt-data-charging-powerextra-r1-2,1,powerextra battery-round1-second charging"
-    "serialbatt-data-charging-powerextra-r1-3,1,powerextra battery-round1-third charging, after refresh with neatoctrl (deep recharge), there's a dust box install at the middle of charging"
-    "serialbatt-data-charging-powerextra-r1-4,1,powerextra battery-round1-4th charging-can only last 5min?"
-    "serialbatt-data-standby-powerextra-r1-2,1,powerextra battery-round1-standby after second charging"
-    "serialbatt-data-charging-mcnair-old-1,0,McNair battery old-in the machine-first charging"
-    "serialbatt-data-charging-mcnair-old-2,0,McNair battery old-in the machine-second charging"
-    "serialbatt-data-charging-mcnair-old-3,0,McNair battery old-in the machine-third charging"
-    #"serialbatt-data-standby-old-1,0,new battery standby after first charging"
+    # <prefix>, <1: plot VBattV*400/%>, <brand>, <serial>, <comments>
+    "serialbatt-data-charging-powerextra-r1-1,1,Powerextra Ni-MH 7.2V 4000mAh for Neato XV x2,1,powerextra battery-round1-first charging-machine1-firmware 3.1"
+    "serialbatt-data-charging-powerextra-r1-2,1,Powerextra Ni-MH 7.2V 4000mAh for Neato XV x2,1,powerextra battery-round1-second charging-machine1-firmware 3.4"
+    "serialbatt-data-charging-powerextra-r1-3,1,Powerextra Ni-MH 7.2V 4000mAh for Neato XV x2,1,powerextra battery-round1-third charging-machine1-firmware 3.4-after refresh with neatoctrl (deep recharge), there's a dust box install at the middle of charging"
+    "serialbatt-data-charging-powerextra-r1-4,1,Powerextra Ni-MH 7.2V 4000mAh for Neato XV x2,1,powerextra battery-round1-4th charging-machine1-firmware 3.4-can only last 5min?"
+    "serialbatt-data-standby-powerextra-r1-2,1,Powerextra Ni-MH 7.2V 4000mAh for Neato XV x2,1,powerextra battery-round1-standby after second charging-machine1-firmware 3.4"
+    "serialbatt-data-charging-mcnair-old-1,0,McNair Ni-MH 7.2V 3200mAh for Neato XV x2,1,McNair battery old-in the machine-first charging-machine1-firmware 3.1"
+    "serialbatt-data-charging-mcnair-old-2,0,McNair Ni-MH 7.2V 3200mAh for Neato XV x2,1,McNair battery old-in the machine-second charging-machine1-firmware 3.1"
+    "serialbatt-data-charging-mcnair-old-3,0,McNair Ni-MH 7.2V 3200mAh for Neato XV x2,1,McNair battery old-in the machine-third charging-machine1-firmware 3.4"
+    "serialbatt-data-charging-oem-1,1,OEM Ni-MH 7.2V 3200mAh for Neato XV x2,1,OEM battery old-in the machine-first charging-machine2-firmware 3.1"
     )
 LIST_DATA1=(
-    "serialbatt-data-charging-powerextra-r1-4,1,powerextra battery-round1-4th charging-can only last 5min?"
+    "serialbatt-data-charging-oem-1,1,OEM Ni-MH 7.2V 3200mAh for Neato XV x2,1,OEM battery old-in the machine-first charging-machine2-firmware 3.1"
     )
 function do_work() {
     local i=0
@@ -115,7 +178,12 @@ function do_work() {
         local LINE1="${LIST_DATA[${i}]}"
         local PREFIX1=$(echo "${LINE1}" | awk -F, '{print $1}')
         local VBATRAT=$(echo "${LINE1}" | awk -F, '{print $2}')
-        plot_charging "${PREFIX1}" "${VBATRAT}" #"0:*<50"
+        local BRAND=$(echo "${LINE1}" | awk -F, '{print $3}')
+        local SERIAL=$(echo "${LINE1}" | awk -F, '{print $4}')
+        local COMMENTS=$(echo "${LINE1}" | awk -F, '{print $5}')
+        date
+        plot_charging "${PREFIX1}" "${VBATRAT}" "" "Charging '${BRAND}' (${SERIAL})" "${COMMENTS}"
+        date
         i=$((i + 1))
     done
 }

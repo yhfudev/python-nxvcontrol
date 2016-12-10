@@ -101,6 +101,31 @@ if api.ready():
             'FuelPercent',
             'ChargingActive',
             'Charger_mAH',
+            # suppliment:
+            'UIButtonInmV',
+            'VacuumCurrentInmA',
+            'SideBrushCurrentInmA',
+            'VoltageReferenceInmV',
+            'BattTempCAvg[0]',
+            'BattTempCAvg[1]',
+            'BatteryOverTemp',
+            'ChargingEnabled',
+            'ConfidentOnFuel',
+            'OnReservedFuel',
+            'EmptyFuel',
+            'BatteryFailure',
+            'ExtPwrPresent',
+            'ThermistorPresent[0]',
+            'ThermistorPresent[1]',
+            #
+            #'WallSensorInMM',
+            #'LeftDropInMM',
+            #'RightDropInMM',
+            #'LeftMagSensor',
+            #'RightMagSensor',
+            #'AccelXInmG',
+            #'AccelYInmG',
+            #'AccelZInmG',
             )
         tm_begin = datetime.now()
         print ("# start time " + str(tm_begin) + ", " + ", ".join(list_keys))
@@ -120,7 +145,7 @@ if api.ready():
             api.put(sendcmd)
 
             tm_now = datetime.now()
-            record = [-1] * 16
+            #record = [-1] * 16
             retlines = api.get()
             responses = retlines.split('\n')
             for i in range(0,len(responses)):
