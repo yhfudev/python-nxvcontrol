@@ -40,15 +40,15 @@ serv = None
 L.debug('serv.open() ...')
 serv = neatocmdapi.NCIService(target=args.target.strip(), timeout=args.interval)
 
-
-queue_out = Queue()
-
 def cb_task(tid, req):
     L.debug("do task: tid=" + str(tid) + ", req=" + str(req))
-    resp = serv.get_request_block(req)
+    reqstr = req[0]
+    resp = serv.get_request_block(reqstr)
     if resp != None:
         if resp.strip() != "":
-            queue_out.put(resp.strip())
+            serv.mailbox.put(req[1], resp.strip())
+
+mbox_id = serv.mailbox.declair()
 
 if serv.open(cb_task) == False:
     L.error ('time out for connection')
@@ -56,9 +56,9 @@ if serv.open(cb_task) == False:
 
 try:
     if args.draintime > 0:
-        serv.request("TestMode On\nSetMotor VacuumOn")
+        serv.request(["TestMode On\nSetMotor VacuumOn", mbox_id])
         time.sleep(args.draintime)
-        serv.request("SetMotor VacuumOff\nTestMode Off")
+        serv.request(["SetMotor VacuumOff\nTestMode Off", mbox_id])
 
     list_commands = (
         'GetCharger',
@@ -118,11 +118,11 @@ try:
         for cmd0 in list_commands:
             L.debug ('send command ' + cmd0)
             sendcmd += cmd0 + "\n"
-        serv.request(sendcmd)
+        serv.request([sendcmd, mbox_id])
 
         tm_now = datetime.now()
         #record = [-1] * 16
-        retlines = queue_out.get()
+        retlines = serv.mailbox.get(mbox_id)
         responses = retlines.split('\n')
         for i in range(0,len(responses)):
             response = responses[i].strip()
