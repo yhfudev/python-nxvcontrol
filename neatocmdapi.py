@@ -235,15 +235,15 @@ class MailPipe(object):
         return -1
 
     # get a message from specified mail pipe
-    def get(self, mid):
+    def get(self, mid, isblock=True):
         if mid in self._idx:
-            return self._idx[mid].get()
+            return self._idx[mid].get(isblock)
         return None
 
     # add a message to a specified mail pipe
-    def put(self, mid, msg):
+    def put(self, mid, msg, isblock=True):
         if mid in self._idx:
-            self._idx[mid].put(msg)
+            self._idx[mid].put(msg, isblock)
             return True
         return False
 
