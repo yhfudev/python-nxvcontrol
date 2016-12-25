@@ -7,16 +7,21 @@ if sys.version_info[0] < 3:
     import ttk
     import ScrolledText
     import tkFileDialog as fd
+    import Queue
+
 else:
     import tkinter as tk
     from tkinter import ttk
     from tkinter.scrolledtext import ScrolledText
     import tkinter.filedialog as fd
+    import multiprocessing
+    from multiprocessing import Queue
 
 import time
 from threading import Thread
 import queue
 
+import neatocmdapi
 
 import logging as L
 L.basicConfig(filename='serial.log', level=L.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
@@ -89,15 +94,26 @@ def set_readonly_text(text, msg):
 
 class MyTkAppFrame(ttk.Notebook):
 
+    # the req is a list
+    def cb_task(self, tid, req):
+        L.debug("do task: tid=" + str(tid) + ", req=" + str(req))
+        resp = self.serv.get_request_block(req)
+        if resp != None:
+            if resp.strip() != "":
+                self.serv.qput(resp.strip())
+
     def do_stop(self):
-        if self.runT != None:
-            if self.runT.isAlive():
+        isrun = False;
+        if self.runth_svr != None:
+            if self.runth_svr.isAlive():
                 L.info('signal server to stop ...')
                 self.server.shutdown()
+                L.info('server close ...')
                 self.server.server_close()
-                return
-        L.info('server is not running. skip')
-        return
+                isrun = True
+        if isrun == False:
+            L.info('server is not running. skip')
+        #return
 
     def do_start(self):
         import socketserver as ss
@@ -106,6 +122,7 @@ class MyTkAppFrame(ttk.Notebook):
         class ThreadedTCPRequestHandler(ss.BaseRequestHandler):
             # override base class handle method
             def handle(self):
+                self.serv = self.server.serv
                 BUFFER_SIZE = 4096
                 MAXIUM_SIZE = BUFFER_SIZE * 5
                 data = ""
@@ -113,6 +130,7 @@ class MyTkAppFrame(ttk.Notebook):
 
                 cli_log_head = "CLI" + str(self.client_address)
                 while 1:
+                    # receive the requests
                     recvdat = self.request.recv(BUFFER_SIZE)
                     if not recvdat:
                         # EOF, client closed, just return
@@ -125,11 +143,14 @@ class MyTkAppFrame(ttk.Notebook):
                     if (cntdata < 1):
                         L.debug(cli_log_head + " not receive newline, skip: " + data)
                         continue
+                    # process the requests after a '\n'
                     requests = data.split('\n')
                     for i in range(0, cntdata):
+                        # for each line:
                         request = requests[i].strip()
                         L.info(cli_log_head + " request [" + str(i+1) + "/" + str(cntdata) + "] '" + request + "'")
-                        response = nsim.fake_respose(request)
+                        self.serv.request (request)
+                        response = self.serv.qget()
                         if response != "":
                             L.debug(cli_log_head + 'send data back: sz=' + str(len(response)))
                             self.request.sendall(bytes(response, 'ascii'))
@@ -139,30 +160,40 @@ class MyTkAppFrame(ttk.Notebook):
         class ThreadedTCPServer(ss.ThreadingMixIn, ss.TCPServer):
             daemon_threads = True
             allow_reuse_address = True
-            pass
+            # pass the serv to handler
+            def __init__(self, host_port_tuple, streamhandler, serv):
+                super().__init__(host_port_tuple, streamhandler)
+                self.serv = serv
 
-        if self.runT != None:
-            if self.runT.isAlive():
+        if self.runth_svr != None:
+            if self.runth_svr.isAlive():
                 L.info('server is already running. skip')
                 return
 
-        L.info('start server ' + self.chistory.get())
-        b = self.chistory.get().split(":")
+        L.info('connect to ' + self.conn_port.get())
+        self.serv = neatocmdapi.NCIService(target=self.conn_port.get().strip(), timeout=0.5)
+        if self.serv.open(self.cb_task) == False:
+            L.error ('time out for connection')
+            exit(0)
+
+        L.info('start server ' + self.bind_port.get())
+        b = self.bind_port.get().split(":")
         HOST=b[0]
         PORT=3333
         if len(b) > 1:
             PORT=int(b[1])
         L.info('server is running ...')
         try:
-            self.server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler)
+            self.server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler, self.serv)
         except Exception as e:
             L.error("Error in starting service: " + str(e))
             return
         ip, port = self.server.server_address
         L.info("server listened to: " + str(ip) + ":" + str(port))
-        self.runT = Thread(target=self.server.serve_forever)
-        self.runT.setDaemon(True) # When closing the main thread, which is our GUI, all daemons will automatically be stopped as well.
-        self.runT.start()
+        self.runth_svr = Thread(target=self.server.serve_forever)
+        self.runth_svr.setDaemon(True) # When closing the main thread, which is our GUI, all daemons will automatically be stopped as well.
+        self.runth_svr.start()
+
         return
 
     def get_log_text(self):
@@ -171,7 +202,9 @@ class MyTkAppFrame(ttk.Notebook):
     def __init__(self, tk_frame_parent):
         ttk.Notebook.__init__(self, tk_frame_parent)
         nb = self
-        self.runT = None
+        self.runth_svr = None
+        self.serv = None
+
 
         # page for About
         page_about = ttk.Frame(nb)
@@ -193,15 +226,25 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
 
         frame_svr = ttk.LabelFrame(page_server, text='Setup')
 
-        commandhistory = ('localhost:3333', '127.0.0.1:4444', 'localhost:5555')
-        self.chistory = tk.StringVar()
         line=0
+        bind_port_history = ('localhost:3333', '127.0.0.1:4444', 'localhost:5555')
+        self.bind_port = tk.StringVar()
         lbl_svr_port = tk.Label(frame_svr, text="Bind Address:")
         lbl_svr_port.grid(row=line, column=0, padx=5, sticky=tk.N+tk.S+tk.W)
-        combobox_chistory = ttk.Combobox(frame_svr, textvariable=self.chistory)
-        combobox_chistory['values'] = commandhistory
-        combobox_chistory.grid(row=line, column=1, padx=5, pady=5, sticky=tk.N+tk.S+tk.W)
-        combobox_chistory.current(0)
+        combobox_bind_port = ttk.Combobox(frame_svr, textvariable=self.bind_port)
+        combobox_bind_port['values'] = bind_port_history
+        combobox_bind_port.grid(row=line, column=1, padx=5, pady=5, sticky=tk.N+tk.S+tk.W)
+        combobox_bind_port.current(0)
+
+        line += 1
+        conn_port_history = ('sim:', 'dev://ttyUSB0:115200', 'tcp://localhost:3333')
+        self.conn_port = tk.StringVar()
+        lbl_svr_port = tk.Label(frame_svr, text="Connect Address:")
+        lbl_svr_port.grid(row=line, column=0, padx=5, sticky=tk.N+tk.S+tk.W)
+        combobox_conn_port = ttk.Combobox(frame_svr, textvariable=self.conn_port)
+        combobox_conn_port['values'] = conn_port_history
+        combobox_conn_port.grid(row=line, column=1, padx=5, pady=5, sticky=tk.N+tk.S+tk.W)
+        combobox_conn_port.current(0)
 
         frame_svr.pack(side="top", fill="x", pady=10)
 
@@ -220,6 +263,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         #btn_svr_stop.grid(row=line, column=0, columnspan=2, padx=5, sticky=tk.N+tk.S+tk.W+tk.E)
         btn_svr_stop.pack(side="left", fill="both", padx=5, pady=5, expand=True)
 
+
         # page for client
         page_client = ttk.Frame(nb)
         lbl_cli_head = tk.Label(page_client, text="Client", font=LARGE_FONT)
@@ -230,7 +274,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         nb.add(page_server, text='Server')
         nb.add(page_client, text='Client')
         nb.add(page_about, text='About')
-        combobox_chistory.focus()
+        combobox_bind_port.focus()
 
 def demo():
 
