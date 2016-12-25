@@ -111,9 +111,14 @@ class MyTkAppFrame(ttk.Notebook):
                 self.server.shutdown()
                 L.info('server close ...')
                 self.server.server_close()
+                L.info('server closed.')
                 isrun = True
         if isrun == False:
             L.info('server is not running. skip')
+        if self.serv != None:
+            self.serv.close()
+            self.serv = None
+
         #return
 
     def do_start(self):
@@ -188,8 +193,8 @@ class MyTkAppFrame(ttk.Notebook):
         L.info('connect to ' + self.conn_port.get())
         self.serv = neatocmdapi.NCIService(target=self.conn_port.get().strip(), timeout=0.5)
         if self.serv.open(self.cb_task) == False:
-            L.error ('time out for connection')
-            exit(0)
+            L.error ('Error in open serial')
+            return
 
         L.info('start server ' + self.bind_port.get())
         b = self.bind_port.get().split(":")
@@ -208,7 +213,7 @@ class MyTkAppFrame(ttk.Notebook):
         self.runth_svr = Thread(target=self.server.serve_forever)
         self.runth_svr.setDaemon(True) # When closing the main thread, which is our GUI, all daemons will automatically be stopped as well.
         self.runth_svr.start()
-
+        L.info('server started.')
         return
 
     def get_log_text(self):
@@ -219,7 +224,7 @@ class MyTkAppFrame(ttk.Notebook):
         nb = self
         self.runth_svr = None
         self.serv = None
-
+        self.serv_cli = None
 
         # page for About
         page_about = ttk.Frame(nb)
@@ -254,7 +259,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         line += 1
         conn_port_history = ('sim:', 'dev://ttyUSB0:115200', 'tcp://localhost:3333')
         self.conn_port = tk.StringVar()
-        lbl_svr_port = tk.Label(frame_svr, text="Connect Address:")
+        lbl_svr_port = tk.Label(frame_svr, text="Connect to:")
         lbl_svr_port.grid(row=line, column=0, padx=5, sticky=tk.N+tk.S+tk.W)
         combobox_conn_port = ttk.Combobox(frame_svr, textvariable=self.conn_port)
         combobox_conn_port['values'] = conn_port_history
@@ -283,13 +288,124 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         page_client = ttk.Frame(nb)
         lbl_cli_head = tk.Label(page_client, text="Client", font=LARGE_FONT)
         lbl_cli_head.pack(side="top", fill="x", pady=10)
-        #page_client = page_server # debug!
+
+        frame_cli = ttk.LabelFrame(page_client, text='Connection')
+
+        line=0
+        client_port_history = ('sim:', 'dev://ttyUSB0:115200', 'tcp://localhost:3333')
+        self.client_port = tk.StringVar()
+        lbl_cli_port = tk.Label(frame_cli, text="Connect to:")
+        lbl_cli_port.grid(row=line, column=0, padx=5, sticky=tk.N+tk.S+tk.W)
+        combobox_client_port = ttk.Combobox(frame_cli, textvariable=self.client_port)
+        combobox_client_port['values'] = client_port_history
+        combobox_client_port.grid(row=line, column=1, padx=5, pady=5, sticky=tk.N+tk.S+tk.W)
+        combobox_client_port.current(0)
+
+        btn_cli_start = tk.Button(frame_cli, text="Connect", command=self.do_cli_connect)
+        btn_cli_start.grid(row=line, column=2, columnspan=1, padx=5, sticky=tk.N+tk.S+tk.W+tk.E)
+        #btn_cli_start.pack(side="left", fill="both", padx=5, pady=5, expand=True)
+
+        btn_cli_stop = tk.Button(frame_cli, text="Disconnect", command=self.do_cli_disconnect)
+        btn_cli_stop.grid(row=line, column=3, columnspan=1, padx=5, sticky=tk.N+tk.S+tk.W+tk.E)
+        #btn_cli_stop.pack(side="left", fill="both", padx=5, pady=5, expand=True)
+
+        frame_cli.pack(side="top", fill="x", pady=10)
+
+        page_command = page_client
+        frame_top = tk.Frame(page_command)#, background="green")
+        frame_bottom = tk.Frame(page_command)#, background="yellow")
+        frame_top.pack(side="top", fill="both", expand=True)
+        frame_bottom.pack(side="bottom", fill="x", expand=False)
+
+        self.text_cli_command = ScrolledText(frame_top, wrap=tk.WORD)
+        #self.text_cli_command.insert(tk.END, "Some Text\ntest 1\ntest 2\n")
+        self.text_cli_command.configure(state='disabled')
+        self.text_cli_command.pack(expand=True, fill="both", side="top")
+        # make sure the widget gets focus when clicked
+        # on, to enable highlighting and copying to the
+        # clipboard.
+        self.text_cli_command.bind("<1>", lambda event: self.text_cli_command.focus_set())
+        self.text_cli_command.after(100, self.check_mid_cli_command)
+
+        self.cli_command = tk.StringVar()
+        self.combobox_cli_command = ttk.Combobox(frame_bottom, textvariable=self.cli_command)
+        self.combobox_cli_command['values'] = ('GetCharger', 'GetTime', 'GetVersion')
+        self.combobox_cli_command.pack(side="left", fill="both", padx=5, pady=5, expand=True)
+        self.combobox_cli_command.bind("<Return>", self.do_cli_run_ev)
+        self.combobox_cli_command.bind("<<ComboboxSelected>>", self.do_select_clicmd)
+        btn_run_cli_command = tk.Button(frame_bottom, text="Run", command=self.do_cli_run)
+        btn_run_cli_command.pack(side="right", fill="x", padx=5, pady=5, expand=False)
+
 
         # last
         nb.add(page_server, text='Server')
         nb.add(page_client, text='Client')
         nb.add(page_about, text='About')
         combobox_bind_port.focus()
+        return
+
+    def do_select_clicmd(self, event):
+        self.combobox_cli_command.select_range(0, tk.END)
+        return
+
+    # the req is a list
+    def cb_task_cli(self, tid, req):
+        L.debug("do task: tid=" + str(tid) + ", req=" + str(req))
+        reqstr = req[0]
+        resp = self.serv_cli.get_request_block(reqstr)
+        if resp != None:
+            if resp.strip() != "":
+                self.serv_cli.mailbox.put(req[1], resp.strip())
+        return
+
+    def do_cli_connect(self):
+        self.do_cli_disconnect()
+        L.info('client connect ...')
+        L.info('connect to ' + self.client_port.get())
+        self.serv_cli = neatocmdapi.NCIService(target=self.client_port.get().strip(), timeout=0.5)
+        if self.serv_cli.open(self.cb_task_cli) == False:
+            L.error ('Error in open serial')
+            return
+        self.mid_cli_command = self.serv_cli.mailbox.declair();
+        L.info ('serial opened')
+        return
+
+    def do_cli_disconnect(self):
+        if self.serv_cli != None:
+            L.info('client disconnect ...')
+            self.serv_cli.close()
+        else:
+            L.info('client is not connected, skip.')
+        self.serv_cli = None
+        self.mid_cli_command = -1;
+        return
+
+    def do_cli_run(self):
+        if self.serv_cli == None:
+            L.error('client is not connected, please connect it first!')
+            return
+        L.info('client run ...')
+        reqstr = self.cli_command.get().strip()
+        if reqstr != "":
+            self.serv_cli.request([reqstr, self.mid_cli_command])
+        return
+
+    def do_cli_run_ev(self, event):
+        self.do_cli_run()
+        return
+
+    def check_mid_cli_command(self):
+        if self.serv_cli != None and self.mid_cli_command >= 0:
+            try:
+                resp = self.serv_cli.mailbox.get(self.mid_cli_command, False)
+                # put the content to the end of the textarea
+                textarea_append (self.text_cli_command, resp)
+            except queue.Empty:
+                # ignore
+                pass
+        # setup next
+        self.text_cli_command.after(100, self.check_mid_cli_command)
+        return
 
 def demo():
 
