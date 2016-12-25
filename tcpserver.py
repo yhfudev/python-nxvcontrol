@@ -97,10 +97,11 @@ class MyTkAppFrame(ttk.Notebook):
     # the req is a list
     def cb_task(self, tid, req):
         L.debug("do task: tid=" + str(tid) + ", req=" + str(req))
-        resp = self.serv.get_request_block(req)
+        reqstr = req[0]
+        resp = self.serv.get_request_block(reqstr)
         if resp != None:
             if resp.strip() != "":
-                self.serv.qput(resp.strip())
+                self.serv.mailbox.put(req[1], resp.strip())
 
     def do_stop(self):
         isrun = False;
@@ -127,35 +128,49 @@ class MyTkAppFrame(ttk.Notebook):
                 MAXIUM_SIZE = BUFFER_SIZE * 5
                 data = ""
                 L.info("server connectd by client: " + str(self.client_address))
+                mbox_id = self.serv.mailbox.declair()
 
                 cli_log_head = "CLI" + str(self.client_address)
                 while 1:
-                    # receive the requests
-                    recvdat = self.request.recv(BUFFER_SIZE)
-                    if not recvdat:
-                        # EOF, client closed, just return
-                        L.info(cli_log_head + " disconnected: " + str(self.client_address))
-                        return
-                    data += str(recvdat, 'ascii')
-                    L.debug(cli_log_head + " all of data: " + data)
-                    cntdata = data.count('\n')
-                    L.debug(cli_log_head + " the # of newline: %d"%cntdata)
-                    if (cntdata < 1):
-                        L.debug(cli_log_head + " not receive newline, skip: " + data)
-                        continue
-                    # process the requests after a '\n'
-                    requests = data.split('\n')
-                    for i in range(0, cntdata):
-                        # for each line:
-                        request = requests[i].strip()
-                        L.info(cli_log_head + " request [" + str(i+1) + "/" + str(cntdata) + "] '" + request + "'")
-                        self.serv.request (request)
-                        response = self.serv.qget()
-                        if response != "":
-                            L.debug(cli_log_head + 'send data back: sz=' + str(len(response)))
-                            self.request.sendall(bytes(response, 'ascii'))
+                    try:
+                        # receive the requests
+                        recvdat = self.request.recv(BUFFER_SIZE)
+                        if not recvdat:
+                            # EOF, client closed, just return
+                            L.info(cli_log_head + " disconnected: " + str(self.client_address))
+                            break
+                        data += str(recvdat, 'ascii')
+                        L.debug(cli_log_head + " all of data: " + data)
+                        cntdata = data.count('\n')
+                        L.debug(cli_log_head + " the # of newline: %d"%cntdata)
+                        if (cntdata < 1):
+                            L.debug(cli_log_head + " not receive newline, skip: " + data)
+                            continue
+                        # process the requests after a '\n'
+                        requests = data.split('\n')
+                        for i in range(0, cntdata):
+                            # for each line:
+                            request = requests[i].strip()
+                            L.info(cli_log_head + " request [" + str(i+1) + "/" + str(cntdata) + "] '" + request + "'")
+                            self.serv.request ([request, mbox_id])
+                            response = self.serv.mailbox.get(mbox_id)
+                            if response != "":
+                                L.debug(cli_log_head + 'send data back: sz=' + str(len(response)))
+                                self.request.sendall(bytes(response, 'ascii'))
 
-                    data = requests[-1]
+                        data = requests[-1]
+
+                    except BrokenPipeError:
+                        L.error (cli_log_head + 'remote closed: ' + str(self.client_address))
+                        break
+                    except ConnectionResetError:
+                        L.error (cli_log_head + 'remote reset: ' + str(self.client_address))
+                        break
+                    except Exception as e1:
+                        L.error (cli_log_head + 'Error in read serial: ' + str(e1))
+                        break
+
+                self.serv.mailbox.close(mbox_id)
 
         class ThreadedTCPServer(ss.ThreadingMixIn, ss.TCPServer):
             daemon_threads = True

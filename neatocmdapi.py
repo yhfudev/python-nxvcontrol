@@ -205,6 +205,49 @@ class MyHeap(object):
     def pop(self):
         return heapq.heappop(self._data)[-1]
 
+# MailPipe
+#   each pipe has its address
+#   the message in the pipe is in Queue
+class MailPipe(object):
+    def __init__(self):
+        self._counter = count()
+        self._idx = {}
+
+    # declair a new mail pipe, return the handler
+    def declair(self):
+        mid = next(self._counter)
+        self._idx[mid] = Queue()
+        return mid
+
+    # close a mail pipe; mid the id of the mail pipe
+    def close(self, mid):
+        self._idx.pop(mid)
+        pass
+
+    # get the # of mail pipe
+    def size(self, mid):
+        return len(self._idx)
+
+    # get the # of messages of a specified mail pipe
+    def count(self, mid):
+        if mid in self._idx:
+            return self._idx[mid].qsize()
+        return -1
+
+    # get a message from specified mail pipe
+    def get(self, mid):
+        if mid in self._idx:
+            return self._idx[mid].get()
+        return None
+
+    # add a message to a specified mail pipe
+    def put(self, mid, msg):
+        if mid in self._idx:
+            self._idx[mid].put(msg)
+            return True
+        return False
+
+
 # each task will executed until finished
 # supports priority, 0 -- critial for important task, 1-n -- normal priority tasks
 # supports execute at a exact time.
@@ -371,7 +414,8 @@ class NCIService(object):
         "target accepts: 'tcp://localhost:3333', 'dev://ttyUSB0:115200', 'sim:' "
         self.api = None
         self.th_sche = None
-        self.queue_out = Queue()
+        self.mailbox = MailPipe()
+
         result = urlparse(target)
         if result.scheme == "tcp":
             addr = result.netloc.split(':')
@@ -436,13 +480,6 @@ class NCIService(object):
 
     def request_time (self, req, exacttime):
         return self.sche.request_time(req, exacttime)
-
-    def qget(self):
-        return self.queue_out.get()
-    def qput(self,a):
-        return self.queue_out.put(a)
-    def qget_nowait(self):
-        return self.queue_out.get_nowait()
 
 
 def test_nci_service():
