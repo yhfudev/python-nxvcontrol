@@ -444,23 +444,28 @@ class NCIService(object):
     #    resp = self.get_request_block(req)
 
     def open(self, cb_task1):
-        L.debug('api.open() ...')
-        self.api.open()
-        time.sleep(0.5)
-        cnt=1
-        while self.api.ready() == False and cnt < 2:
-            time.sleep(1)
-            cnt += 1
-        if self.api.ready() == False:
+        try:
+            L.debug('api.open() ...')
+            self.api.open()
+            time.sleep(0.5)
+            cnt=1
+            while self.api.ready() == False and cnt < 2:
+                time.sleep(1)
+                cnt += 1
+            if self.api.ready() == False:
+                return False
+            self.api.flush()
+
+            # creat a thread to run the task in background
+            self.sche = AtomTaskScheduler(cb_task=cb_task1)
+
+            self.th_sche = threading.Thread(target=self.sche.serve_forever)
+            self.th_sche.setDaemon(True)
+            self.th_sche.start()
+
+        except Exception as e1:
+            L.error ('Error in read serial: ' + str(e1))
             return False
-        self.api.flush()
-
-        # creat a thread to run the task in background
-        self.sche = AtomTaskScheduler(cb_task=cb_task1)
-
-        self.th_sche = threading.Thread(target=self.sche.serve_forever)
-        self.th_sche.setDaemon(True)
-        self.th_sche.start()
 
         return True
 
