@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 
 def fake_respose(request="Help"):
     response = ""

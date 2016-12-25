@@ -2,7 +2,7 @@
 
 import time
 import logging as L
-L.basicConfig(filename='neatocmdapi.log', level=L.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
+#L.basicConfig(filename='neatocmdapi.log', level=L.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
 
 class NeatoCommandInterface(object):
     "Neato Command Interface abstraction interface"
@@ -411,7 +411,7 @@ class NCIService(object):
 
     # target: example: tcp://localhost:3333 sim://
     def __init__(self, target="tcp://localhost:3333", timeout=1):
-        "target accepts: 'tcp://localhost:3333', 'dev://ttyUSB0:115200', 'sim:' "
+        "target accepts: 'tcp://localhost:3333', 'dev://ttyUSB0:115200', 'dev://COM12:115200', 'sim:' "
         self.api = None
         self.th_sche = None
         self.mailbox = MailPipe()
@@ -432,7 +432,12 @@ class NCIService(object):
             baudrate = 115200
             if len(addr) > 1:
                 baudrate = int(addr[1])
-            self.api = neatocmdapi.NCISerial(timeout = timeout, port = "/dev/" + addr[0], baudrate = baudrate)
+            port = addr[0]
+            import re
+            if re.match('tty.*', port):
+                port = "/dev/" + addr[0]
+            L.debug('serial open: ' + port + ", " + str(baudrate))
+            self.api = neatocmdapi.NCISerial(timeout = timeout, port = port, baudrate = baudrate)
 
     # block read and get
     def get_request_block(self, req):
@@ -479,12 +484,19 @@ class NCIService(object):
             while self.th_sche.isAlive():
                 time.sleep(1)
         self.api.close()
+        self.api = None
+        self.sche = None
+        self.th_sche = None
 
     def request(self, req):
-        return self.sche.request(req, 5)
+        if self.sche != None:
+            return self.sche.request(req, 5)
+        return -1
 
     def request_time (self, req, exacttime):
-        return self.sche.request_time(req, exacttime)
+        if self.sche != None:
+            return self.sche.request_time(req, exacttime)
+        return -1
 
 
 def test_nci_service():

@@ -21,10 +21,11 @@ import time
 from threading import Thread
 import queue
 
-import neatocmdapi
-
 import logging as L
 L.basicConfig(filename='serial.log', level=L.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
+
+import neatocmdapi
+import guilog
 
 str_progname="TCPServer"
 str_version="0.1"
@@ -32,59 +33,6 @@ str_version="0.1"
 LARGE_FONT= ("Verdana", 18)
 NORM_FONT = ("Helvetica", 12)
 SMALL_FONT = ("Helvetica", 8)
-
-def textarea_append(text_area, msg):
-    # Disabling states so no user can write in it
-    text_area.configure(state=tk.NORMAL)
-    text_area.insert(tk.END, msg) #Inserting the logger message in the widget
-    text_area.configure(state=tk.DISABLED)
-    text_area.see(tk.END)
-
-# logging redirector
-class IODirector(object):
-    def __init__(self, text_area):
-        self.text_area = text_area
-class TextareaStream(IODirector):
-    def write(self, msg):
-        # Disabling states so no user can write in it
-        textarea_append(self.text_area, msg)
-    def flush(self):
-        pass
-class TextareaLogHandler(L.StreamHandler):
-    def __init__(self, textctrl):
-        L.StreamHandler.__init__(self) # initialize parent
-        self.text_area = textctrl
-        self.text_area.tag_config("INFO", foreground="black")
-        self.text_area.tag_config("DEBUG", foreground="grey")
-        self.text_area.tag_config("WARNING", foreground="orange")
-        self.text_area.tag_config("ERROR", foreground="red")
-        self.text_area.tag_config("CRITICAL", foreground="red", underline=1)
-
-    # for logging.StreamHandler
-    def emit(self, record):
-        textarea_append(self.text_area, self.format(record) + "\n")
-
-def set_log_textarea(textarea):
-    #L.basicConfig(level=L.DEBUG)
-    logger = L.getLogger()
-    formatter = L.Formatter('%(asctime)s %(levelname)s: %(message)s')
-
-    console0 = L.StreamHandler()  # no arguments => stderr
-    console0.setFormatter(formatter)
-    logger.addHandler(console0)
-    if 1 == 2:
-        handler = TextareaStream(textarea)
-        console = L.StreamHandler(handler)
-        #console.setFormatter(formatter)
-        logger.addHandler(console)
-    else:
-        console2 = TextareaLogHandler(textarea)
-        console2.setFormatter(formatter)
-        logger.addHandler(console2)
-
-    L.info("set logger done")
-    L.debug("debug test 1")
-
 
 def set_readonly_text(text, msg):
     text.config(state=tk.NORMAL)
@@ -292,7 +240,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         frame_cli = ttk.LabelFrame(page_client, text='Connection')
 
         line=0
-        client_port_history = ('sim:', 'dev://ttyUSB0:115200', 'tcp://localhost:3333')
+        client_port_history = ('dev://ttyACM0:115200', 'dev://ttyUSB0:115200', 'dev://COM11:115200', 'dev://COM12:115200', 'sim:', 'tcp://localhost:3333')
         self.client_port = tk.StringVar()
         lbl_cli_port = tk.Label(frame_cli, text="Connect to:")
         lbl_cli_port.grid(row=line, column=0, padx=5, sticky=tk.N+tk.S+tk.W)
@@ -301,13 +249,13 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         combobox_client_port.grid(row=line, column=1, padx=5, pady=5, sticky=tk.N+tk.S+tk.W)
         combobox_client_port.current(0)
 
-        btn_cli_start = tk.Button(frame_cli, text="Connect", command=self.do_cli_connect)
-        btn_cli_start.grid(row=line, column=2, columnspan=1, padx=5, sticky=tk.N+tk.S+tk.W+tk.E)
-        #btn_cli_start.pack(side="left", fill="both", padx=5, pady=5, expand=True)
+        btn_cli_connect = tk.Button(frame_cli, text="Connect", command=self.do_cli_connect)
+        btn_cli_connect.grid(row=line, column=2, columnspan=1, padx=5, sticky=tk.N+tk.S+tk.W+tk.E)
+        #btn_cli_connect.pack(side="left", fill="both", padx=5, pady=5, expand=True)
 
-        btn_cli_stop = tk.Button(frame_cli, text="Disconnect", command=self.do_cli_disconnect)
-        btn_cli_stop.grid(row=line, column=3, columnspan=1, padx=5, sticky=tk.N+tk.S+tk.W+tk.E)
-        #btn_cli_stop.pack(side="left", fill="both", padx=5, pady=5, expand=True)
+        btn_cli_disconnect = tk.Button(frame_cli, text="Disconnect", command=self.do_cli_disconnect)
+        btn_cli_disconnect.grid(row=line, column=3, columnspan=1, padx=5, sticky=tk.N+tk.S+tk.W+tk.E)
+        #btn_cli_disconnect.pack(side="left", fill="both", padx=5, pady=5, expand=True)
 
         frame_cli.pack(side="top", fill="x", pady=10)
 
@@ -325,16 +273,18 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         # on, to enable highlighting and copying to the
         # clipboard.
         self.text_cli_command.bind("<1>", lambda event: self.text_cli_command.focus_set())
-        self.text_cli_command.after(100, self.check_mid_cli_command)
 
         self.cli_command = tk.StringVar()
         self.combobox_cli_command = ttk.Combobox(frame_bottom, textvariable=self.cli_command)
-        self.combobox_cli_command['values'] = ('GetCharger', 'GetTime', 'GetVersion')
+        self.combobox_cli_command['values'] = ('Help', 'GetAccel', 'GetButtons', 'GetCalInfo', 'GetCharger', 'GetDigitalSensors', 'GetErr', 'GetLDSScan', 'GetLifeStatLog', 'GetMotors', 'GetSchedule', 'GetTime', 'GetVersion', 'GetWarranty', 'PlaySound 0')
         self.combobox_cli_command.pack(side="left", fill="both", padx=5, pady=5, expand=True)
         self.combobox_cli_command.bind("<Return>", self.do_cli_run_ev)
         self.combobox_cli_command.bind("<<ComboboxSelected>>", self.do_select_clicmd)
+        self.combobox_cli_command.current(0)
         btn_run_cli_command = tk.Button(frame_bottom, text="Run", command=self.do_cli_run)
         btn_run_cli_command.pack(side="right", fill="x", padx=5, pady=5, expand=False)
+
+        self.check_mid_cli_command()
 
 
         # last
@@ -344,6 +294,9 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         combobox_bind_port.focus()
         return
 
+    #
+    # connection and command: support functions
+    #
     def do_select_clicmd(self, event):
         self.combobox_cli_command.select_range(0, tk.END)
         return
@@ -398,13 +351,15 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         if self.serv_cli != None and self.mid_cli_command >= 0:
             try:
                 resp = self.serv_cli.mailbox.get(self.mid_cli_command, False)
+                respstr = resp.strip() + "\n\n"
                 # put the content to the end of the textarea
-                textarea_append (self.text_cli_command, resp)
+                guilog.textarea_append (self.text_cli_command, respstr)
+                self.text_cli_command.update_idletasks()
             except queue.Empty:
                 # ignore
                 pass
         # setup next
-        self.text_cli_command.after(100, self.check_mid_cli_command)
+        self.after(300, self.check_mid_cli_command)
         return
 
 def demo():
@@ -415,7 +370,7 @@ def demo():
     app.pack(fill="both", expand=True)
     ttk.Sizegrip(root).pack(side="right")
 
-    set_log_textarea (app.get_log_text())
+    guilog.set_log_textarea (app.get_log_text())
 
     root.mainloop()
 

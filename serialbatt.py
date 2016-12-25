@@ -20,7 +20,7 @@ parser=argparse.ArgumentParser(description='Log battery data from USB port(seria
 #parser.add_argument('intergers', metavar='N', type=int, nargs='+', help='an integer for the accumulator')
 parser.add_argument('-l', '--logfile', type=str, dest='fnlog', default="/dev/stderr", help='the file to output the log')
 parser.add_argument('-o', '--output', type=str, dest='fnout', default="/dev/stdout", help='the file to output the data')
-parser.add_argument('-a', '--target', type=str, dest='target', default="", help='tcp://localhost:3333, dev://ttyUSB0:115200, sim:')
+parser.add_argument('-a', '--target', type=str, dest='target', default="", help='tcp://localhost:3333, dev://ttyUSB0:115200, dev://COM12:115200, sim:')
 parser.add_argument('-i', '--interval', type=float, dest='interval', default=0.5, help='the interval between log records')
 parser.add_argument('-t', '--time', type=int, dest='time', default=0, help='the second time length of log records')
 parser.add_argument('-d', '--drain', type=int, dest='draintime', default=0, help='the second time length of draining the battery(start fan motor)')
