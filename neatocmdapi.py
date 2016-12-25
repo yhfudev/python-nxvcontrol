@@ -223,6 +223,7 @@ class AtomTaskScheduler(object):
             self.request_time = None
             self.start_time = None
             self.finish_time = None
+            self.is_run = False
 
         def setPriority(self, pri):
             self.priority = pri
@@ -240,8 +241,12 @@ class AtomTaskScheduler(object):
             self.finish_time = etime
 
     # use two queues to accept and cache the requests,
-    #  queue_priority is for tasks with priority
-    #  queue_time is for tasks with exact time
+    #    queue_priority is for tasks with priority
+    #    queue_time is for tasks with exact time
+    # use two internal heap/priorityQueue to manage the task to decide which task should run next
+    #    heap_priority sort and store the task will be run
+    #    heap_time sort and store the tasks of time bound
+    # and a main function/loop to move the requests from queue_xxx to heap_xxx, and run the task from heap_priority
     #
     # loop:
     #  move tasks from queue_priority to heap_priority
@@ -252,9 +257,8 @@ class AtomTaskScheduler(object):
     #  wait_time=1
     #  if has task in heap_time, wait_time = wait time for the top task
     #  cond_wait(wait_time)
-    def __init__(self, cb_task=None, cb_signal=None):
+    def __init__(self, cb_task=None):
         self.cb_task = cb_task
-        self.cb_signal = cb_signal
         self.queue_priority = Queue()
         self.queue_time = Queue()
         self.heap_priority = MyHeap(key=lambda x:x.priority);
@@ -328,9 +332,8 @@ class AtomTaskScheduler(object):
         if (self.heap_priority.size() > 0):
             newreq = self.heap_priority.pop()
             newreq.setStartTime(datetime.now())
-            resp = self.cb_task (newreq.req)    # do the job
+            self.cb_task (newreq.tid, newreq.req)    # do the job
             newreq.setFinishTime(datetime.now())
-            self.cb_signal (newreq.tid, newreq.request_time, newreq.start_time, newreq.finish_time, resp) # callback, return result
             #return True # if has done task, goto loop
         return wait_time
 
@@ -342,27 +345,33 @@ class AtomTaskScheduler(object):
                 self.condnewtask.wait(wait_time)
             except RuntimeError:
                 L.debug("wait timeout!")
-                time.sleep(0.01)
+                #time.sleep(0) # Effectively yield this thread.
+
+    def stop(self):
+        self.is_run = False
 
     def serve_forever (self):
-        while True:
+        self.is_run = True
+        while self.is_run:
             wait_time = self.do_work_once()
-            if wait_time > 0:
+            if self.is_run and wait_time > 0:
                 self.do_wait_queue(wait_time)
 
 #from urlparse import urlparse
 from urllib.parse import urlparse
 import neatocmdapi
+
+# the service thread,
+# 
 class NCIService(object):
     "Neato Command Interface all"
-    def cb_task1(self, req):
-        L.debug("do task: req=" + str(req))
-    def cb_signal1(self, tid, request_time, start_time, finish_time, resp):
-        L.debug("signal: tid=" + str(tid) + ", reqtime=" + str(request_time) + ", starttime=" + str(start_time) + ", fintime=" + str(finish_time) + ", resp=" + str(resp) )
 
+    # target: example: tcp://localhost:3333 sim://
     def __init__(self, target="tcp://localhost:3333", timeout=1):
-        "target accepts: 'tcp://localhost:3333', '/dev/ttyUSB0', 'sim:' "
+        "target accepts: 'tcp://localhost:3333', 'dev://ttyUSB0:115200', 'sim:' "
         self.api = None
+        self.th_sche = None
+        self.queue_out = Queue()
         result = urlparse(target)
         if result.scheme == "tcp":
             addr = result.netloc.split(':')
@@ -375,10 +384,66 @@ class NCIService(object):
             self.api = neatocmdapi.NCISimulator()
 
         else:
+            addr = result.netloc.split(':')
             baudrate = 115200
-            self.api = neatocmdapi.NCISerial(timeout = timeout, port = result.path, baudrate = baudrate)
+            if len(addr) > 1:
+                baudrate = int(addr[1])
+            self.api = neatocmdapi.NCISerial(timeout = timeout, port = "/dev/" + addr[0], baudrate = baudrate)
 
-        #if None == self.api:
+    # block read and get
+    def get_request_block(self, req):
+        self.api.put(req)
+        return self.api.get()
+
+    #def cb_task1(self, tid, req):
+    #    L.debug("do task: tid=" + str(tid) + ", req=" + str(req))
+    #    resp = self.get_request_block(req)
+
+    def open(self, cb_task1):
+        L.debug('api.open() ...')
+        self.api.open()
+        time.sleep(0.5)
+        cnt=1
+        while self.api.ready() == False and cnt < 2:
+            time.sleep(1)
+            cnt += 1
+        if self.api.ready() == False:
+            return False
+        self.api.flush()
+
+        # creat a thread to run the task in background
+        self.sche = AtomTaskScheduler(cb_task=cb_task1)
+
+        self.th_sche = threading.Thread(target=self.sche.serve_forever)
+        self.th_sche.setDaemon(True)
+        self.th_sche.start()
+
+        return True
+
+    def close(self):
+        isrun = False;
+        if self.th_sche != None:
+            if self.th_sche.isAlive():
+                self.sche.stop()
+                isrun = True
+        if isrun:
+            while self.th_sche.isAlive():
+                time.sleep(1)
+        self.api.close()
+
+    def request(self, req):
+        return self.sche.request(req, 5)
+
+    def request_time (self, req, exacttime):
+        return self.sche.request_time(req, exacttime)
+
+    def qget(self):
+        return self.queue_out.get()
+    def qput(self,a):
+        return self.queue_out.put(a)
+    def qget_nowait(self):
+        return self.queue_out.get_nowait()
+
 
 def test_nci_service():
     a = NCIService()
@@ -484,11 +549,12 @@ def test_heap_atomtask_priority_class():
     tc = TestContainer()
     tc.selftest()
 
+# test the AtomTaskScheduler in a function
 def test_atomtask():
-    def cb_task1(req):
-        L.debug("do task: req=" + str(req))
-    def cb_signal1(tid, request_time, start_time, finish_time, resp):
-        L.debug("signal: tid=" + str(tid) + ", reqtime=" + str(request_time) + ", starttime=" + str(start_time) + ", fintime=" + str(finish_time) + ", resp=" + str(resp) )
+    def cb_task1(tid, req):
+        L.debug("(infunc) do task: tid=" + str(tid) + ", req=" + str(req))
+    #def cb_signal1(tid, request_time, start_time, finish_time, resp):
+    #    L.debug("(infunc) signal: tid=" + str(tid) + ", reqtime=" + str(request_time) + ", starttime=" + str(start_time) + ", fintime=" + str(finish_time) + ", resp=" + str(resp) )
 
     def th_setup(sche):
         sche.request("init work 2-1", 2)
@@ -504,29 +570,75 @@ def test_atomtask():
         sche.request("normal work 5-2", 5)
         sche.request("normal work 5-3", 5)
         sche.request("normal work 5-4", 5)
+        L.debug("sleep 5")
+        time.sleep(5.31)
+        L.debug("sche stop")
+        sche.stop()
 
-    sche = AtomTaskScheduler(cb_task=cb_task1, cb_signal=cb_signal1)
+    sche = AtomTaskScheduler(cb_task=cb_task1)
 
     if 1 == 1:
         runT = threading.Thread(target=sche.serve_forever)
         runT.setDaemon(True)
         runT.start()
         th_setup(sche)
-        L.debug("sleep ...")
-        time.sleep(5.31)
     else:
         runT = threading.Thread(target=th_setup, args=(sche,))
         runT.setDaemon(True)
         runT.start()
         sche.serve_forever()
 
+# test the AtomTaskScheduler in a class
+class TestAtomtask(object):
+    def cb_task1(self, tid, req):
+        L.debug("(inclas) do task: tid=" + str(tid) + ", req=" + str(req))
+    #def cb_signal1(self, tid, request_time, start_time, finish_time, resp):
+    #    L.debug("(inclas) signal: tid=" + str(tid) + ", reqtime=" + str(request_time) + ", starttime=" + str(start_time) + ", fintime=" + str(finish_time) + ", resp=" + str(resp) )
+
+    def th_setup(self, sche):
+        sche.request("init work 2-1", 2)
+        sche.request("init work 2-3", 2)
+        sche.request("init work 1-2", 1)
+        sche.request("init work 2-2", 2)
+        sche.request("init work 0-1", 0)
+        sche.request("init work 1-1", 1)
+        sche.request("init work 2-4", 2)
+        sche.request("init work 0-2", 0)
+        time.sleep(5)
+        sche.request("normal work 5-1", 5)
+        sche.request("normal work 5-2", 5)
+        sche.request("normal work 5-3", 5)
+        sche.request("normal work 5-4", 5)
+        L.debug("sleep 5")
+        time.sleep(5.31)
+        L.debug("sche stop")
+        sche.stop()
+
+    def run_test(self):
+        self.sche = AtomTaskScheduler(cb_task=self.cb_task1)
+
+        if 1 == 0:
+            runT = threading.Thread(target=self.sche.serve_forever)
+            runT.setDaemon(True)
+            runT.start()
+            self.th_setup(self.sche)
+        else:
+            runT = threading.Thread(target=self.th_setup, args=(self.sche,))
+            runT.setDaemon(True)
+            runT.start()
+            self.sche.serve_forever()
+def test_atomtask_class():
+    run1 = TestAtomtask()
+    run1.run_test()
+
 def testme():
-    test_heap_time()
-    test_heap_priority()
-    test_heap_atomtask_priority()
-    test_heap_atomtask_time()
-    test_heap_atomtask_priority_class()
-    test_atomtask()
+    #test_heap_time()
+    #test_heap_priority()
+    #test_heap_atomtask_priority()
+    #test_heap_atomtask_time()
+    #test_heap_atomtask_priority_class()
+    #test_atomtask()
+    test_atomtask_class()
     #test_nci_service()
 
 
