@@ -88,7 +88,6 @@ class NCISerial(NeatoCommandInterface):
             return ""
         sendcmd = line.strip() + "\n"
         self.ser.write(sendcmd.encode('ASCII'))
-        self.ser.flush()
 
     def get(self):
         if self.ready() == False:
@@ -114,7 +113,7 @@ class NCISerial(NeatoCommandInterface):
                 if response[0] == '\x1A':
                     break
             retval += response + "\n"
-        return retval
+        return retval.strip() + "\n\n"
 
 import socket
 class NCINetwork(NeatoCommandInterface):
@@ -141,12 +140,14 @@ class NCINetwork(NeatoCommandInterface):
         return True
 
     def flush(self):
+        self.sock.flush()
         pass
 
     def put(self, line):
         sendcmd = line.strip() + "\n"
         L.debug ('cli snd: ' + sendcmd)
         self.sock.sendall (bytes(sendcmd, 'ascii'))
+        self.sock.flush()
         return ""
 
     def get(self):

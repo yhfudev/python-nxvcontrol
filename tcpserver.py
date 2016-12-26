@@ -205,7 +205,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         combobox_bind_port.current(0)
 
         line += 1
-        conn_port_history = ('sim:', 'dev://ttyUSB0:115200', 'tcp://localhost:3333')
+        conn_port_history = ('dev://ttyACM0:115200', 'dev://ttyUSB0:115200', 'dev://COM11:115200', 'dev://COM12:115200', 'sim:', 'tcp://localhost:3333')
         self.conn_port = tk.StringVar()
         lbl_svr_port = tk.Label(frame_svr, text="Connect to:")
         lbl_svr_port.grid(row=line, column=0, padx=5, sticky=tk.N+tk.S+tk.W)
