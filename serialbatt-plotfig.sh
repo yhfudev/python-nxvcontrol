@@ -158,21 +158,29 @@ EOF
 
 
 
-
+# 2016-12-07 10: m2 upgrade to 3.4
 LIST_DATA=(
     # <prefix>, <1: plot VBattV*400/%>, <brand>, <serial>, <comments>
-    "serialbatt-data-charging-mcnair-old-1,0,McNair Ni-MH 7.2V 3200mAh for Neato XV x2,1,McNair battery old-in the machine-first charging-machine1-firmware 3.1"
-    "serialbatt-data-charging-mcnair-old-2,0,McNair Ni-MH 7.2V 3200mAh for Neato XV x2,1,McNair battery old-in the machine-second charging-machine1-firmware 3.1"
-    "serialbatt-data-charging-mcnair-old-3,0,McNair Ni-MH 7.2V 3200mAh for Neato XV x2,1,McNair battery old-in the machine-third charging-machine1-firmware 3.4"
-    "serialbatt-data-charging-oem-1,1,OEM Ni-MH 7.2V 3200mAh for Neato XV x2,1,OEM battery old-in the machine-first charging-machine2-firmware 3.1"
-    "serialbatt-data-charging-powerextra-r1-1,1,Powerextra Ni-MH 7.2V 4000mAh for Neato XV x2,1,powerextra battery-round1-first charging-machine1-firmware 3.1"
-    "serialbatt-data-charging-powerextra-r1-2,1,Powerextra Ni-MH 7.2V 4000mAh for Neato XV x2,1,powerextra battery-round1-second charging-machine1-firmware 3.4"
-    "serialbatt-data-charging-powerextra-r1-3,1,Powerextra Ni-MH 7.2V 4000mAh for Neato XV x2,1,powerextra battery-round1-third charging-machine1-firmware 3.4-after refresh with neatoctrl (deep recharge), there's a dust box install at the middle of charging"
-    "serialbatt-data-charging-powerextra-r1-4,1,Powerextra Ni-MH 7.2V 4000mAh for Neato XV x2,1,powerextra battery-round1-4th charging-machine1-firmware 3.4-can only last 5min?"
-    "serialbatt-data-standby-powerextra-r1-2,1,Powerextra Ni-MH 7.2V 4000mAh for Neato XV x2,1,powerextra battery-round1-standby after second charging-machine1-firmware 3.4"
+    "serialbatt-data-charging-mcnair-old-m2-1,0,McNair Ni-MH 7.2V 3200mAh for Neato XV x2,1,McNair battery old-in the machine-first charging-machine2-firmware 3.1"
+    "serialbatt-data-charging-mcnair-old-m2-2,0,McNair Ni-MH 7.2V 3200mAh for Neato XV x2,1,McNair battery old-in the machine-second charging-machine2-firmware 3.1"
+    "serialbatt-data-charging-mcnair-old-m2-3,0,McNair Ni-MH 7.2V 3200mAh for Neato XV x2,1,McNair battery old-in the machine-third charging-machine2-firmware 3.4"
+    "serialbatt-data-charging-oem-m1-1,1,OEM Ni-MH 7.2V 3200mAh for Neato XV x2,1,OEM battery old-in the machine-first charging-machine1-firmware 3.1"
+    "serialbatt-data-charging-powerextra-r1-m2-1,1,Powerextra Ni-MH 7.2V 4000mAh for Neato XV x2,1,powerextra battery-round1-first charging-machine2-firmware 3.1"
+    "serialbatt-data-charging-powerextra-r1-m2-2,1,Powerextra Ni-MH 7.2V 4000mAh for Neato XV x2,1,powerextra battery-round1-second charging-machine2-firmware 3.4"
+    "serialbatt-data-charging-powerextra-r1-m2-3,1,Powerextra Ni-MH 7.2V 4000mAh for Neato XV x2,1,powerextra battery-round1-third charging-machine2-firmware 3.4-after refresh with neatoctrl (deep recharge), there's a dust box install at the middle of charging"
+    "serialbatt-data-charging-powerextra-r1-m2-4,1,Powerextra Ni-MH 7.2V 4000mAh for Neato XV x2,1,powerextra battery-round1-4th charging-machine2-firmware 3.4-can only last 5min?"
+    "serialbatt-data-standby-powerextra-r1-m2-2,1,Powerextra Ni-MH 7.2V 4000mAh for Neato XV x2,1,powerextra battery-round1-standby after second charging-machine2-firmware 3.4"
+    "serialbatt-data-charging-oem-m2-1,1,OEM Ni-MH 7.2V 3200mAh for Neato XV x2,1,OEM battery old-in the machine-first charging-machine2-firmware 3.4"
+    "serialbatt-data-charging-oem-m2-2,1,OEM Ni-MH 7.2V 3200mAh for Neato XV x2,1,OEM battery old-in the machine-second charging-machine2-firmware 3.4"
+    "serialbatt-data-charging-oem-m2-3,1,OEM Ni-MH 7.2V 3200mAh for Neato XV x2,1,OEM battery old-in the machine-third charging-machine2-firmware 3.4"
+    "serialbatt-data-charging-powerextra-r1-m1-1,1,Powerextra Ni-MH 7.2V 4000mAh for Neato XV x2,1,powerextra battery-round1-first charging-machine1-firmware 3.1"
+
+    "serialbatt-data-charging-powerextra-r2-m1-1,1,Powerextra Ni-MH 7.2V 4000mAh for Neato XV x2,1,powerextra battery-round2-first charging-machine1-firmware 3.1" #TODO: the second round of battery, with old firmware and old hardware
+    "serialbatt-data-charging-powerextra-r2-m1-2,1,Powerextra Ni-MH 7.2V 4000mAh for Neato XV x2,1,powerextra battery-round2-second charging-machine1-firmware 3.4" #TODO: the second round of battery, with firmware 3.4 and updated hardware(capacitors)
+    "serialbatt-data-charging-powerextra-r2-m2-1,1,Powerextra Ni-MH 7.2V 4000mAh for Neato XV x2,1,powerextra battery-round2-third charging-machine2-firmware 3.4" #TODO: the second round of battery, with firmware 3.4 and updated hardware(capacitors)
     )
-LIST_DATA1=(
-    "serialbatt-data-charging-oem-1,1,OEM Ni-MH 7.2V 3200mAh for Neato XV x2,1,OEM battery old-in the machine-first charging-machine2-firmware 3.1"
+LIST_DATA=(
+    "serialbatt-data-charging-oem-m2-3,1,OEM Ni-MH 7.2V 3200mAh for Neato XV x2,1,OEM battery old-in the machine-third charging-machine2-firmware 3.4"
     )
 function do_work() {
     local i=0
