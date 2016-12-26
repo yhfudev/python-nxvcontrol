@@ -113,6 +113,14 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
     def show_robot_time(self, msg):
         self.lbl_synctime['text'] = msg
 
+    def show_robot_testmode(self, onoff=False):
+        if onoff:
+            self.lbl_testmode['text'] = "ON"
+            self.lbl_testmode['fg'] = "red"
+        else:
+            self.lbl_testmode['text'] = "OFF"
+            self.lbl_testmode['fg'] = "green"
+
     # the functions for log file in status
     def onSelectAllLogname(self, event):
         self.combobox_logfile.tag_add(tk.SEL, "1.0", tk.END)
@@ -150,10 +158,13 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
         return
 
     def __init__(self, tk_frame_parent):
+        global MAXDIST
+        global CONST_RAD
         #nb = ttk.Notebook(tk_frame_parent)
         ttk.Notebook.__init__(self, tk_frame_parent)
         nb = self
         self.serv_cli = None
+        self.istestmode = False
 
         # page for test pack()
         page_testpack = tk.Frame(nb)
@@ -229,10 +240,10 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         line += 1
         lbl_testmode_conn = tk.Label(self.frame_status, text="Test Mode:")
         lbl_testmode_conn.grid(row=line, column=0, padx=5)
-        lbl_testmode = tk.Label(self.frame_status, text="Unknown")
-        lbl_testmode.grid(row=line, column=1, padx=5)
-        btn_testmode_on = tk.Button(self.frame_status, text="Test ON")
-        btn_testmode_off = tk.Button(self.frame_status, text="Test OFF")
+        self.lbl_testmode = tk.Label(self.frame_status, text="Unknown")
+        self.lbl_testmode.grid(row=line, column=1, padx=5)
+        btn_testmode_on = tk.Button(self.frame_status, text="Test ON", command=lambda: self.set_robot_testmode(True))
+        btn_testmode_off = tk.Button(self.frame_status, text="Test OFF", command=lambda: self.set_robot_testmode(False))
         btn_testmode_on.grid(row=line, column=2, padx=5, sticky=tk.N+tk.S+tk.W)
         btn_testmode_off.grid(row=line, column=2, padx=5, sticky=tk.N+tk.S+tk.E)
         line += 1
@@ -306,6 +317,8 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         # clipboard.
         self.text_cli_command.bind("<1>", lambda event: self.text_cli_command.focus_set())
 
+        btn_clear_cli_command = tk.Button(frame_bottom, text="Clear", command=lambda: (set_readonly_text(self.text_cli_command, ""), self.text_cli_command.update_idletasks()) )
+        btn_clear_cli_command.pack(side="left", fill="x", padx=5, pady=5, expand=False)
         self.cli_command = tk.StringVar()
         self.combobox_cli_command = ttk.Combobox(frame_bottom, textvariable=self.cli_command)
         self.combobox_cli_command['values'] = ('Help', 'GetAccel', 'GetButtons', 'GetCalInfo', 'GetCharger', 'GetDigitalSensors', 'GetErr', 'GetLDSScan', 'GetLifeStatLog', 'GetMotors', 'GetSchedule', 'GetTime', 'GetVersion', 'GetWarranty', 'PlaySound 0')
@@ -434,6 +447,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
                 pass
             else:
                 self.canvas_lidar_isactive = False
+                self.serv_cli.request(["SetLDSRotation Off", self.mid_cli_command])
 
         if self.canvas_lidar_isactive:
             self.after(5000, self.canvas_lidar_request)
@@ -459,12 +473,16 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
 
     def canvas_lidar_process_focus(self):
         if self.canvas_lidar_isfocused1 or self.canvas_lidar_isfocused2 or self.canvas_lidar_isfocused3:
+            self.set_robot_testmode(True)
             if self.serv_cli != None:
                 if self.mid_query_lidar < 0 :
                     L.info('LiDAR canvas focus <---')
                     self.mid_query_lidar = self.serv_cli.mailbox.declair()
+                else:
+                    self.serv_cli.request(["SetLDSRotation On", self.mid_cli_command])
                 if self.canvas_lidar_isactive == False:
                     self.canvas_lidar_isactive = True
+                    self.set_robot_testmode(True)
                     self.canvas_lidar_request()
         #else:
             #self.canvas_lidar_isactive = False
@@ -599,8 +617,11 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         return
 
     def do_cli_disconnect(self):
+        import time
         if self.serv_cli != None:
             L.info('client disconnect ...')
+            self.set_robot_testmode(False)
+            time.sleep(1)
             self.serv_cli.close()
         else:
             L.info('client is not connected, skip.')
@@ -718,6 +739,16 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         cmdstr = time.strftime("SetTime Day %w Hour %H Min %M Sec %S", tm_now)
         self.serv_cli.request([cmdstr, self.mid_cli_command])
         self.serv_cli.request(["GetVersion\nGetWarranty\n", self.mid_query_version])
+
+    def set_robot_testmode (self, istest = False):
+        if self.istestmode != istest:
+            if self.serv_cli != None and self.mid_cli_command >= 0:
+                if istest:
+                    self.serv_cli.request(["TestMode On", self.mid_cli_command])
+                else:
+                    self.serv_cli.request(["SetLDSRotation Off\nTestMode Off", self.mid_cli_command])
+        self.istestmode = istest
+        self.show_robot_testmode(istest)
 
 def demo():
     root = tk.Tk()
