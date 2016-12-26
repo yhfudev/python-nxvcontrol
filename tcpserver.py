@@ -49,7 +49,7 @@ class MyTkAppFrame(ttk.Notebook):
         resp = self.serv.get_request_block(reqstr)
         if resp != None:
             if resp.strip() != "":
-                self.serv.mailbox.put(req[1], resp.strip())
+                self.serv.mailbox.put(req[1], resp)
 
     def do_stop(self):
         isrun = False;

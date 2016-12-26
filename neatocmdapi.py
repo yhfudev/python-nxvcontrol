@@ -34,11 +34,13 @@ class NCISimulator(NeatoCommandInterface):
         self.lastcmd += lines.strip() + "\n"
     def get(self):
         import neatocmdsim as nsim
-        requests = self.lastcmd.split('\n')
+        cmdstr = self.lastcmd.strip() + "\n"
         self.lastcmd = ""
+        requests = cmdstr.split('\n')
         response = ""
         for i in range(0,len(requests)):
-            response += nsim.fake_respose(requests[i].strip())
+            retline = nsim.fake_respose(requests[i].strip())
+            response += retline
 
         return response
 
@@ -65,7 +67,7 @@ class NCISerial(NeatoCommandInterface):
             self.ser.open()
             self.isready = True
         except Exception as e:
-            L.error("Error open serial port: " + str(e))
+            L.error("[NCISerial] Error open serial port: " + str(e))
             self.isready = False
 
     def close(self):
@@ -95,23 +97,24 @@ class NCISerial(NeatoCommandInterface):
         retval = ""
         while True:
             try:
-                L.debug('readline ...')
+                L.debug('[NCISerial] readline ...')
                 response = self.ser.readline()
             except TimeoutError:
-                L.debug('timeout read')
+                L.debug('[NCISerial] timeout read')
                 break
             if len(response) < 1:
-                L.debug('read null')
+                L.debug('[NCISerial] read null')
                 break
             response = response.decode('ASCII').strip()
-            L.debug('received: ' + response)
+            L.debug('[NCISerial] received: ' + response)
             #L.debug('read size=' + len(response) )
             if len(response) < 1:
-                L.debug('read null 2')
+                L.debug('[NCISerial] read null 2')
                 break
             if len(response) == 1:
                 if response[0] == '\x1A':
                     break
+            response = response.replace('\x1A', '\n')
             retval += response + "\n"
         return retval.strip() + "\n\n"
 
@@ -126,7 +129,7 @@ class NCINetwork(NeatoCommandInterface):
     def open(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect((self.address, self.port))
-        L.debug ('Client has been assigned socket name' + str(self.sock.getsockname()))
+        L.debug ('[NCINetwork] Client has been assigned socket name' + str(self.sock.getsockname()))
         self.sock.setblocking(True)
         self.sock.settimeout(self.timeout)
         self.data = ""
@@ -140,27 +143,27 @@ class NCINetwork(NeatoCommandInterface):
         return True
 
     def flush(self):
-        self.sock.flush()
+        #self.sock.flush()
         pass
 
     def put(self, line):
         sendcmd = line.strip() + "\n"
-        L.debug ('cli snd: ' + sendcmd)
+        L.debug ('[NCINetwork] cli snd: ' + sendcmd)
         self.sock.sendall (bytes(sendcmd, 'ascii'))
-        self.sock.flush()
+        #self.sock.flush()
         return ""
 
     def get(self):
         BUFFER_SIZE = 4096
         #MAXIUM_SIZE = BUFFER_SIZE * 5
 
-        cli_log_head = "CLI2SVR" + str(self.sock.getpeername())
+        cli_log_head = "[NCINetwork] " + str(self.sock.getpeername())
         response=""
         while True:
             try:
                 recvdat = self.sock.recv(BUFFER_SIZE)
             except socket.timeout:
-                L.debug('timeout read')
+                L.debug(cli_log_head + 'timeout read')
                 break
             if not recvdat:
                 # EOF, client closed, just return
@@ -174,10 +177,10 @@ class NCINetwork(NeatoCommandInterface):
                 L.debug(cli_log_head + " not receive newline, skip: " + self.data)
                 continue
             requests = self.data.split('\n')
-            response += '\n'.join(requests[0:-1]) + "\n"
-            self.data = requests[-1]
-            L.debug('split and merge: ' + '\n'.join(requests[0:-2]) + "\n" + requests[-1])
-        L.debug("get() return: " + response + self.data + "\n")
+            response += '\n'.join(requests[0:len(requests)]) + "\n"
+            self.data = "" #requests[-1]
+            L.debug(cli_log_head + 'split and merge: ' + response)
+        L.debug(cli_log_head + "get() return: " + response + self.data + "\n")
         return response + self.data + "\n"
 
 

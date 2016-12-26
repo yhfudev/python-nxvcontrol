@@ -189,7 +189,9 @@ ChassisRev,2,,
 UIPanelRev,1,,
 """
     elif request.lower() == "GetWarranty".lower():
-        response = """00000000 0000 962d3a58
+        response = """00000000
+0000
+962d3a58
 """
     elif request.lower() == "Help".lower():
         response = """Help Strlen = 1840
@@ -4731,5 +4733,5 @@ ROTATION_SPEED,5.02
 552,LS_A2D15,50,-13,-13,0xfffffffffffffd76,0x0000000000002102
 552,LS_LDROP_MM,50,60,60,0x0000000000000bb8,0x000000000002bf20
 """
-    return request + "\n" + response
+    return request + "\n" + response.strip() + "\n\n"
 

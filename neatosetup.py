@@ -531,7 +531,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         if self.serv_cli != None:
             # setup next
             self.serv_cli.request(["GetTime\n", self.mid_query_time]) # query the time
-            self.after(1000, self.guiloop_check_per1sec)
+            self.after(5000, self.guiloop_check_per1sec)
         return
 
     def guiloop_check_per30sec(self):
