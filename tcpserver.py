@@ -195,7 +195,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         frame_svr = ttk.LabelFrame(page_server, text='Setup')
 
         line=0
-        bind_port_history = ('localhost:3333', '127.0.0.1:4444', 'localhost:5555')
+        bind_port_history = ('localhost:3333', '127.0.0.1:4444', '0.0.0.0:3333')
         self.bind_port = tk.StringVar()
         lbl_svr_port = tk.Label(frame_svr, text="Bind Address:")
         lbl_svr_port.grid(row=line, column=0, padx=5, sticky=tk.N+tk.S+tk.W)
@@ -205,7 +205,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         combobox_bind_port.current(0)
 
         line += 1
-        conn_port_history = ('dev://ttyACM0:115200', 'dev://ttyUSB0:115200', 'dev://COM11:115200', 'dev://COM12:115200', 'sim:', 'tcp://localhost:3333')
+        conn_port_history = ('dev://ttyACM0:115200', 'dev://ttyUSB0:115200', 'dev://COM11:115200', 'dev://COM12:115200', 'sim:', 'tcp://localhost:3333', 'tcp://0.0.0.0:3333')
         self.conn_port = tk.StringVar()
         lbl_svr_port = tk.Label(frame_svr, text="Connect to:")
         lbl_svr_port.grid(row=line, column=0, padx=5, sticky=tk.N+tk.S+tk.W)
@@ -240,7 +240,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         frame_cli = ttk.LabelFrame(page_client, text='Connection')
 
         line=0
-        client_port_history = ('dev://ttyACM0:115200', 'dev://ttyUSB0:115200', 'dev://COM11:115200', 'dev://COM12:115200', 'sim:', 'tcp://localhost:3333')
+        client_port_history = ('dev://ttyACM0:115200', 'dev://ttyUSB0:115200', 'dev://COM11:115200', 'dev://COM12:115200', 'sim:', 'tcp://localhost:3333', 'tcp://0.0.0.0:3333')
         self.client_port = tk.StringVar()
         lbl_cli_port = tk.Label(frame_cli, text="Connect to:")
         lbl_cli_port.grid(row=line, column=0, padx=5, sticky=tk.N+tk.S+tk.W)
