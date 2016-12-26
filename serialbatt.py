@@ -122,7 +122,8 @@ try:
 
         tm_now = datetime.now()
         #record = [-1] * 16
-        retlines = serv.mailbox.get(mbox_id)
+        respstr = serv.mailbox.get(mbox_id)
+        retlines = respstr.strip() + '\n'
         responses = retlines.split('\n')
         for i in range(0,len(responses)):
             response = responses[i].strip()

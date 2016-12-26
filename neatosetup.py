@@ -13,6 +13,14 @@ else:
     from tkinter.scrolledtext import ScrolledText
     import tkinter.filedialog as fd
 
+import queue
+
+import logging as L
+L.basicConfig(filename='neatosetup.log', level=L.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
+
+import neatocmdapi
+import guilog
+
 str_progname="NeatoSetup"
 str_version="0.1"
 
@@ -87,13 +95,17 @@ def set_readonly_text(text, msg):
     text.config(state=tk.DISABLED)
 
 class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
-    def set_battery_level(self, level):
+    def show_battery_level(self, level):
         self.style_battstat.configure("LabeledProgressbar", text="{0} %      ".format(level))
         self.progress_batt["value"]=level
         #self.frame_status.update()
+        self.progress_batt.update_idletasks()
 
-    def set_robot_version(self, msg):
+    def show_robot_version(self, msg):
         set_readonly_text(self.text_version, msg)
+
+    def show_robot_time(self, msg):
+        self.lbl_synctime['text'] = msg
 
     # the functions for log file in status
     def onSelectAllLogname(self, event):
@@ -135,6 +147,7 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
         #nb = ttk.Notebook(tk_frame_parent)
         ttk.Notebook.__init__(self, tk_frame_parent)
         nb = self
+        self.serv_cli = None
 
         # page for test pack()
         page_testpack = tk.Frame(nb)
@@ -174,38 +187,37 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         #   log file name, enable/disable: all of connection message and input output will be here!
         lbl_conn_head = tk.Label(page_conn, text="Connection", font=LARGE_FONT)
         lbl_conn_head.pack(side="top", fill="x", pady=10)
-        f1 = ttk.LabelFrame(page_conn, text='Conection')
         self.frame_status = ttk.LabelFrame(page_conn, text='Status')
 
+
         # connection
-        portnames = ('tcp://localhost:3333', '/dev/ttyACM0', 'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9', 'COM10', )
-        pnames = tk.StringVar(value=portnames)
-        #text_conn = tk.Text(f1, height=1)
-        #text_conn.pack(side="top", fill="x", padx=5, pady=5, expand=True)
-        selnames = tk.StringVar()
-        combobox_conn = ttk.Combobox(f1, textvariable=selnames)
-        #combobox_conn.bind('<<ComboboxSelected>>', cb_function)
-        combobox_conn['values'] = ('USA', 'Canada', 'Australia')
-        combobox_conn.pack(side="top", fill="x", padx=5, pady=5, expand=True)
-        lbox_conn = tk.Listbox(f1, listvariable=pnames, height=10)
-        lbox_conn.pack(side="left", fill="x", padx=5, pady=5, expand=True)
-        scroll_conn = ttk.Scrollbar(f1, orient=tk.VERTICAL, command=lbox_conn.yview)
-        scroll_conn.pack(side="left", fill="y", padx=5, pady=5, expand=False)
-        #scroll_conn.pack(side=tk.RIGHT, fill=tk.Y)
-        lbox_conn.configure(yscrollcommand=scroll_conn.set)
-        btn_conn = tk.Button(f1, text="Connect")
-        btn_conn.pack(side="top", fill="y", padx=5, pady=5, expand=False)
-        btn_disconn = tk.Button(f1, text="Disconnect")
-        btn_disconn.pack(side="bottom", fill="y", padx=5, pady=5, expand=False)
+        frame_cli = ttk.LabelFrame(page_conn, text='Conection')
+        line=0
+        client_port_history = ('dev://ttyACM0:115200', 'dev://ttyUSB0:115200', 'dev://COM11:115200', 'dev://COM12:115200', 'sim:', 'tcp://localhost:3333')
+        self.client_port = tk.StringVar()
+        lbl_cli_port = tk.Label(frame_cli, text="Connect to:")
+        lbl_cli_port.grid(row=line, column=0, padx=5, sticky=tk.N+tk.S+tk.W)
+        combobox_client_port = ttk.Combobox(frame_cli, textvariable=self.client_port)
+        combobox_client_port['values'] = client_port_history
+        combobox_client_port.grid(row=line, column=1, padx=5, pady=5, sticky=tk.N+tk.S+tk.W)
+        combobox_client_port.current(0)
+        # Buttons
+        btn_cli_connect = tk.Button(frame_cli, text="Connect", command=self.do_cli_connect)
+        btn_cli_connect.grid(row=line, column=2, columnspan=1, padx=5, sticky=tk.N+tk.S+tk.W+tk.E)
+        #btn_cli_connect.pack(side="left", fill="both", padx=5, pady=5, expand=True)
+        btn_cli_disconnect = tk.Button(frame_cli, text="Disconnect", command=self.do_cli_disconnect)
+        btn_cli_disconnect.grid(row=line, column=3, columnspan=1, padx=5, sticky=tk.N+tk.S+tk.W+tk.E)
+        #btn_cli_disconnect.pack(side="left", fill="both", padx=5, pady=5, expand=True)
+        frame_cli.pack(side="top", fill="x", pady=10)
 
         # status
         line = 0 # line
         lbl_synctime_conn = tk.Label(self.frame_status, text="Robot Time:")
         lbl_synctime_conn.grid(row=line, column=0, padx=5, sticky=tk.N+tk.S+tk.W)
-        lbl_synctime = tk.Label(self.frame_status, text="00:00:00")
-        lbl_synctime.grid(row=line, column=1, padx=5)
-        #lbl_synctime.pack(side="right", fill="x", pady=10)
-        btn_synctime = tk.Button(self.frame_status, text="Sync PC time to robot")
+        self.lbl_synctime = tk.Label(self.frame_status, text="00:00:00")
+        self.lbl_synctime.grid(row=line, column=1, padx=5)
+        #self.lbl_synctime.pack(side="right", fill="x", pady=10)
+        btn_synctime = tk.Button(self.frame_status, text="Sync PC time to robot", command=self.set_robot_time_from_pc)
         btn_synctime.grid(row=line, column=2, padx=5, sticky=tk.N+tk.S+tk.E+tk.W)
         #btn_synctime.pack(side="right", fill="x", pady=10)
         line += 1
@@ -231,7 +243,6 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
                 'sticky': 'nswe'})])
         self.progress_batt = ttk.Progressbar(self.frame_status, orient=tk.HORIZONTAL, style="LabeledProgressbar", mode='determinate', length=300)
         self.progress_batt.grid(row=line, column=1, padx=5)
-        #self.set_battery_level(50)
         #btn_battstat = tk.Button(self.frame_status, text="")
         #btn_battstat.grid(row=line, column=2, padx=5, sticky=tk.E)
         line += 1
@@ -241,8 +252,8 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         self.text_version.configure(state='disabled')
         #self.text_version.pack(expand=True, fill="both", side="top")
         self.text_version.grid(row=line, column=1, columnspan=2, padx=5)
-        self.text_version.bind("<1>", lambda event: text_command.focus_set()) # enable highlighting and copying
-        self.set_robot_version("Version Info\nver 1\nver 2\n")
+        self.text_version.bind("<1>", lambda event: self.text_version.focus_set()) # enable highlighting and copying
+
         line += 1
         self.use_logfile = tk.StringVar()
         self.check_logfile = ttk.Checkbutton(self.frame_status, text='Use Log File',
@@ -260,7 +271,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         self.button_select_logfile = tk.Button(self.frame_status, text=" ... ", command=self.onSelectLogfile)
         self.button_select_logfile.grid(row=line, column=2, sticky=tk.W)
 
-        f1.pack(side="top", fill="x", pady=10)
+        frame_cli.pack(side="top", fill="x", pady=10)
         self.frame_status.pack(side="top", fill="both", pady=10)
 
         #ttk.Separator(page_conn, orient=HORIZONTAL).pack()
@@ -274,28 +285,30 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         #   help message area
         lbl_command_head = tk.Label(page_command, text="Commands", font=LARGE_FONT)
         lbl_command_head.pack(side="top", fill="x", pady=10)
-        commandhistory = ('GetCharger')
-        chistory = tk.StringVar(value=commandhistory)
 
         frame_top = tk.Frame(page_command)#, background="green")
         frame_bottom = tk.Frame(page_command)#, background="yellow")
         frame_top.pack(side="top", fill="both", expand=True)
         frame_bottom.pack(side="bottom", fill="x", expand=False)
 
-        text_command = ScrolledText(frame_top, wrap=tk.WORD)
-        text_command.insert(tk.END, "Some Text\ntest 1\ntest 2\n")
-        text_command.configure(state='disabled')
-        text_command.pack(expand=True, fill="both", side="top")
+        self.text_cli_command = ScrolledText(frame_top, wrap=tk.WORD)
+        #self.text_cli_command.insert(tk.END, "Some Text\ntest 1\ntest 2\n")
+        self.text_cli_command.configure(state='disabled')
+        self.text_cli_command.pack(expand=True, fill="both", side="top")
         # make sure the widget gets focus when clicked
         # on, to enable highlighting and copying to the
         # clipboard.
-        text_command.bind("<1>", lambda event: text_command.focus_set())
+        self.text_cli_command.bind("<1>", lambda event: self.text_cli_command.focus_set())
 
-        combobox_chistory = ttk.Combobox(frame_bottom, textvariable=chistory)
-        combobox_chistory['values'] = ('GetCharger', 'GetTime', 'GetVersion')
-        combobox_chistory.pack(side="left", fill="both", padx=5, pady=5, expand=True)
-        btn_command = tk.Button(frame_bottom, text="Run")
-        btn_command.pack(side="right", fill="x", padx=5, pady=5, expand=False)
+        self.cli_command = tk.StringVar()
+        self.combobox_cli_command = ttk.Combobox(frame_bottom, textvariable=self.cli_command)
+        self.combobox_cli_command['values'] = ('Help', 'GetAccel', 'GetButtons', 'GetCalInfo', 'GetCharger', 'GetDigitalSensors', 'GetErr', 'GetLDSScan', 'GetLifeStatLog', 'GetMotors', 'GetSchedule', 'GetTime', 'GetVersion', 'GetWarranty', 'PlaySound 0')
+        self.combobox_cli_command.pack(side="left", fill="both", padx=5, pady=5, expand=True)
+        self.combobox_cli_command.bind("<Return>", self.do_cli_run_ev)
+        self.combobox_cli_command.bind("<<ComboboxSelected>>", self.do_select_clicmd)
+        self.combobox_cli_command.current(0)
+        btn_run_cli_command = tk.Button(frame_bottom, text="Run", command=self.do_cli_run)
+        btn_run_cli_command.pack(side="right", fill="x", padx=5, pady=5, expand=False)
 
 
 #    txt_about = tk.Text(page_about)
@@ -382,6 +395,150 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         #nb.add(page_testgrid, text='TestGrid')
         nb.add(page_testpack, text='TestPack')
 
+        self.do_cli_disconnect()
+
+
+    #
+    # connection and command: support functions
+    #
+    def do_select_clicmd(self, event):
+        self.combobox_cli_command.select_range(0, tk.END)
+        return
+
+    # the req is a list
+    def cb_task_cli(self, tid, req):
+        L.debug("do task: tid=" + str(tid) + ", req=" + str(req))
+        reqstr = req[0]
+        resp = self.serv_cli.get_request_block(reqstr)
+        if resp != None:
+            if resp.strip() != "":
+                self.serv_cli.mailbox.put(req[1], resp.strip())
+        return
+
+    def do_cli_connect(self):
+        self.do_cli_disconnect()
+        L.info('client connect ...')
+        L.info('connect to ' + self.client_port.get())
+        self.serv_cli = neatocmdapi.NCIService(target=self.client_port.get().strip(), timeout=0.5)
+        if self.serv_cli.open(self.cb_task_cli) == False:
+            L.error ('Error in open serial')
+            return
+        L.info ('serial opened')
+        self.mid_cli_command = self.serv_cli.mailbox.declair();
+        self.mid_query_version = self.serv_cli.mailbox.declair();
+        self.mid_query_time = self.serv_cli.mailbox.declair();
+        self.mid_query_battery = self.serv_cli.mailbox.declair();
+        self.serv_cli.request(["GetVersion\nGetWarranty\n", self.mid_query_version]) # query the time
+        self.guiloop_check_rightnow()
+        self.guiloop_check_per1sec()
+        self.guiloop_check_per30sec()
+        return
+
+    def do_cli_disconnect(self):
+        if self.serv_cli != None:
+            L.info('client disconnect ...')
+            self.serv_cli.close()
+        else:
+            L.info('client is not connected, skip.')
+        self.serv_cli = None
+        self.mid_cli_command = -1;
+        self.mid_query_version = -1;
+        self.mid_query_time = -1;
+        self.mid_query_battery = -1;
+        return
+
+    def do_cli_run(self):
+        if self.serv_cli == None:
+            L.error('client is not connected, please connect it first!')
+            return
+        L.info('client run ...')
+        reqstr = self.cli_command.get().strip()
+        if reqstr != "":
+            self.serv_cli.request([reqstr, self.mid_cli_command])
+        return
+
+    def do_cli_run_ev(self, event):
+        self.do_cli_run()
+        return
+
+    def guiloop_check_rightnow(self):
+        if self.serv_cli != None:
+            if self.mid_cli_command >= 0:
+                try:
+                    resp = self.serv_cli.mailbox.get(self.mid_cli_command, False)
+                    respstr = resp.strip() + "\n\n"
+                    # put the content to the end of the textarea
+                    guilog.textarea_append (self.text_cli_command, respstr)
+                    self.text_cli_command.update_idletasks()
+                except queue.Empty:
+                    # ignore
+                    pass
+            if self.mid_query_version >= 0:
+                try:
+                    resp = self.serv_cli.mailbox.get(self.mid_query_version, False)
+                    respstr = resp.strip()
+                    self.show_robot_version (respstr)
+                except queue.Empty:
+                    # ignore
+                    pass
+            if self.mid_query_battery >= 0:
+                try:
+                    while True:
+                        respstr = self.serv_cli.mailbox.get(self.mid_query_battery, False)
+                        if respstr == None:
+                            break
+                        retlines = respstr.strip() + '\n'
+                        responses = retlines.split('\n')
+                        for i in range(0,len(responses)):
+                            response = responses[i].strip()
+                            if len(response) < 1:
+                                #L.debug('read null 2')
+                                break
+                            lst = response.split(',')
+                            if len(lst) > 1:
+                                if lst[0].lower() == 'FuelPercent'.lower():
+                                    L.debug('got fule percent: ' + lst[1])
+                                    self.show_battery_level(int(lst[1]))
+                except queue.Empty:
+                    # ignore
+                    pass
+            if self.mid_query_time >= 0:
+                try:
+                    while True:
+                        respstr = self.serv_cli.mailbox.get(self.mid_query_time, False)
+                        if respstr == None:
+                            break
+                        retlines = respstr.strip()
+                        self.show_robot_time(retlines)
+                except queue.Empty:
+                    # ignore
+                    pass
+            # setup next
+            self.after(300, self.guiloop_check_rightnow)
+        return
+
+    def guiloop_check_per1sec(self):
+        if self.serv_cli != None:
+            # setup next
+            self.serv_cli.request(["GetTime\n", self.mid_query_time]) # query the time
+            self.after(1000, self.guiloop_check_per1sec)
+        return
+
+    def guiloop_check_per30sec(self):
+        if self.serv_cli != None:
+            # setup next
+            self.serv_cli.request(["GetCharger\n", self.mid_query_battery]) # query the level of battery
+            self.after(30000, self.guiloop_check_per30sec)
+        return
+
+    def set_robot_time_from_pc(self):
+        if self.serv_cli == None:
+            L.error('client is not connected, please connect it first!')
+            return
+        import time
+        tm_now = time.localtime()
+        cmdstr = time.strftime("SetTime Day %w Hour %H Min %M Sec %S", tm_now)
+        self.serv_cli.request([cmdstr, self.mid_cli_command])
 
 def demo():
     root = tk.Tk()

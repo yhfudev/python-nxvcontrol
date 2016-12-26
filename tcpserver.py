@@ -22,7 +22,7 @@ from threading import Thread
 import queue
 
 import logging as L
-L.basicConfig(filename='serial.log', level=L.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
+L.basicConfig(filename='tcpserver.log', level=L.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
 
 import neatocmdapi
 import guilog

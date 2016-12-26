@@ -1,7 +1,9 @@
 #!/usr/bin/python3
 
-def fake_respose(request="Help"):
+def fake_respose(requestline="Help"):
     response = ""
+    requestlist = requestline.split(' ')
+    request = requestlist[0]
     if request == "GetCharger":
         response = """GetCharger
 Label,Value
@@ -155,8 +157,10 @@ Fri 00:00 H
 Sat 00:00 H
 """
     elif request == "GetTime":
-        response = """Sunday 13:57:09
-"""
+        import time
+        tm_now = time.localtime()
+        response = time.strftime("%A %H:%M:%S\n", tm_now)
+
     elif request == "GetVersion":
         response = """Component,Major,Minor,Build
 ModelID,-1,XV21,
@@ -231,7 +235,7 @@ ZInG,0.000
 SumInG,0.000
 """
     elif request == "PlaySound":
-        response = '\n'
+        response = 'PlaySound: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
     elif request == "TestMode":
         response = '\n'
     elif request == "RestoreDefaults":
@@ -255,7 +259,7 @@ SumInG,0.000
     elif request == "SetSystemMode":
         response = '\n'
     elif request == "SetTime":
-        response = '\n'
+        response = 'SetTime: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
     elif request == "SetWallFollower":
         response = '\n'
     elif request == "Upload":
