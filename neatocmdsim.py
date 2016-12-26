@@ -4,9 +4,8 @@ def fake_respose(requestline="Help"):
     response = ""
     requestlist = requestline.split(' ')
     request = requestlist[0]
-    if request == "GetCharger":
-        response = """GetCharger
-Label,Value
+    if request.lower() == "GetCharger".lower():
+        response = """Label,Value
 FuelPercent,19
 BatteryOverTemp,0
 ChargingActive,0
@@ -24,7 +23,7 @@ VBattV,14.33
 VExtV,0.00
 Charger_mAH,0
 """
-    elif request == "GetAnalogSensors":
+    elif request.lower() == "GetAnalogSensors".lower():
         response = """SensorName,Value
 WallSensorInMM,60,
 BatteryVoltageInmV,14056,
@@ -44,7 +43,7 @@ AccelXInmG,20,
 AccelYInmG,-16,
 AccelZInmG,1028,
 """
-    elif request == "GetAnalogSensors stats":
+    elif request.lower() == "GetAnalogSensors stats".lower():
         response = """SensorName,Mean,Max,Min,Cnt,Dev
 WallSensorInMM,0,0,0,50,0
 BatteryVoltageInmV,2574,2574,2574,50,0
@@ -63,7 +62,7 @@ CurrentInmA,992,992,992,50,0
 NotConnected3,0,0,0,50,0
 BatteryTemp0InC,1759,1759,1759,50,0
 """
-    elif request == "GetAnalogSensors raw":
+    elif request.lower() == "GetAnalogSensors raw".lower():
         response = """SensorName,SignalVoltageInmV
 WallSensorInMM,0
 BatteryVoltageInmV,2574
@@ -82,7 +81,7 @@ CurrentInmA,992
 NotConnected3,0
 BatteryTemp0InC,1759
 """
-    elif request == "GetButtons":
+    elif request.lower() == "GetButtons".lower():
         response = """Button Name,Pressed
 BTN_SOFT_KEY,0
 BTN_SCROLL_UP,0
@@ -90,7 +89,7 @@ BTN_START,0
 BTN_BACK,0
 BTN_SCROLL_DOWN,0
 """
-    elif request == "GetCalInfo":
+    elif request.lower() == "GetCalInfo".lower():
         response = """Parameter,Value
 Parameter,Value
 LDSOffset,0
@@ -115,7 +114,7 @@ CleaningTestCarpetSpeed,100
 CleaningTestHardDistance,1200
 CleaningTestCarpetDistance,1200
 """
-    elif request == "GetDigitalSensors":
+    elif request.lower() == "GetDigitalSensors".lower():
         response = """Digital Sensor Name, Value
 SNSR_DC_JACK_CONNECT,0
 SNSR_DUSTBIN_IS_IN,1
@@ -126,10 +125,10 @@ LFRONTBIT,0
 RSIDEBIT,0
 RFRONTBIT,0
 """
-    elif request == "GetErr":
+    elif request.lower() == "GetErr".lower():
         response = """21
 """
-    elif request == "GetMotors":
+    elif request.lower() == "GetMotors".lower():
         response = """Parameter,Value
 Brush_RPM,0
 Brush_mA,0
@@ -146,7 +145,7 @@ RightWheel_Speed,0
 Charger_mAH, 0
 SideBrush_mA,0
 """
-    elif request == "GetSchedule":
+    elif request.lower() == "GetSchedule".lower():
         response = """Schedule is Enabled
 Sun 00:00 - None -
 Mon 00:00 - None -
@@ -156,12 +155,12 @@ Thu 00:00 R
 Fri 00:00 H
 Sat 00:00 H
 """
-    elif request == "GetTime":
+    elif request.lower() == "GetTime".lower():
         import time
         tm_now = time.localtime()
         response = time.strftime("%A %H:%M:%S\n", tm_now)
 
-    elif request == "GetVersion":
+    elif request.lower() == "GetVersion".lower():
         response = """Component,Major,Minor,Build
 ModelID,-1,XV21,
 ConfigID,2,,
@@ -189,10 +188,10 @@ MainBoard Version,4,0,
 ChassisRev,2,,
 UIPanelRev,1,,
 """
-    elif request == "GetWarranty":
+    elif request.lower() == "GetWarranty".lower():
         response = """00000000 0000 962d3a58
 """
-    elif request == "Help":
+    elif request.lower() == "Help".lower():
         response = """Help Strlen = 1840
 Help - Without any argument, this prints a list of all possible cmds.
 With a command name, it prints the help for that particular command
@@ -225,7 +224,7 @@ SetSystemMode - Set the operation mode of the robot. (TestMode Only)
 TestMode - Sets TestMode on or off. Some commands can only be run in TestMode.
 Upload - Uploads new program to the robot.
 """
-    elif request == "GetAccel":
+    elif request.lower() == "GetAccel".lower():
         response = """Label,Value
 PitchInDegrees,0.00
 RollInDegrees,0.00
@@ -234,37 +233,37 @@ YInG,0.000
 ZInG,0.000
 SumInG,0.000
 """
-    elif request == "PlaySound":
-        response = 'PlaySound: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
-    elif request == "TestMode":
+    elif request.lower() == "PlaySound".lower():
+        response = 'PlaySound accepted: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
+    elif request.lower() == "TestMode".lower():
         response = '\n'
-    elif request == "RestoreDefaults":
+    elif request.lower() == "RestoreDefaults".lower():
         response = '\n'
-    elif request == "SetDistanceCal":
+    elif request.lower() == "SetDistanceCal".lower():
         response = '\n'
-    elif request == "SetFuelGauge":
+    elif request.lower() == "SetFuelGauge".lower():
         response = '\n'
-    elif request == "SetIEC":
+    elif request.lower() == "SetIEC".lower():
         response = '\n'
-    elif request == "SetLCD":
+    elif request.lower() == "SetLCD".lower():
         response = '\n'
-    elif request == "SetLDSRotation":
+    elif request.lower() == "SetLDSRotation".lower():
         response = '\n'
-    elif request == "SetLED":
+    elif request.lower() == "SetLED".lower():
         response = '\n'
-    elif request == "SetMotor":
+    elif request.lower() == "SetMotor".lower():
         response = '\n'
-    elif request == "SetSchedule":
+    elif request.lower() == "SetSchedule".lower():
         response = '\n'
-    elif request == "SetSystemMode":
+    elif request.lower() == "SetSystemMode".lower():
         response = '\n'
-    elif request == "SetTime":
-        response = 'SetTime: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
-    elif request == "SetWallFollower":
+    elif request.lower() == "SetTime".lower():
+        response = 'SetTime accepted: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
+    elif request.lower() == "SetWallFollower".lower():
         response = '\n'
-    elif request == "Upload":
+    elif request.lower() == "Upload".lower():
         response = '\n'
-    elif request == "GetLDSScan":
+    elif request.lower() == "GetLDSScan".lower():
         response = """AngleInDegrees,DistInMM,Intensity,ErrorCodeHEX
 0,1545,53,0
 1,1548,29,0
@@ -628,7 +627,7 @@ SumInG,0.000
 359,1540,89,0
 ROTATION_SPEED,5.02
 """
-    elif request == "GetLifeStatLog":
+    elif request.lower() == "GetLifeStatLog".lower():
         response = """runID,statID,count,Min,Max,Sum,SumV*2
 351,LS_A2D0,80,73,74,0x00000000000016e3,0x0000000000068c39
 351,LS_A2D1,101,1018,1447,0x000000000001e0a1,0x0000000009060c15
@@ -4732,5 +4731,5 @@ ROTATION_SPEED,5.02
 552,LS_A2D15,50,-13,-13,0xfffffffffffffd76,0x0000000000002102
 552,LS_LDROP_MM,50,60,60,0x0000000000000bb8,0x000000000002bf20
 """
-    return response
+    return request + "\n" + response
 

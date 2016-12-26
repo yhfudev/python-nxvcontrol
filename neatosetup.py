@@ -503,13 +503,23 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
                     # ignore
                     pass
             if self.mid_query_time >= 0:
+                import re
                 try:
                     while True:
                         respstr = self.serv_cli.mailbox.get(self.mid_query_time, False)
                         if respstr == None:
                             break
                         retlines = respstr.strip()
-                        self.show_robot_time(retlines)
+                        retlines = respstr.strip() + '\n'
+                        responses = retlines.split('\n')
+                        for i in range(0,len(responses)):
+                            response = responses[i].strip()
+                            if len(response) < 1:
+                                #L.debug('read null 2')
+                                break
+                            if not re.match("GetTime".lower(), response.lower()):
+                                L.debug("gettime: " + response)
+                                self.show_robot_time(response)
                 except queue.Empty:
                     # ignore
                     pass
@@ -539,6 +549,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         tm_now = time.localtime()
         cmdstr = time.strftime("SetTime Day %w Hour %H Min %M Sec %S", tm_now)
         self.serv_cli.request([cmdstr, self.mid_cli_command])
+        self.serv_cli.request(["GetVersion\nGetWarranty\n", self.mid_query_version])
 
 def demo():
     root = tk.Tk()
