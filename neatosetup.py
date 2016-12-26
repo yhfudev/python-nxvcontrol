@@ -616,7 +616,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         self.do_cli_disconnect()
         L.info('client connect ...')
         L.info('connect to ' + self.client_port.get())
-        self.serv_cli = neatocmdapi.NCIService(target=self.client_port.get().strip(), timeout=0.5)
+        self.serv_cli = neatocmdapi.NCIService(target=self.client_port.get().strip(), timeout=2)
         if self.serv_cli.open(self.cb_task_cli) == False:
             L.error ('Error in open serial')
             return

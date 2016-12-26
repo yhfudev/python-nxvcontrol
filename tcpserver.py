@@ -55,11 +55,11 @@ class MyTkAppFrame(ttk.Notebook):
         isrun = False;
         if self.runth_svr != None:
             if self.runth_svr.isAlive():
-                L.info('signal server to stop ...')
+                #L.info('signal server to stop ...')
                 self.server.shutdown()
-                L.info('server close ...')
+                #L.info('server close ...')
                 self.server.server_close()
-                L.info('server closed.')
+                #L.info('server closed.')
                 isrun = True
         if isrun == False:
             L.info('server is not running. skip')
@@ -146,6 +146,7 @@ class MyTkAppFrame(ttk.Notebook):
 
         L.info('start server ' + self.bind_port.get())
         b = self.bind_port.get().split(":")
+        L.info('b=' + str(b))
         HOST=b[0]
         PORT=3333
         if len(b) > 1:
@@ -205,7 +206,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         combobox_bind_port.current(0)
 
         line += 1
-        conn_port_history = ('dev://ttyACM0:115200', 'dev://ttyUSB0:115200', 'dev://COM11:115200', 'dev://COM12:115200', 'sim:', 'tcp://localhost:3333', 'tcp://0.0.0.0:3333')
+        conn_port_history = ('tcp://192.168.3.163:3333', 'dev://ttyACM0:115200', 'dev://ttyUSB0:115200', 'dev://COM11:115200', 'dev://COM12:115200', 'sim:', 'tcp://localhost:3333', 'tcp://0.0.0.0:3333')
         self.conn_port = tk.StringVar()
         lbl_svr_port = tk.Label(frame_svr, text="Connect to:")
         lbl_svr_port.grid(row=line, column=0, padx=5, sticky=tk.N+tk.S+tk.W)

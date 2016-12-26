@@ -121,7 +121,7 @@ class NCISerial(NeatoCommandInterface):
 import socket
 class NCINetwork(NeatoCommandInterface):
     "Neato Command Interface for TCP pipe"
-    def __init__(self, address="localhost", port=3333, timeout=1):
+    def __init__(self, address="localhost", port=3333, timeout=2):
         self.address = address
         self.port = port
         self.timeout = timeout
@@ -158,30 +158,46 @@ class NCINetwork(NeatoCommandInterface):
         #MAXIUM_SIZE = BUFFER_SIZE * 5
 
         cli_log_head = "[NCINetwork] " + str(self.sock.getpeername())
-        response=""
         while True:
             try:
                 recvdat = self.sock.recv(BUFFER_SIZE)
             except socket.timeout:
                 L.debug(cli_log_head + 'timeout read')
+                if len(self.data) > 0:
+                    break
+                continue
+            except os.ConnectionResetError:
+                L.debug(cli_log_head + 'peer reset')
                 break
             if not recvdat:
                 # EOF, client closed, just return
                 L.info(cli_log_head + " disconnected: " + str(self.sock.getpeername()))
-                return
-            L.debug(cli_log_head + "recv  size=" + str(len(recvdat)))
-            self.data += str(recvdat, 'ascii')
-            cntdata = self.data.count('\n')
-            L.debug(cli_log_head + " the # of newline: %d"%cntdata)
-            if (cntdata < 1):
-                L.debug(cli_log_head + " not receive newline, skip: " + self.data)
-                continue
-            requests = self.data.split('\n')
-            response += '\n'.join(requests[0:len(requests)]) + "\n"
-            self.data = "" #requests[-1]
-            L.debug(cli_log_head + 'split and merge: ' + response)
-        L.debug(cli_log_head + "get() return: " + response + self.data + "\n")
-        return response + self.data + "\n"
+                self.data += "\n\n"
+            else:
+                #L.debug(cli_log_head + "recv  size=" + str(len(recvdat)))
+                self.data += str(recvdat, 'ascii')
+
+            if self.data.find("\n\n") >= 0:
+                break
+
+        pos = self.data.find("\n\n")
+        if pos < 0:
+            retstr = self.data
+            self.data = ""
+            return retstr.strip() + "\n\n"
+        else:
+            # end mode:
+            self.data = self.data.lstrip()
+            pos = self.data.find("\n\n")
+            if pos < 0:
+                # this means the "\n\n" is at left(and be removed)
+                L.debug(cli_log_head + 'tcp return null')
+                return "\n\n"
+            else:
+                retstr = self.data[0:pos]
+                self.data = self.data[pos+2:len(self.data)]
+                L.debug(cli_log_head + 'tcp return ' + retstr)
+                return retstr + "\n\n"
 
 
 from multiprocessing import Queue, Lock
@@ -312,7 +328,7 @@ class AtomTaskScheduler(object):
 
         self._counter = count()
         self.idlock = Lock()
-        self.condnewtask= threading.Condition()
+        self.api_ev = threading.Event()
 
     # create a new request id
     def getNewId(self):
@@ -328,8 +344,7 @@ class AtomTaskScheduler(object):
         newreq = AtomTask(req=req, newid=newid, priority=priority)
         newreq.setRequestTime(datetime.now())
         self.queue_priority.put(newreq)
-        with self.condnewtask:
-            self.condnewtask.notifyAll()
+        self.api_ev.set()
         return newid
 
     # request for a task, with the exact time
@@ -339,8 +354,7 @@ class AtomTaskScheduler(object):
         newreq.setRequestTime(datetime.now())
         newreq.setExecuteTime(exacttime)
         self.queue_time.put(newreq)
-        with self.condnewtask:
-            self.condnewtask.notifyAll()
+        self.api_ev.set()
         return newid
 
     def do_work_once (self):
@@ -362,7 +376,7 @@ class AtomTaskScheduler(object):
                 break;
             self.heap_time.push (newreq)
         # if heap_time has expired tasks need to execute, move the tasks(priority=1) to heap_priority
-        wait_time=10000 # seconds, wait time for cond
+        wait_time=10.3 # seconds, wait time for cond
         while (self.heap_time.size() > 0):
             newreq = self.heap_time.pop()
             tmnow = datetime.now()
@@ -388,13 +402,14 @@ class AtomTaskScheduler(object):
 
     def do_wait_queue(self, wait_time):
         # if has task in heap_time, wait_time = wait time for the top task
-        with self.condnewtask:
-            try:
-                L.debug("waiting queues for " + str(wait_time) + " seconds ...")
-                self.condnewtask.wait(wait_time)
-            except RuntimeError:
-                L.debug("wait timeout!")
-                #time.sleep(0) # Effectively yield this thread.
+        try:
+            #L.debug("waiting queues for " + str(wait_time) + " seconds ...")
+            self.api_ev.wait(wait_time)
+            #L.debug("endof wait!")
+        except RuntimeError:
+            #L.debug("wait timeout!")
+            #time.sleep(0) # Effectively yield this thread.
+            pass
 
     def stop(self):
         self.is_run = False
@@ -416,7 +431,7 @@ class NCIService(object):
     "Neato Command Interface all"
 
     # target: example: tcp://localhost:3333 sim://
-    def __init__(self, target="tcp://localhost:3333", timeout=1):
+    def __init__(self, target="tcp://localhost:3333", timeout=2):
         "target accepts: 'tcp://localhost:3333', 'dev://ttyUSB0:115200', 'dev://COM12:115200', 'sim:' "
         self.api = None
         self.th_sche = None
