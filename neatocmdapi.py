@@ -97,7 +97,7 @@ class NCISerial(NeatoCommandInterface):
         retval = ""
         while True:
             try:
-                L.debug('[NCISerial] readline ...')
+                #L.debug('[NCISerial] readline ...')
                 response = self.ser.readline()
             except TimeoutError:
                 L.debug('[NCISerial] timeout read')
@@ -106,7 +106,7 @@ class NCISerial(NeatoCommandInterface):
                 L.debug('[NCISerial] read null')
                 break
             response = response.decode('ASCII').strip()
-            L.debug('[NCISerial] received: ' + response)
+            #L.debug('[NCISerial] received: ' + response)
             #L.debug('read size=' + len(response) )
             if len(response) < 1:
                 L.debug('[NCISerial] read null 2')
@@ -362,7 +362,7 @@ class AtomTaskScheduler(object):
                 break;
             self.heap_time.push (newreq)
         # if heap_time has expired tasks need to execute, move the tasks(priority=1) to heap_priority
-        wait_time=0 # seconds, wait time for cond
+        wait_time=10000 # seconds, wait time for cond
         while (self.heap_time.size() > 0):
             newreq = self.heap_time.pop()
             tmnow = datetime.now()
@@ -381,13 +381,16 @@ class AtomTaskScheduler(object):
             self.cb_task (newreq.tid, newreq.req)    # do the job
             newreq.setFinishTime(datetime.now())
             #return True # if has done task, goto loop
+        if (self.heap_priority.size() > 0):
+            wait_time = 0
+
         return wait_time
 
     def do_wait_queue(self, wait_time):
         # if has task in heap_time, wait_time = wait time for the top task
         with self.condnewtask:
             try:
-                L.debug("waiting for queues ...")
+                L.debug("waiting queues for " + str(wait_time) + " seconds ...")
                 self.condnewtask.wait(wait_time)
             except RuntimeError:
                 L.debug("wait timeout!")
