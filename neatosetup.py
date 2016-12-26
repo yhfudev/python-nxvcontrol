@@ -94,12 +94,18 @@ def set_readonly_text(text, msg):
     text.insert(tk.END, msg)
     text.config(state=tk.DISABLED)
 
+import math
+# const
+MAXDIST=16700 # the maxmium allowed of the distance value of lidar
+MAXDIST=4000 # the maxmium allowed of the distance value of lidar
+CONST_RAD=math.pi / 180
+
 class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
     def show_battery_level(self, level):
         self.style_battstat.configure("LabeledProgressbar", text="{0} %      ".format(level))
         self.progress_batt["value"]=level
         #self.frame_status.update()
-        self.progress_batt.update_idletasks()
+        #self.progress_batt.update_idletasks()
 
     def show_robot_version(self, msg):
         set_readonly_text(self.text_version, msg)
@@ -352,6 +358,26 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         #   buttons to remote control: left/right/up/down/rotate
         lbl_lidar_head = tk.Label(page_lidar, text="LiDAR", font=LARGE_FONT)
         lbl_lidar_head.pack(side="top", fill="x", pady=10)
+        self.canvas_lidar = tk.Canvas(page_lidar)
+        self.canvas_lidar.pack(side="top", fill="both", expand="yes", pady=10)
+        self.canvas_lidar_points = {} # 360 items, 0 - 359 degree, lines
+        self.canvas_lidar_lines = {}
+        self.map_sin_lidar = {}
+        self.map_cos_lidar = {}
+        for i in range(0,360):
+            self.map_cos_lidar[i] = math.cos(CONST_RAD * i) / MAXDIST
+            self.map_sin_lidar[i] = math.sin(CONST_RAD * i) / MAXDIST
+        self.mid_query_lidar = -1
+        self.canvas_lidar_isfocused1 = False
+        self.canvas_lidar_isfocused2 = False
+        self.canvas_lidar_isfocused3 = False
+        self.canvas_lidar_isactive = False
+        page_lidar.bind("<FocusIn>",  self.guiloop_lidar_got_focus1)
+        page_lidar.bind("<FocusOut>", self.guiloop_lidar_lost_focus1)
+        lbl_lidar_head.bind("<FocusIn>",  self.guiloop_lidar_got_focus2)
+        lbl_lidar_head.bind("<FocusOut>", self.guiloop_lidar_lost_focus2)
+        self.canvas_lidar.bind("<FocusIn>",  self.guiloop_lidar_got_focus3)
+        self.canvas_lidar.bind("<FocusOut>", self.guiloop_lidar_lost_focus3)
 
         # page for motors
         page_moto = ttk.Frame(nb)
@@ -369,7 +395,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         lbl_statlog_head.pack(side="top", fill="x", pady=10)
 
         text_statlog = ScrolledText(page_statlog, wrap=tk.WORD)
-        text_statlog.insert(tk.END, "Some Text\ntest 1\ntest 2\n")
+        #text_statlog.insert(tk.END, "Some Text\ntest 1\ntest 2\n")
         text_statlog.configure(state='disabled')
         text_statlog.pack(expand=True, fill="both", side="top")
         text_statlog.bind("<1>", lambda event: text_statlog.focus_set())
@@ -397,6 +423,144 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
 
         self.do_cli_disconnect()
 
+    #
+    # lidar: support functions
+    #
+    def canvas_lidar_request(self):
+        if self.serv_cli != None and self.mid_query_lidar >= 0:
+            if self.canvas_lidar_isactive:
+                self.serv_cli.request(["GetLDSScan\n", self.mid_query_lidar])
+            if self.canvas_lidar_isfocused1 or self.canvas_lidar_isfocused2 or self.canvas_lidar_isfocused3:
+                pass
+            else:
+                self.canvas_lidar_isactive = False
+
+        if self.canvas_lidar_isactive:
+            self.after(5000, self.canvas_lidar_request)
+
+    def guiloop_lidar_got_focus1(self, event):
+        self.canvas_lidar_isfocused1 = True
+        self.canvas_lidar_process_focus()
+    def guiloop_lidar_got_focus2(self, event):
+        self.canvas_lidar_isfocused2 = True
+        self.canvas_lidar_process_focus()
+    def guiloop_lidar_got_focus3(self, event):
+        self.canvas_lidar_isfocused3 = True
+        self.canvas_lidar_process_focus()
+    def guiloop_lidar_lost_focus1(self, event):
+        self.canvas_lidar_isfocused1 = False
+        self.canvas_lidar_process_focus()
+    def guiloop_lidar_lost_focus2(self, event):
+        self.canvas_lidar_isfocused2 = False
+        self.canvas_lidar_process_focus()
+    def guiloop_lidar_lost_focus3(self, event):
+        self.canvas_lidar_isfocused3 = False
+        self.canvas_lidar_process_focus()
+
+    def canvas_lidar_process_focus(self):
+        if self.canvas_lidar_isfocused1 or self.canvas_lidar_isfocused2 or self.canvas_lidar_isfocused3:
+            if self.serv_cli != None:
+                if self.mid_query_lidar < 0 :
+                    L.info('LiDAR canvas focus <---')
+                    self.mid_query_lidar = self.serv_cli.mailbox.declair()
+                if self.canvas_lidar_isactive == False:
+                    self.canvas_lidar_isactive = True
+                    self.canvas_lidar_request()
+        #else:
+            #self.canvas_lidar_isactive = False
+            #self.serv_cli.mailbox.close(self.mid_query_lidar)
+
+    def mailpipe_process_lidar(self):
+        if self.serv_cli != None and self.mid_query_lidar >= 0:
+            try:
+                pre=None
+                while True:
+                    # remove all of items in the queue
+                    try:
+                        respstr = self.serv_cli.mailbox.get(self.mid_query_lidar, False)
+                        if respstr == None:
+                            break
+                        L.info('LiDAR data pulled out!')
+                        pre = respstr
+                    except queue.Empty:
+                        # ignore
+                        break
+                respstr = pre
+                if respstr == None:
+                    return
+                width = self.canvas_lidar.winfo_width()
+                height = self.canvas_lidar.winfo_height()
+                MAXCOOD = height
+                if width < height:
+                    MAXCOOD = width
+                MAXCOOD = int(MAXCOOD / 2)
+                MAXCOODX = int(width / 2)
+                MAXCOODY = int(height / 2)
+                CIRRAD=2
+                if 1 == 1:
+                    #self.canvas_lidar.xview_scroll(width, "units")
+                    #self.canvas_lidar.yview_scroll(height, "units")
+                    self.canvas_lidar.configure(scrollregion=(0-MAXCOODX, 0-MAXCOODY, MAXCOODX, MAXCOODY))
+                    MAXCOODX = 0
+                    MAXCOODY = 0
+                #L.info('LiDAR canvas sz=(' + str(width) + ", " + str(height) + "), maxcood=(" + str(MAXCOODX) + ", " + str(MAXCOODY) + ") " + str(MAXCOOD))
+
+                retlines = respstr.strip() + '\n'
+                responses = retlines.split('\n')
+                for i in range(0,len(responses)):
+                    response = responses[i].strip()
+                    if len(response) < 1:
+                        break
+                    lst = response.split(',')
+                    if len(lst) < 4:
+                        continue
+                    if lst[0].lower() == 'AngleInDegrees'.lower():
+                        continue
+                    angle = int(lst[0])
+                    if angle < 0 or angle > 359:
+                        continue
+                    distmm = int(lst[1])
+                    intensity = int(lst[2])
+                    #errval = lst[3]
+                    #if distmm > 1600:
+                    #    distmm = MAXDIST
+                    #if errval != "0":
+                    #    distmm = MAXDIST
+                    #L.info('LiDAR angle=' + str(angle) + ", dist=" + str(distmm) + ", intensity=" + str(intensity) )
+
+                    if distmm == 0:
+                        posx = MAXCOODX
+                        posy = MAXCOODY
+                    else:
+                        off = distmm * MAXCOOD
+                        posx = MAXCOODX + off * self.map_cos_lidar[angle]
+                        posy = MAXCOODY + off * self.map_sin_lidar[angle]
+                    #L.info('LiDAR angle=' + str(angle) + ", pos=(" + str(posx) + "," + str(posy) +")" )
+
+                    #save to the list
+                    if angle in self.canvas_lidar_lines:
+                        # update
+                        i = self.canvas_lidar_lines[angle]
+                        self.canvas_lidar.coords(i, MAXCOODX, MAXCOODY, posx, posy)
+                    else:
+                        # create a new line
+                        i = self.canvas_lidar.create_line(MAXCOODX, MAXCOODY, posx, posy, fill="red", dash=(4, 4))
+                        self.canvas_lidar_lines[angle] = i
+
+                    if angle in self.canvas_lidar_points:
+                        # update
+                        i = self.canvas_lidar_points[angle]
+                        self.canvas_lidar.coords(i, posx - CIRRAD, posy - CIRRAD, posx + CIRRAD, posy + CIRRAD)
+                    else:
+                        # create a new line
+                        i = self.canvas_lidar.create_oval(posx - CIRRAD, posy - CIRRAD, posx + CIRRAD, posy + CIRRAD, outline="green", fill="green", width=1)
+                        #i = self.canvas_lidar.create_circle(posx, posy, CIRRAD, outline="green", fill="green", width=1)
+                        self.canvas_lidar_points[angle] = i
+
+                L.info('LiDAR canvas updated!')
+            except queue.Empty:
+                # ignore
+                pass
 
     #
     # connection and command: support functions
@@ -424,10 +588,10 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
             L.error ('Error in open serial')
             return
         L.info ('serial opened')
-        self.mid_cli_command = self.serv_cli.mailbox.declair();
-        self.mid_query_version = self.serv_cli.mailbox.declair();
-        self.mid_query_time = self.serv_cli.mailbox.declair();
-        self.mid_query_battery = self.serv_cli.mailbox.declair();
+        self.mid_cli_command = self.serv_cli.mailbox.declair()
+        self.mid_query_version = self.serv_cli.mailbox.declair()
+        self.mid_query_time = self.serv_cli.mailbox.declair()
+        self.mid_query_battery = self.serv_cli.mailbox.declair()
         self.serv_cli.request(["GetVersion\nGetWarranty\n", self.mid_query_version]) # query the time
         self.guiloop_check_rightnow()
         self.guiloop_check_per1sec()
@@ -461,70 +625,74 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         self.do_cli_run()
         return
 
+    def mailpipe_process_conn_cmd(self):
+        if self.mid_cli_command >= 0:
+            try:
+                resp = self.serv_cli.mailbox.get(self.mid_cli_command, False)
+                respstr = resp.strip() + "\n\n"
+                # put the content to the end of the textarea
+                guilog.textarea_append (self.text_cli_command, respstr)
+                self.text_cli_command.update_idletasks()
+            except queue.Empty:
+                # ignore
+                pass
+        if self.mid_query_version >= 0:
+            try:
+                resp = self.serv_cli.mailbox.get(self.mid_query_version, False)
+                respstr = resp.strip()
+                self.show_robot_version (respstr)
+            except queue.Empty:
+                # ignore
+                pass
+        if self.mid_query_battery >= 0:
+            try:
+                while True:
+                    respstr = self.serv_cli.mailbox.get(self.mid_query_battery, False)
+                    if respstr == None:
+                        break
+                    retlines = respstr.strip() + '\n'
+                    responses = retlines.split('\n')
+                    for i in range(0,len(responses)):
+                        response = responses[i].strip()
+                        if len(response) < 1:
+                            #L.debug('read null 2')
+                            break
+                        lst = response.split(',')
+                        if len(lst) > 1:
+                            if lst[0].lower() == 'FuelPercent'.lower():
+                                L.debug('got fule percent: ' + lst[1])
+                                self.show_battery_level(int(lst[1]))
+            except queue.Empty:
+                # ignore
+                pass
+        if self.mid_query_time >= 0:
+            import re
+            try:
+                while True:
+                    respstr = self.serv_cli.mailbox.get(self.mid_query_time, False)
+                    if respstr == None:
+                        break
+                    retlines = respstr.strip()
+                    retlines = respstr.strip() + '\n'
+                    responses = retlines.split('\n')
+                    for i in range(0,len(responses)):
+                        response = responses[i].strip()
+                        if len(response) < 1:
+                            #L.debug('read null 2')
+                            break
+                        if not re.match("GetTime".lower(), response.lower()):
+                            L.debug("gettime: " + response)
+                            self.show_robot_time(response)
+            except queue.Empty:
+                # ignore
+                pass
+
     def guiloop_check_rightnow(self):
         if self.serv_cli != None:
-            if self.mid_cli_command >= 0:
-                try:
-                    resp = self.serv_cli.mailbox.get(self.mid_cli_command, False)
-                    respstr = resp.strip() + "\n\n"
-                    # put the content to the end of the textarea
-                    guilog.textarea_append (self.text_cli_command, respstr)
-                    self.text_cli_command.update_idletasks()
-                except queue.Empty:
-                    # ignore
-                    pass
-            if self.mid_query_version >= 0:
-                try:
-                    resp = self.serv_cli.mailbox.get(self.mid_query_version, False)
-                    respstr = resp.strip()
-                    self.show_robot_version (respstr)
-                except queue.Empty:
-                    # ignore
-                    pass
-            if self.mid_query_battery >= 0:
-                try:
-                    while True:
-                        respstr = self.serv_cli.mailbox.get(self.mid_query_battery, False)
-                        if respstr == None:
-                            break
-                        retlines = respstr.strip() + '\n'
-                        responses = retlines.split('\n')
-                        for i in range(0,len(responses)):
-                            response = responses[i].strip()
-                            if len(response) < 1:
-                                #L.debug('read null 2')
-                                break
-                            lst = response.split(',')
-                            if len(lst) > 1:
-                                if lst[0].lower() == 'FuelPercent'.lower():
-                                    L.debug('got fule percent: ' + lst[1])
-                                    self.show_battery_level(int(lst[1]))
-                except queue.Empty:
-                    # ignore
-                    pass
-            if self.mid_query_time >= 0:
-                import re
-                try:
-                    while True:
-                        respstr = self.serv_cli.mailbox.get(self.mid_query_time, False)
-                        if respstr == None:
-                            break
-                        retlines = respstr.strip()
-                        retlines = respstr.strip() + '\n'
-                        responses = retlines.split('\n')
-                        for i in range(0,len(responses)):
-                            response = responses[i].strip()
-                            if len(response) < 1:
-                                #L.debug('read null 2')
-                                break
-                            if not re.match("GetTime".lower(), response.lower()):
-                                L.debug("gettime: " + response)
-                                self.show_robot_time(response)
-                except queue.Empty:
-                    # ignore
-                    pass
+            self.mailpipe_process_conn_cmd()
+            self.mailpipe_process_lidar()
             # setup next
-            self.after(300, self.guiloop_check_rightnow)
+            self.after(500, self.guiloop_check_rightnow)
         return
 
     def guiloop_check_per1sec(self):
