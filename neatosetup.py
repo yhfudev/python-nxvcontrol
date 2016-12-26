@@ -110,6 +110,10 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
     def show_robot_version(self, msg):
         set_readonly_text(self.text_version, msg)
 
+    def show_robot_statlog(self, msg):
+        set_readonly_text(self.text_statlog, msg)
+
+
     def show_robot_time(self, msg):
         self.lbl_synctime['text'] = msg
 
@@ -407,13 +411,13 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         lbl_statlog_head = tk.Label(page_statlog, text="LifeStatLog", font=LARGE_FONT)
         lbl_statlog_head.pack(side="top", fill="x", pady=10)
 
-        text_statlog = ScrolledText(page_statlog, wrap=tk.WORD)
-        #text_statlog.insert(tk.END, "Some Text\ntest 1\ntest 2\n")
-        text_statlog.configure(state='disabled')
-        text_statlog.pack(expand=True, fill="both", side="top")
-        text_statlog.bind("<1>", lambda event: text_statlog.focus_set())
+        self.text_statlog = ScrolledText(page_statlog, wrap=tk.WORD)
+        #self.text_statlog.insert(tk.END, "Some Text\ntest 1\ntest 2\n")
+        self.text_statlog.configure(state='disabled')
+        self.text_statlog.pack(expand=True, fill="both", side="top")
+        self.text_statlog.bind("<1>", lambda event: self.text_statlog.focus_set())
 
-        btn_statlog_get = tk.Button(page_statlog, text="Get Log")
+        btn_statlog_get = tk.Button(page_statlog, text="Get Log", command=self.do_statlog)
         btn_statlog_get.pack(side=tk.BOTTOM)
 
         # page for Recharge
@@ -435,6 +439,17 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         nb.add(page_testpack, text='TestPack')
 
         self.do_cli_disconnect()
+
+    #
+    # statlog: support functions
+    #
+    def do_statlog(self):
+        if self.serv_cli == None:
+            L.error('client is not connected, please connect it first!')
+            return
+        L.info('get stat log ...')
+        self.serv_cli.request(["GetLifeStatLog", self.mid_query_statlog])
+        return
 
     #
     # lidar: support functions
@@ -610,6 +625,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         self.mid_query_version = self.serv_cli.mailbox.declair()
         self.mid_query_time = self.serv_cli.mailbox.declair()
         self.mid_query_battery = self.serv_cli.mailbox.declair()
+        self.mid_query_statlog = self.serv_cli.mailbox.declair()
         self.serv_cli.request(["GetVersion\nGetWarranty\n", self.mid_query_version]) # query the time
         self.guiloop_check_rightnow()
         self.guiloop_check_per1sec()
@@ -630,6 +646,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         self.mid_query_version = -1;
         self.mid_query_time = -1;
         self.mid_query_battery = -1;
+        self.mid_query_statlog = -1
         return
 
     def do_cli_run(self):
@@ -662,6 +679,15 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
                 resp = self.serv_cli.mailbox.get(self.mid_query_version, False)
                 respstr = resp.strip()
                 self.show_robot_version (respstr)
+            except queue.Empty:
+                # ignore
+                pass
+        if self.mid_query_statlog >= 0:
+            try:
+                resp = self.serv_cli.mailbox.get(self.mid_query_statlog, False)
+                respstr = resp.strip()
+                L.debug('got statlog sz=' + str(len(respstr)) )
+                self.show_robot_statlog (respstr)
             except queue.Empty:
                 # ignore
                 pass
