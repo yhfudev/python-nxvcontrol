@@ -3642,6 +3642,7 @@ ROTATION_SPEED,5.00
 """,
 )
 
+is_test_mode=False
 lds_cur = 0
 def get_lds_data():
     global lds_cur
@@ -3651,6 +3652,7 @@ def get_lds_data():
     return lds_list[lds_cur]
 
 def fake_respose(requestline="Help"):
+    global is_test_mode
     response = ""
     requestlist = requestline.split(' ')
     request = requestlist[0]
@@ -3888,33 +3890,59 @@ SumInG,0.000
     elif request.lower() == "PlaySound".lower():
         response = 'PlaySound accepted: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
     elif request.lower() == "TestMode".lower():
-        response = '\n'
+        isprocessed = False
+        if requestlist[1].strip().lower() == "on":
+            is_test_mode = True
+            isprocessed = True
+        if requestlist[1].strip().lower() == "off":
+            is_test_mode = False
+            isprocessed = True
+        if isprocessed == False:
+            response = 'TestMode rejected: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
+        else:
+            response = 'TestMode turned to ' + str(is_test_mode) + '\n'
+
     elif request.lower() == "RestoreDefaults".lower():
-        response = '\n'
+        response = 'RestoreDefaults accepted: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
     elif request.lower() == "SetDistanceCal".lower():
-        response = '\n'
+        response = 'SetDistanceCal accepted: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
     elif request.lower() == "SetFuelGauge".lower():
-        response = '\n'
+        response = 'SetFuelGauge accepted: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
     elif request.lower() == "SetIEC".lower():
-        response = '\n'
+        response = 'SetIEC accepted: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
     elif request.lower() == "SetLCD".lower():
-        response = '\n'
+        if is_test_mode:
+            response = 'SetLCD accepted: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
+        else:
+            response = 'SetLCD rejected: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
     elif request.lower() == "SetLDSRotation".lower():
-        response = '\n'
+        if is_test_mode:
+            response = 'SetLDSRotation accepted: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
+        else:
+            response = 'SetLDSRotation rejected: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
     elif request.lower() == "SetLED".lower():
-        response = '\n'
+        if is_test_mode:
+            response = 'SetLED accepted: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
+        else:
+            response = 'SetLED rejected: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
     elif request.lower() == "SetMotor".lower():
-        response = '\n'
+        if is_test_mode:
+            response = 'SetMotor accepted: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
+        else:
+            response = 'SetMotor rejected: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
     elif request.lower() == "SetSchedule".lower():
-        response = '\n'
+        response = 'SetSchedule accepted: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
     elif request.lower() == "SetSystemMode".lower():
-        response = '\n'
+        if is_test_mode:
+            response = 'SetSystemMode accepted: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
+        else:
+            response = 'SetSystemMode rejected: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
     elif request.lower() == "SetTime".lower():
         response = 'SetTime accepted: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
     elif request.lower() == "SetWallFollower".lower():
-        response = '\n'
+        response = 'SetWallFollower accepted: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
     elif request.lower() == "Upload".lower():
-        response = '\n'
+        response = 'Upload accepted: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
     elif request.lower() == "GetLDSScan".lower():
         response = get_lds_data()
     elif request.lower() == "GetLifeStatLog".lower():
