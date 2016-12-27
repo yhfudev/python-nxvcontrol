@@ -170,6 +170,10 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
         self.serv_cli = None
         self.istestmode = False
 
+        # the images for toggle buttons
+        self.img_ledon=tk.PhotoImage(file="ledred-on.gif")
+        self.img_ledoff=tk.PhotoImage(file="ledred-off.gif")
+
         # page for test pack()
         page_testpack = tk.Frame(nb)
         #lbl_test_head = tk.Label(page_testpack, text="Test pack()", font=LARGE_FONT)
@@ -375,7 +379,13 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         #   buttons to remote control: left/right/up/down/rotate
         lbl_lidar_head = tk.Label(page_lidar, text="LiDAR", font=LARGE_FONT)
         lbl_lidar_head.pack(side="top", fill="x", pady=10)
-        self.canvas_lidar = tk.Canvas(page_lidar)
+
+        frame_top = tk.Frame(page_lidar)#, background="green")
+        frame_bottom = tk.Frame(page_lidar)#, background="yellow")
+        frame_top.pack(side="top", fill="both", expand=True)
+        frame_bottom.pack(side="bottom", fill="x", expand=False)
+
+        self.canvas_lidar = tk.Canvas(frame_top)
         self.canvas_lidar.pack(side="top", fill="both", expand="yes", pady=10)
         self.canvas_lidar_points = {} # 360 items, 0 - 359 degree, lines
         self.canvas_lidar_lines = {}
@@ -385,16 +395,11 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
             self.map_cos_lidar[i] = math.cos(CONST_RAD * i) / MAXDIST
             self.map_sin_lidar[i] = math.sin(CONST_RAD * i) / MAXDIST
         self.mid_query_lidar = -1
-        self.canvas_lidar_isfocused1 = False
-        self.canvas_lidar_isfocused2 = False
-        self.canvas_lidar_isfocused3 = False
+        self.canvas_lidar_isfocused = False
         self.canvas_lidar_isactive = False
-        page_lidar.bind("<FocusIn>",  self.guiloop_lidar_got_focus1)
-        page_lidar.bind("<FocusOut>", self.guiloop_lidar_lost_focus1)
-        lbl_lidar_head.bind("<FocusIn>",  self.guiloop_lidar_got_focus2)
-        lbl_lidar_head.bind("<FocusOut>", self.guiloop_lidar_lost_focus2)
-        self.canvas_lidar.bind("<FocusIn>",  self.guiloop_lidar_got_focus3)
-        self.canvas_lidar.bind("<FocusOut>", self.guiloop_lidar_lost_focus3)
+
+        self.btn_lidar_enable = guilog.ToggleButton(frame_bottom, txtt="ON: LiDAR", txtr="OFF: LiDAR", imgt=self.img_ledon, imgr=self.img_ledoff, command=self.guiloop_lidar_enable )
+        self.btn_lidar_enable.pack(pady=5)
 
         # page for motors
         page_moto = ttk.Frame(nb)
@@ -403,6 +408,30 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         lbl_moto_head = tk.Label(page_moto, text="Motors", font=LARGE_FONT)
         lbl_moto_head.pack(side="top", fill="x", pady=10)
         s = ttk.Scale(page_moto, orient=tk.HORIZONTAL, length=200, from_=1.0, to=100.0)
+
+        devstr = "Left Wheel"
+        self.btn_enable_leftwheel = guilog.ToggleButton(page_moto, txtt="ON: "+devstr, txtr="OFF: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, command=self.guiloop_enable_leftwheel)
+        self.btn_enable_leftwheel.pack(pady=5)
+
+        devstr = "Right Wheel"
+        self.btn_enable_rightwheel = guilog.ToggleButton(page_moto, txtt="ON: "+devstr, txtr="OFF: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, command=self.guiloop_enable_rightwheel )
+        self.btn_enable_rightwheel.pack(pady=5)
+
+        devstr = "LiDAR Motor"
+        self.btn_enable_lidarmoto = guilog.ToggleButton(page_moto, txtt="ON: "+devstr, txtr="OFF: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, command=self.guiloop_enable_lidarmoto )
+        self.btn_enable_lidarmoto.pack(pady=5)
+
+        devstr = "Vacuum"
+        self.btn_enable_vacuum = guilog.ToggleButton(page_moto, txtt="ON: "+devstr, txtr="OFF: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, command=self.guiloop_enable_vacuum )
+        self.btn_enable_vacuum.pack(pady=5)
+
+        devstr = "Brush"
+        self.btn_enable_brush = guilog.ToggleButton(page_moto, txtt="ON: "+devstr, txtr="OFF: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, command=self.guiloop_enable_brush )
+        self.btn_enable_brush.pack(pady=5)
+
+        devstr = "Side Brush"
+        self.btn_enable_sidebrush = guilog.ToggleButton(page_moto, txtt="ON: "+devstr, txtr="OFF: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, command=self.guiloop_enable_sidebrush )
+        self.btn_enable_sidebrush.pack(pady=5)
 
         # page for LifeStatLog
         page_statlog = ttk.Frame(nb)
@@ -426,17 +455,19 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         lbl_recharge_head = tk.Label(page_recharge, text="Recharge", font=LARGE_FONT)
         lbl_recharge_head.pack(side="top", fill="x", pady=10)
 
+        self.tabtxt_lidar = "LiDAR"
         nb.add(page_conn, text='Connection')
         nb.add(page_command, text='Commands')
         nb.add(page_sche, text='Schedule')
         nb.add(page_sensors, text='Sensors')
-        nb.add(page_lidar, text='LiDAR')
+        nb.add(page_lidar, text=self.tabtxt_lidar)
         nb.add(page_moto, text='Moto')
         nb.add(page_statlog, text='LifeStatLog')
         nb.add(page_recharge, text='Recharge')
         nb.add(page_about, text='About')
         #nb.add(page_testgrid, text='TestGrid')
         nb.add(page_testpack, text='TestPack')
+        nb.bind('<<NotebookTabChanged>>', self.guiloop_nb_tabchanged)
 
         self.do_cli_disconnect()
 
@@ -454,51 +485,145 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
     #
     # lidar: support functions
     #
-    def canvas_lidar_request(self):
-        if self.serv_cli != None and self.mid_query_lidar >= 0:
-            if self.canvas_lidar_isactive:
-                self.serv_cli.request(["GetLDSScan\n", self.mid_query_lidar])
-            if self.canvas_lidar_isfocused1 or self.canvas_lidar_isfocused2 or self.canvas_lidar_isfocused3:
-                pass
+    def guiloop_lidar_enable(self):
+        b1 = self.btn_lidar_enable
+        if b1.config('relief')[-1] == 'sunken':
+            b1['fg'] = "red"
+            self.canvas_lidar_isactive=True
+            self.canvas_lidar_isfocused=False
+            self.guiloop_process_lidar(True)
+        else:
+            b1['fg'] = "green"
+            self.canvas_lidar_isactive=False
+
+    def guiloop_enable_leftwheel(self):
+        enable = False
+        b1 = self.btn_enable_leftwheel
+        if b1.config('relief')[-1] == 'sunken':
+            b1['fg'] = "red"
+            enable = True
+        else:
+            b1['fg'] = "green"
+        if self.serv_cli != None and self.mid_cli_command >= 0:
+            self.set_robot_testmode(True)
+            if enable:
+                self.serv_cli.request(["SetMotor LWheelEnable", self.mid_cli_command])
             else:
-                self.canvas_lidar_isactive = False
+                self.serv_cli.request(["SetMotor LWheelDisable", self.mid_cli_command])
+
+    def guiloop_enable_rightwheel(self):
+        enable = False
+        b1 = self.btn_enable_rightwheel
+        if b1.config('relief')[-1] == 'sunken':
+            b1['fg'] = "red"
+            enable = True
+        else:
+            b1['fg'] = "green"
+        if self.serv_cli != None and self.mid_cli_command >= 0:
+            self.set_robot_testmode(True)
+            if enable:
+                self.serv_cli.request(["SetMotor RWheelEnable", self.mid_cli_command])
+            else:
+                self.serv_cli.request(["SetMotor RWheelDisable", self.mid_cli_command])
+
+    def guiloop_enable_lidarmoto(self):
+        enable = False
+        b1 = self.btn_enable_lidarmoto
+        if b1.config('relief')[-1] == 'sunken':
+            b1['fg'] = "red"
+            enable = True
+        else:
+            b1['fg'] = "green"
+        if self.serv_cli != None and self.mid_cli_command >= 0:
+            self.set_robot_testmode(True)
+            if enable:
+                self.serv_cli.request(["SetLDSRotation On", self.mid_cli_command])
+            else:
                 self.serv_cli.request(["SetLDSRotation Off", self.mid_cli_command])
 
-        if self.canvas_lidar_isactive:
+    def guiloop_enable_vacuum(self):
+        enable = False
+        b1 = self.btn_enable_vacuum
+        if b1.config('relief')[-1] == 'sunken':
+            b1['fg'] = "red"
+            enable = True
+        else:
+            b1['fg'] = "green"
+        if self.serv_cli != None and self.mid_cli_command >= 0:
+            self.set_robot_testmode(True)
+            if enable:
+                self.serv_cli.request(["SetMotor VacuumOn", self.mid_cli_command])
+            else:
+                self.serv_cli.request(["SetMotor VacuumOff", self.mid_cli_command])
+
+    def guiloop_enable_brush(self):
+        enable = False
+        b1 = self.btn_enable_brush
+        if b1.config('relief')[-1] == 'sunken':
+            b1['fg'] = "red"
+            enable = True
+        else:
+            b1['fg'] = "green"
+        if self.serv_cli != None and self.mid_cli_command >= 0:
+            self.set_robot_testmode(True)
+            if enable:
+                self.serv_cli.request(["SetMotor BrushEnable", self.mid_cli_command])
+            else:
+                self.serv_cli.request(["SetMotor BrushDisable", self.mid_cli_command])
+
+    def guiloop_enable_sidebrush(self):
+        enable = False
+        b1 = self.btn_enable_sidebrush
+        if b1.config('relief')[-1] == 'sunken':
+            b1['fg'] = "red"
+            enable = True
+        else:
+            b1['fg'] = "green"
+        if self.serv_cli != None and self.mid_cli_command >= 0:
+            self.set_robot_testmode(True)
+            if enable:
+                self.serv_cli.request(["SetMotor BrushEnable", self.mid_cli_command])
+            else:
+                self.serv_cli.request(["SetMotor BrushDisable", self.mid_cli_command])
+
+    def guiloop_nb_tabchanged(self, event):
+        cur_focus = False
+        if event.widget.tab(event.widget.index("current"),"text") == self.tabtxt_lidar:
+            cur_focus = True
+        self.guiloop_process_lidar(cur_focus)
+
+    def guiloop_process_lidar(self, cur_focus):
+        if self.canvas_lidar_isactive == False:
+            self.canvas_lidar_isfocused = cur_focus
+            return
+        if self.canvas_lidar_isfocused == False:
+            if cur_focus == True:
+                self.canvas_lidar_isfocused = cur_focus
+                self._canvas_lidar_process_focus()
+        else:
+            if cur_focus == False:
+                self.canvas_lidar_isfocused = cur_focus
+                self._canvas_lidar_process_focus()
+
+    def canvas_lidar_request(self):
+        if self.serv_cli != None and self.mid_query_lidar >= 0:
+            if self.canvas_lidar_isfocused:
+                self.serv_cli.request(["GetLDSScan\n", self.mid_query_lidar])
+            else:
+                self.serv_cli.request(["SetLDSRotation Off", self.mid_cli_command])
+
+        if self.canvas_lidar_isfocused and self.canvas_lidar_isactive:
             self.after(5000, self.canvas_lidar_request)
 
-    def guiloop_lidar_got_focus1(self, event):
-        self.canvas_lidar_isfocused1 = True
-        self.canvas_lidar_process_focus()
-    def guiloop_lidar_got_focus2(self, event):
-        self.canvas_lidar_isfocused2 = True
-        self.canvas_lidar_process_focus()
-    def guiloop_lidar_got_focus3(self, event):
-        self.canvas_lidar_isfocused3 = True
-        self.canvas_lidar_process_focus()
-    def guiloop_lidar_lost_focus1(self, event):
-        self.canvas_lidar_isfocused1 = False
-        self.canvas_lidar_process_focus()
-    def guiloop_lidar_lost_focus2(self, event):
-        self.canvas_lidar_isfocused2 = False
-        self.canvas_lidar_process_focus()
-    def guiloop_lidar_lost_focus3(self, event):
-        self.canvas_lidar_isfocused3 = False
-        self.canvas_lidar_process_focus()
-
-    def canvas_lidar_process_focus(self):
-        if self.canvas_lidar_isfocused1 or self.canvas_lidar_isfocused2 or self.canvas_lidar_isfocused3:
+    def _canvas_lidar_process_focus(self):
+        if self.canvas_lidar_isfocused == True:
             self.set_robot_testmode(True)
             if self.serv_cli != None:
                 if self.mid_query_lidar < 0 :
                     L.info('LiDAR canvas focus <---')
                     self.mid_query_lidar = self.serv_cli.mailbox.declair()
-                else:
-                    self.serv_cli.request(["SetLDSRotation On", self.mid_cli_command])
-                if self.canvas_lidar_isactive == False:
-                    self.canvas_lidar_isactive = True
-                    self.set_robot_testmode(True)
-                    self.canvas_lidar_request()
+                self.serv_cli.request(["SetLDSRotation On", self.mid_cli_command])
+                self.canvas_lidar_request()
         #else:
             #self.canvas_lidar_isactive = False
             #self.serv_cli.mailbox.close(self.mid_query_lidar)
