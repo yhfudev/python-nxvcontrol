@@ -382,7 +382,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
 
         # Dustbin In: GetDigitalSensors:SNSR_DUSTBIN_IS_IN,1
         devstr = "Dustbin"
-        self.btn_status_dustbin = guilog.ToggleButton(page_sensors, txtt="Out: "+devstr, txtr="In: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
+        self.btn_status_dustbin = guilog.ToggleButton(page_sensors, txtt="In: "+devstr, txtr="Out: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
         self.btn_status_dustbin.pack(pady=5)
 
         # Left Wheel Extended: GetDigitalSensors:SNSR_LEFT_WHEEL_EXTENDED,0
