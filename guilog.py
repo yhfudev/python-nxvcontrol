@@ -43,14 +43,19 @@ class TextareaLogHandler(L.StreamHandler):
     def emit(self, record):
         textarea_append(self.text_area, self.format(record) + "\n")
 
-def set_log_textarea(textarea):
-    #L.basicConfig(level=L.DEBUG)
+def set_log_stderr():
     logger = L.getLogger()
     formatter = L.Formatter('%(asctime)s %(levelname)s: %(message)s')
 
     console0 = L.StreamHandler()  # no arguments => stderr
     console0.setFormatter(formatter)
     logger.addHandler(console0)
+
+def set_log_textarea(textarea):
+    #L.basicConfig(level=L.DEBUG)
+    logger = L.getLogger()
+    formatter = L.Formatter('%(asctime)s %(levelname)s: %(message)s')
+
     if 1 == 2:
         handler = TextareaStream(textarea)
         console = L.StreamHandler(handler)

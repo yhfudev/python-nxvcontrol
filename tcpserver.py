@@ -23,6 +23,8 @@ import queue
 
 import logging as L
 L.basicConfig(filename='tcpserver.log', level=L.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
+# if we use the textarea to output log. There's problem when multiple threads output to the same textarea
+config_use_textarea_log=False
 
 import neatocmdapi
 import guilog
@@ -123,6 +125,7 @@ class MyTkAppFrame(ttk.Notebook):
                         L.error (cli_log_head + 'Error in read serial: ' + str(e1))
                         break
 
+                L.error (cli_log_head + 'close: ' + str(self.client_address))
                 self.serv.mailbox.close(mbox_id)
 
         class ThreadedTCPServer(ss.ThreadingMixIn, ss.TCPServer):
@@ -169,6 +172,7 @@ class MyTkAppFrame(ttk.Notebook):
         return self.text_log
 
     def __init__(self, tk_frame_parent):
+        global config_use_textarea_log
         ttk.Notebook.__init__(self, tk_frame_parent)
         nb = self
         self.runth_svr = None
@@ -217,12 +221,14 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
 
         frame_svr.pack(side="top", fill="x", pady=10)
 
-        self.text_log = tk.scrolledtext.ScrolledText(page_server, wrap=tk.WORD, height=1)
-        self.text_log.configure(state='disabled')
-        self.text_log.pack(expand=True, fill="both", side="top")
-        #self.text_log.grid(row=line, column=1, columnspan=2, padx=5)
-        self.text_log.bind("<1>", lambda event: self.text_log.focus_set()) # enable highlighting and copying
-        #set_readonly_text(self.text_log, "Version Info\nver 1\nver 2\n")
+        self.text_log = None
+        if config_use_textarea_log:
+            self.text_log = tk.scrolledtext.ScrolledText(page_server, wrap=tk.WORD, height=1)
+            self.text_log.configure(state='disabled')
+            self.text_log.pack(expand=True, fill="both", side="top")
+            #self.text_log.grid(row=line, column=1, columnspan=2, padx=5)
+            self.text_log.bind("<1>", lambda event: self.text_log.focus_set()) # enable highlighting and copying
+            #set_readonly_text(self.text_log, "Version Info\nver 1\nver 2\n")
 
         btn_svr_start = tk.Button(page_server, text="Start", command=self.do_start)
         #btn_svr_start.grid(row=line, column=0, columnspan=2, padx=5, sticky=tk.N+tk.S+tk.W+tk.E)
@@ -365,7 +371,9 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         self.after(300, self.check_mid_cli_command)
         return
 
-def demo():
+def tcpserver_main():
+    global config_use_textarea_log
+    guilog.set_log_stderr()
 
     root = tk.Tk()
     root.title(str_progname + " - " + str_version)
@@ -373,10 +381,11 @@ def demo():
     app.pack(fill="both", expand=True)
     ttk.Sizegrip(root).pack(side="right")
 
-    guilog.set_log_textarea (app.get_log_text())
+    if config_use_textarea_log:
+        guilog.set_log_textarea (app.get_log_text())
 
     root.mainloop()
 
 if __name__ == "__main__":
-    demo()
+    tcpserver_main()
 
