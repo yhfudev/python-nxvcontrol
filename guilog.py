@@ -97,11 +97,23 @@ class ToggleButton(tk.Button):
         #self.master.message_upstream(self, message)
         pass
 
-    def _command(self):
-        if self.config('relief')[-1] == 'sunken':
-            self.config(relief="raised", text=self.txtr, image=self.imgr)
+    def config(self, mapstr=None, relief=None, *args, **kwargs):
+        if mapstr != None:
+            return tk.Button.config(self, mapstr, *args, **kwargs)
+
+        if relief != None:
+            if relief=='sunken':
+                return tk.Button.config(self, relief="sunken", text=self.txtt, image=self.imgt, *args, **kwargs)
+            else:
+                return tk.Button.config(self, relief="raised", text=self.txtr, image=self.imgr, *args, **kwargs)
         else:
-            self.config(relief="sunken", text=self.txtt, image=self.imgt)
+            return tk.Button.config(self, *args, **kwargs)
+
+    def _command(self):
+        if tk.Button.config(self, 'relief')[-1] == 'sunken':
+            tk.Button.config(self, relief="raised", text=self.txtr, image=self.imgr)
+        else:
+            tk.Button.config(self, relief="sunken", text=self.txtt, image=self.imgt)
 
         if self.command != None:
             self.command()
