@@ -374,6 +374,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
 
         self.mid_query_digitalsensors = -1
         self.buttons_sensors_isactive = False
+        self.buttons_sensors_request_full = False # flag to signal the command is finished
 
         # power DC connection: GetDigitalSensors:SNSR_DC_JACK_CONNECT,0
         devstr = "Power DC Jack"
@@ -440,6 +441,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         self.mid_query_lidar = -1
         self.canvas_lidar_isfocused = False
         self.canvas_lidar_isactive = False
+        self.canvas_lidar_request_full = False
 
         self.btn_lidar_enable = guilog.ToggleButton(frame_bottom, txtt="ON: LiDAR", txtr="OFF: LiDAR", imgt=self.img_ledon, imgr=self.img_ledoff, command=self.guiloop_lidar_enable )
         self.btn_lidar_enable.pack(pady=5)
@@ -672,20 +674,22 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
                 if self.mid_query_digitalsensors < 0 :
                     L.info('create mid_query_digitalsensors')
                     self.mid_query_digitalsensors = self.serv_cli.mailbox.declair()
-                if self.mid_query_digitalsensors >= 0:
+                if self.mid_query_digitalsensors >= 0 and self.buttons_sensors_request_full == False:
                     L.info('Request GetDigitalSensors ...')
+                    self.buttons_sensors_request_full = True
                     self.serv_cli.request(["GetDigitalSensors\n", self.mid_query_digitalsensors])
             L.info('setup next call buttons_sensors_request ...')
-            self.after(1000, self.buttons_sensors_request)
+            self.after(500, self.buttons_sensors_request)
 
     # the periodical routine for the widgets of LiDAR
     def canvas_lidar_request(self):
         if self.serv_cli != None and self.mid_query_lidar >= 0:
-            if self.canvas_lidar_isfocused:
+            if self.canvas_lidar_isfocused and self.canvas_lidar_request_full == False:
                 self.serv_cli.request(["GetLDSScan\n", self.mid_query_lidar])
+                self.canvas_lidar_request_full = True
 
         if self.canvas_lidar_isfocused and self.canvas_lidar_isactive:
-            self.after(5000, self.canvas_lidar_request)
+            self.after(1000, self.canvas_lidar_request)
 
     def _canvas_lidar_process_focus(self):
         if self.canvas_lidar_isfocused == True:
@@ -698,7 +702,6 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         #else:
             #self.canvas_lidar_isactive = False
             #self.serv_cli.mailbox.close(self.mid_query_lidar)
-
 
     def mailpipe_process_digitalsensors(self):
         if self.serv_cli != None and self.mid_query_digitalsensors >= 0:
@@ -775,6 +778,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
             except queue.Empty:
                 # ignore
                 pass
+            self.buttons_sensors_request_full = False
 
     def mailpipe_process_lidar(self):
         if self.serv_cli != None and self.mid_query_lidar >= 0:
@@ -867,6 +871,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
             except queue.Empty:
                 # ignore
                 pass
+            self.canvas_lidar_request_full = False
 
     #
     # connection and command: support functions
@@ -922,6 +927,12 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         self.mid_query_time = -1;
         self.mid_query_battery = -1;
         self.mid_query_statlog = -1
+        self.mid_query_lidar = -1
+        self.mid_query_digitalsensors = -1
+
+        self.buttons_sensors_request_full = False # flag to signal the command is finished
+        self.canvas_lidar_request_full = False
+
         self.btn_cli_connect.config(state=tk.NORMAL)
         self.btn_cli_disconnect.config(state=tk.DISABLED)
 
