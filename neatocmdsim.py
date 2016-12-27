@@ -1,6 +1,371 @@
 #!/usr/bin/python3
+import time
 
 lds_list=(
+"""AngleInDegrees,DistInMM,Intensity,ErrorCodeHEX
+0,0,0,0
+1,0,0,0
+2,0,0,0
+3,0,0,0
+4,0,0,0
+5,0,0,0
+6,0,0,0
+7,0,0,0
+8,0,0,0
+9,0,0,0
+10,0,0,0
+11,0,0,0
+12,0,0,0
+13,0,0,0
+14,0,0,0
+15,0,0,0
+16,0,0,0
+17,0,0,0
+18,0,0,0
+19,0,0,0
+20,0,0,0
+21,0,0,0
+22,0,0,0
+23,0,0,0
+24,0,0,0
+25,0,0,0
+26,0,0,0
+27,0,0,0
+28,0,0,0
+29,0,0,0
+30,0,0,0
+31,0,0,0
+32,0,0,0
+33,0,0,0
+34,0,0,0
+35,0,0,0
+36,0,0,0
+37,0,0,0
+38,0,0,0
+39,0,0,0
+40,0,0,0
+41,0,0,0
+42,0,0,0
+43,0,0,0
+44,0,0,0
+45,0,0,0
+46,0,0,0
+47,0,0,0
+48,0,0,0
+49,0,0,0
+50,0,0,0
+51,0,0,0
+52,0,0,0
+53,0,0,0
+54,0,0,0
+55,0,0,0
+56,0,0,0
+57,0,0,0
+58,0,0,0
+59,0,0,0
+60,0,0,0
+61,0,0,0
+62,0,0,0
+63,0,0,0
+64,0,0,0
+65,0,0,0
+66,0,0,0
+67,0,0,0
+68,0,0,0
+69,0,0,0
+70,0,0,0
+71,0,0,0
+72,0,0,0
+73,0,0,0
+74,0,0,0
+75,0,0,0
+76,0,0,0
+77,0,0,0
+78,0,0,0
+79,0,0,0
+80,0,0,0
+81,0,0,0
+82,0,0,0
+83,0,0,0
+84,0,0,0
+85,0,0,0
+86,0,0,0
+87,0,0,0
+88,0,0,0
+89,0,0,0
+90,0,0,0
+91,0,0,0
+92,0,0,0
+93,0,0,0
+94,0,0,0
+95,0,0,0
+96,0,0,0
+97,0,0,0
+98,0,0,0
+99,0,0,0
+100,0,0,0
+101,0,0,0
+102,0,0,0
+103,0,0,0
+104,0,0,0
+105,0,0,0
+106,0,0,0
+107,0,0,0
+108,0,0,0
+109,0,0,0
+110,0,0,0
+111,0,0,0
+112,0,0,0
+113,0,0,0
+114,0,0,0
+115,0,0,0
+116,0,0,0
+117,0,0,0
+118,0,0,0
+119,0,0,0
+120,0,0,0
+121,0,0,0
+122,0,0,0
+123,0,0,0
+124,0,0,0
+125,0,0,0
+126,0,0,0
+127,0,0,0
+128,0,0,0
+129,0,0,0
+130,0,0,0
+131,0,0,0
+132,0,0,0
+133,0,0,0
+134,0,0,0
+135,0,0,0
+136,0,0,0
+137,0,0,0
+138,0,0,0
+139,0,0,0
+140,0,0,0
+141,0,0,0
+142,0,0,0
+143,0,0,0
+144,0,0,0
+145,0,0,0
+146,0,0,0
+147,0,0,0
+148,0,0,0
+149,0,0,0
+150,0,0,0
+151,0,0,0
+152,0,0,0
+153,0,0,0
+154,0,0,0
+155,0,0,0
+156,0,0,0
+157,0,0,0
+158,0,0,0
+159,0,0,0
+160,0,0,0
+161,0,0,0
+162,0,0,0
+163,0,0,0
+164,0,0,0
+165,0,0,0
+166,0,0,0
+167,0,0,0
+168,0,0,0
+169,0,0,0
+170,0,0,0
+171,0,0,0
+172,0,0,0
+173,0,0,0
+174,0,0,0
+175,0,0,0
+176,0,0,0
+177,0,0,0
+178,0,0,0
+179,0,0,0
+180,0,0,0
+181,0,0,0
+182,0,0,0
+183,0,0,0
+184,0,0,0
+185,0,0,0
+186,0,0,0
+187,0,0,0
+188,0,0,0
+189,0,0,0
+190,0,0,0
+191,0,0,0
+192,0,0,0
+193,0,0,0
+194,0,0,0
+195,0,0,0
+196,0,0,0
+197,0,0,0
+198,0,0,0
+199,0,0,0
+200,0,0,0
+201,0,0,0
+202,0,0,0
+203,0,0,0
+204,0,0,0
+205,0,0,0
+206,0,0,0
+207,0,0,0
+208,0,0,0
+209,0,0,0
+210,0,0,0
+211,0,0,0
+212,0,0,0
+213,0,0,0
+214,0,0,0
+215,0,0,0
+216,0,0,0
+217,0,0,0
+218,0,0,0
+219,0,0,0
+220,0,0,0
+221,0,0,0
+222,0,0,0
+223,0,0,0
+224,0,0,0
+225,0,0,0
+226,0,0,0
+227,0,0,0
+228,0,0,0
+229,0,0,0
+230,0,0,0
+231,0,0,0
+232,0,0,0
+233,0,0,0
+234,0,0,0
+235,0,0,0
+236,0,0,0
+237,0,0,0
+238,0,0,0
+239,0,0,0
+240,0,0,0
+241,0,0,0
+242,0,0,0
+243,0,0,0
+244,0,0,0
+245,0,0,0
+246,0,0,0
+247,0,0,0
+248,0,0,0
+249,0,0,0
+250,0,0,0
+251,0,0,0
+252,0,0,0
+253,0,0,0
+254,0,0,0
+255,0,0,0
+256,0,0,0
+257,0,0,0
+258,0,0,0
+259,0,0,0
+260,0,0,0
+261,0,0,0
+262,0,0,0
+263,0,0,0
+264,0,0,0
+265,0,0,0
+266,0,0,0
+267,0,0,0
+268,0,0,0
+269,0,0,0
+270,0,0,0
+271,0,0,0
+272,0,0,0
+273,0,0,0
+274,0,0,0
+275,0,0,0
+276,0,0,0
+277,0,0,0
+278,0,0,0
+279,0,0,0
+280,0,0,0
+281,0,0,0
+282,0,0,0
+283,0,0,0
+284,0,0,0
+285,0,0,0
+286,0,0,0
+287,0,0,0
+288,0,0,0
+289,0,0,0
+290,0,0,0
+291,0,0,0
+292,0,0,0
+293,0,0,0
+294,0,0,0
+295,0,0,0
+296,0,0,0
+297,0,0,0
+298,0,0,0
+299,0,0,0
+300,0,0,0
+301,0,0,0
+302,0,0,0
+303,0,0,0
+304,0,0,0
+305,0,0,0
+306,0,0,0
+307,0,0,0
+308,0,0,0
+309,0,0,0
+310,0,0,0
+311,0,0,0
+312,0,0,0
+313,0,0,0
+314,0,0,0
+315,0,0,0
+316,0,0,0
+317,0,0,0
+318,0,0,0
+319,0,0,0
+320,0,0,0
+321,0,0,0
+322,0,0,0
+323,0,0,0
+324,0,0,0
+325,0,0,0
+326,0,0,0
+327,0,0,0
+328,0,0,0
+329,0,0,0
+330,0,0,0
+331,0,0,0
+332,0,0,0
+333,0,0,0
+334,0,0,0
+335,0,0,0
+336,0,0,0
+337,0,0,0
+338,0,0,0
+339,0,0,0
+340,0,0,0
+341,0,0,0
+342,0,0,0
+343,0,0,0
+344,0,0,0
+345,0,0,0
+346,0,0,0
+347,0,0,0
+348,0,0,0
+349,0,0,0
+350,0,0,0
+351,0,0,0
+352,0,0,0
+353,0,0,0
+354,0,0,0
+355,0,0,0
+356,0,0,0
+357,0,0,0
+358,0,0,0
+359,0,0,0
+ROTATION_SPEED,0.00
+""",
+
 """AngleInDegrees,DistInMM,Intensity,ErrorCodeHEX
 0,1545,53,0
 1,1548,29,0
@@ -3640,9 +4005,372 @@ ROTATION_SPEED,4.99
 359,0,0,8035
 ROTATION_SPEED,5.00
 """,
+
+"""AngleInDegrees,DistInMM,Intensity,ErrorCodeHEX
+0,1598,51,0
+1,1619,74,0
+2,1641,41,0
+3,2035,9,0
+4,0,0,8035
+5,0,0,8035
+6,1282,42,0
+7,1249,82,0
+8,1231,108,0
+9,1217,119,0
+10,1210,131,0
+11,1207,143,0
+12,1206,151,0
+13,1199,114,0
+14,894,36,0
+15,881,65,0
+16,1239,91,0
+17,1261,66,0
+18,1287,9,0
+19,1080,16,0
+20,1054,17,0
+21,0,0,8035
+22,0,0,8035
+23,741,76,0
+24,723,79,0
+25,702,62,0
+26,678,44,0
+27,17026,16,0
+28,0,0,8035
+29,0,0,8035
+30,0,0,8035
+31,0,0,8035
+32,0,0,8035
+33,0,0,8035
+34,579,314,0
+35,16995,67,0
+36,572,184,0
+37,557,252,0
+38,16948,77,0
+39,0,0,8035
+40,0,0,8035
+41,0,0,8035
+42,0,0,8035
+43,0,0,8035
+44,683,23,0
+45,698,59,0
+46,715,92,0
+47,730,110,0
+48,743,105,0
+49,753,60,0
+50,0,0,8035
+51,0,0,8035
+52,0,0,8035
+53,0,0,8035
+54,0,0,8035
+55,0,0,8035
+56,0,0,8035
+57,0,0,8035
+58,0,0,8035
+59,0,0,8035
+60,0,0,8035
+61,0,0,8035
+62,0,0,8035
+63,0,0,8035
+64,0,0,8035
+65,0,0,8035
+66,0,0,8035
+67,0,0,8035
+68,0,0,8035
+69,0,0,8035
+70,0,0,8035
+71,0,0,8035
+72,0,0,8035
+73,16629,44,0
+74,16628,48,0
+75,16626,65,0
+76,16625,79,0
+77,16624,101,0
+78,16621,103,0
+79,16617,43,0
+80,0,0,8035
+81,0,0,8035
+82,0,0,8035
+83,0,0,8035
+84,0,0,8035
+85,0,0,8035
+86,16625,119,0
+87,238,367,0
+88,236,441,0
+89,236,476,0
+90,236,397,0
+91,236,294,0
+92,237,249,0
+93,238,187,0
+94,16622,116,0
+95,16623,92,0
+96,16625,68,0
+97,16626,60,0
+98,16626,27,0
+99,0,0,8035
+100,0,0,8035
+101,0,0,8035
+102,0,0,8035
+103,0,0,8035
+104,0,0,8035
+105,689,83,0
+106,16992,52,0
+107,590,268,0
+108,579,258,0
+109,578,182,0
+110,577,407,0
+111,561,61,0
+112,0,0,8035
+113,400,383,0
+114,541,109,0
+115,0,0,8035
+116,0,0,8035
+117,0,0,8035
+118,0,0,8035
+119,0,0,8035
+120,0,0,8035
+121,0,0,8035
+122,0,0,8035
+123,0,0,8035
+124,0,0,8035
+125,0,0,8035
+126,0,0,8035
+127,0,0,8035
+128,0,0,8035
+129,0,0,8035
+130,0,0,8035
+131,0,0,8035
+132,0,0,8035
+133,0,0,8035
+134,0,0,8035
+135,0,0,8035
+136,0,0,8035
+137,0,0,8035
+138,0,0,8035
+139,0,0,8035
+140,0,0,8035
+141,0,0,8035
+142,0,0,8035
+143,0,0,8035
+144,0,0,8035
+145,0,0,8035
+146,0,0,8035
+147,0,0,8035
+148,0,0,8035
+149,0,0,8035
+150,0,0,8035
+151,0,0,8035
+152,0,0,8035
+153,0,0,8035
+154,0,0,8035
+155,0,0,8035
+156,0,0,8035
+157,0,0,8035
+158,0,0,8035
+159,0,0,8035
+160,0,0,8035
+161,0,0,8035
+162,0,0,8035
+163,0,0,8035
+164,0,0,8035
+165,0,0,8035
+166,0,0,8035
+167,0,0,8035
+168,0,0,8035
+169,0,0,8035
+170,0,0,8035
+171,0,0,8035
+172,0,0,8035
+173,0,0,8035
+174,0,0,8035
+175,0,0,8035
+176,0,0,8035
+177,0,0,8035
+178,0,0,8035
+179,0,0,8035
+180,0,0,8035
+181,0,0,8035
+182,0,0,8035
+183,0,0,8035
+184,0,0,8035
+185,0,0,8035
+186,0,0,8035
+187,0,0,8035
+188,0,0,8035
+189,0,0,8035
+190,0,0,8035
+191,0,0,8035
+192,0,0,8035
+193,0,0,8035
+194,0,0,8035
+195,0,0,8035
+196,0,0,8035
+197,0,0,8035
+198,0,0,8035
+199,0,0,8035
+200,0,0,8035
+201,0,0,8035
+202,0,0,8035
+203,0,0,8035
+204,0,0,8035
+205,0,0,8035
+206,0,0,8035
+207,0,0,8035
+208,0,0,8035
+209,0,0,8035
+210,0,0,8035
+211,0,0,8035
+212,0,0,8035
+213,0,0,8035
+214,0,0,8035
+215,0,0,8035
+216,0,0,8035
+217,0,0,8035
+218,0,0,8035
+219,0,0,8035
+220,0,0,8035
+221,0,0,8035
+222,0,0,8035
+223,0,0,8035
+224,0,0,8035
+225,0,0,8035
+226,0,0,8035
+227,0,0,8035
+228,0,0,8035
+229,0,0,8035
+230,0,0,8035
+231,0,0,8035
+232,0,0,8035
+233,0,0,8035
+234,0,0,8035
+235,0,0,8035
+236,0,0,8035
+237,0,0,8035
+238,0,0,8035
+239,0,0,8035
+240,0,0,8003
+241,0,0,8003
+242,0,0,8035
+243,0,0,8035
+244,141,1584,0
+245,0,0,8003
+246,0,0,8002
+247,329,223,0
+248,325,135,0
+249,16703,41,0
+250,0,0,8035
+251,0,0,8035
+252,0,0,8035
+253,0,0,8035
+254,0,0,8035
+255,0,0,8035
+256,0,0,8035
+257,0,0,8035
+258,16722,47,0
+259,16720,78,0
+260,16718,91,0
+261,16718,73,0
+262,16719,62,0
+263,16723,65,0
+264,16719,52,0
+265,0,0,8035
+266,0,0,8035
+267,0,0,8035
+268,0,0,8035
+269,0,0,8035
+270,0,0,8035
+271,0,0,8035
+272,0,0,8035
+273,0,0,8002
+274,16817,117,0
+275,16814,119,0
+276,0,0,8035
+277,0,0,8035
+278,0,0,8035
+279,0,0,8035
+280,16807,115,0
+281,0,0,8035
+282,0,0,8035
+283,16815,45,0
+284,16818,65,0
+285,0,0,8035
+286,0,0,8035
+287,0,0,8035
+288,0,0,8035
+289,0,0,8035
+290,0,0,8035
+291,0,0,8035
+292,0,0,8035
+293,0,0,8035
+294,0,0,8035
+295,0,0,8035
+296,0,0,8035
+297,0,0,8035
+298,0,0,8035
+299,0,0,8035
+300,0,0,8035
+301,16852,61,0
+302,16852,29,0
+303,0,0,8035
+304,0,0,8035
+305,0,0,8035
+306,0,0,8035
+307,0,0,8035
+308,0,0,8035
+309,16767,57,0
+310,464,95,0
+311,16830,63,0
+312,16811,34,0
+313,16806,43,0
+314,419,313,0
+315,424,337,0
+316,430,314,0
+317,0,0,8035
+318,0,0,8035
+319,663,128,0
+320,656,94,0
+321,0,0,8035
+322,0,0,8035
+323,441,231,0
+324,0,0,8035
+325,0,0,8035
+326,0,0,8035
+327,0,0,8035
+328,0,0,8035
+329,0,0,8035
+330,0,0,8035
+331,996,23,0
+332,0,0,8035
+333,0,0,8035
+334,0,0,8035
+335,0,0,8035
+336,0,0,8035
+337,0,0,8035
+338,561,121,0
+339,564,91,0
+340,16944,35,0
+341,0,0,8035
+342,0,0,8035
+343,16898,42,0
+344,511,108,0
+345,510,250,0
+346,510,354,0
+347,513,265,0
+348,533,124,0
+349,682,30,0
+350,0,0,8035
+351,0,0,8035
+352,803,64,0
+353,0,0,8035
+354,0,0,8035
+355,0,0,8035
+356,0,0,8035
+357,454,594,0
+358,0,0,8035
+359,0,0,8035
+ROTATION_SPEED,4.97
+""",
 )
 
-is_test_mode=False
 lds_cur = 0
 def get_lds_data():
     global lds_cur
@@ -3651,12 +4379,54 @@ def get_lds_data():
     lds_cur %= len(lds_list)
     return lds_list[lds_cur]
 
+def get_lds_data_zero():
+    return lds_list[0]
+
+is_test_mode=False
+is_lidar_motor_running=False
+tm_lidar_motor_start=time.time()
+
 def fake_respose(requestline="Help"):
     global is_test_mode
+    global is_lidar_motor_running
+    global tm_lidar_motor_start
     response = ""
     requestlist = requestline.split(' ')
     request = requestlist[0]
-    if request.lower() == "GetCharger".lower():
+    if request.lower() == "Help".lower():
+        response = """Help Strlen = 1840
+Help - Without any argument, this prints a list of all possible cmds.
+With a command name, it prints the help for that particular command
+Clean - Starts a cleaning by simulating press of start button.
+DiagTest - Executes different test modes. Once set, press Start button to engage. (Test modes are mutually exclusive.)
+GetAccel - Get the Accelerometer readings.
+GetAnalogSensors - Get the A2D readings for the analog sensors.
+GetButtons - Get the state of the UI Buttons.
+GetCalInfo - Prints out the cal info from the System Control Block.
+GetCharger - Get the diagnostic data for the charging system.
+GetDigitalSensors - Get the state of the digital sensors.
+GetErr - Get Error Message.
+GetLDSScan - Get scan packet from LDS.
+GetMotors - Get the diagnostic data for the motors.
+GetSchedule - Get the Cleaning Schedule. (24 hour clock format)
+GetTime - Get Current Scheduler Time.
+GetVersion - Get the version information for the system software and hardware.
+GetWarranty - Get the warranty validation codes.
+PlaySound - Play the specified sound in the robot.
+RestoreDefaults - Restore user settings to default.
+SetFuelGauge - Set Fuel Gauge Level.
+SetMotor - Sets the specified motor to run in a direction at a requested speed. (TestMode Only)
+SetTime - Sets the current day, hour, and minute for the scheduler clock.
+SetLED - Sets the specified LED to on,off,blink, or dim. (TestMode Only)
+SetIEC - Sets the IEC Cleaning Test parameters
+SetLCD - Sets the LCD to the specified display. (TestMode Only)
+SetLDSRotation - Sets LDS rotation on or off. Can only be run in TestMode.
+SetSchedule - Modify Cleaning Schedule.
+SetSystemMode - Set the operation mode of the robot. (TestMode Only)
+TestMode - Sets TestMode on or off. Some commands can only be run in TestMode.
+Upload - Uploads new program to the robot.
+"""
+    elif request.lower() == "GetCharger".lower():
         response = """Label,Value
 FuelPercent,19
 BatteryOverTemp,0
@@ -3808,7 +4578,6 @@ Fri 00:00 H
 Sat 00:00 H
 """
     elif request.lower() == "GetTime".lower():
-        import time
         tm_now = time.localtime()
         response = time.strftime("%A %H:%M:%S\n", tm_now)
 
@@ -3844,39 +4613,6 @@ UIPanelRev,1,,
         response = """00000000
 0000
 962d3a58
-"""
-    elif request.lower() == "Help".lower():
-        response = """Help Strlen = 1840
-Help - Without any argument, this prints a list of all possible cmds.
-With a command name, it prints the help for that particular command
-Clean - Starts a cleaning by simulating press of start button.
-DiagTest - Executes different test modes. Once set, press Start button to engage. (Test modes are mutually exclusive.)
-GetAccel - Get the Accelerometer readings.
-GetAnalogSensors - Get the A2D readings for the analog sensors.
-GetButtons - Get the state of the UI Buttons.
-GetCalInfo - Prints out the cal info from the System Control Block.
-GetCharger - Get the diagnostic data for the charging system.
-GetDigitalSensors - Get the state of the digital sensors.
-GetErr - Get Error Message.
-GetLDSScan - Get scan packet from LDS.
-GetMotors - Get the diagnostic data for the motors.
-GetSchedule - Get the Cleaning Schedule. (24 hour clock format)
-GetTime - Get Current Scheduler Time.
-GetVersion - Get the version information for the system software and hardware.
-GetWarranty - Get the warranty validation codes.
-PlaySound - Play the specified sound in the robot.
-RestoreDefaults - Restore user settings to default.
-SetFuelGauge - Set Fuel Gauge Level.
-SetMotor - Sets the specified motor to run in a direction at a requested speed. (TestMode Only)
-SetTime - Sets the current day, hour, and minute for the scheduler clock.
-SetLED - Sets the specified LED to on,off,blink, or dim. (TestMode Only)
-SetIEC - Sets the IEC Cleaning Test parameters
-SetLCD - Sets the LCD to the specified display. (TestMode Only)
-SetLDSRotation - Sets LDS rotation on or off. Can only be run in TestMode.
-SetSchedule - Modify Cleaning Schedule.
-SetSystemMode - Set the operation mode of the robot. (TestMode Only)
-TestMode - Sets TestMode on or off. Some commands can only be run in TestMode.
-Upload - Uploads new program to the robot.
 """
     elif request.lower() == "GetAccel".lower():
         response = """Label,Value
@@ -3917,7 +4653,16 @@ SumInG,0.000
             response = 'SetLCD rejected: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
     elif request.lower() == "SetLDSRotation".lower():
         if is_test_mode:
-            response = 'SetLDSRotation accepted: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
+            if requestlist[1].strip().lower() == "on":
+                if is_lidar_motor_running == False:
+                    tm_lidar_motor_start=time.time()
+                is_lidar_motor_running=True
+            elif requestlist[1].strip().lower() == "off":
+                is_lidar_motor_running=False
+            else:
+                response = 'SetLDSRotation unknow arg: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
+
+            #response = 'SetLDSRotation accepted: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
         else:
             response = 'SetLDSRotation rejected: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
     elif request.lower() == "SetLED".lower():
@@ -3927,7 +4672,12 @@ SumInG,0.000
             response = 'SetLED rejected: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
     elif request.lower() == "SetMotor".lower():
         if is_test_mode:
-            response = 'SetMotor accepted: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
+            if requestlist[1].strip().lower() == "VacuumOn".lower():
+                response = "Run Vacuum Motor @ % 99\n"
+            elif requestlist[1].strip().lower() == "VacuumOff".lower():
+                response = "Stop Vacuum Motor\n"
+            else:
+                response = 'SetMotor accepted: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
         else:
             response = 'SetMotor rejected: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
     elif request.lower() == "SetSchedule".lower():
@@ -3943,8 +4693,14 @@ SumInG,0.000
         response = 'SetWallFollower accepted: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
     elif request.lower() == "Upload".lower():
         response = 'Upload accepted: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
+
     elif request.lower() == "GetLDSScan".lower():
-        response = get_lds_data()
+        tmnow = time.time()
+        if is_lidar_motor_running == True and tmnow > tm_lidar_motor_start + 5:
+            response = get_lds_data()
+        else:
+            response = get_lds_data_zero()
+
     elif request.lower() == "GetLifeStatLog".lower():
         response = """runID,statID,count,Min,Max,Sum,SumV*2
 351,LS_A2D0,80,73,74,0x00000000000016e3,0x0000000000068c39
@@ -8049,4 +8805,4 @@ SumInG,0.000
 552,LS_A2D15,50,-13,-13,0xfffffffffffffd76,0x0000000000002102
 552,LS_LDROP_MM,50,60,60,0x0000000000000bb8,0x000000000002bf20
 """
-    return request + "\n" + response.strip() + "\n\n"
+    return requestline.strip() + "\n" + response.strip() + "\n\n"
