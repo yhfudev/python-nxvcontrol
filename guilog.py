@@ -64,3 +64,57 @@ def set_log_textarea(textarea):
     L.info("set logger done")
     L.debug("debug test 1")
 
+
+class ToggleButton(tk.Button):
+    # txtt: the toggled text
+    # txtr: the release text
+    def __init__(self, master, txtt="toggled", txtr="released", imgt=None, imgr=None, command=None, *args, **kwargs):
+        self.master = master
+        self.command = command
+        self.txtt = txtt
+        self.txtr = txtr
+        self.imgt = imgt
+        self.imgr = imgr
+        tk.Button.__init__(self, master, compound="left", command=self._command, relief="raised", text=self.txtr, image=self.imgr, *args, **kwargs)
+
+        #perhaps set command event to send a message
+        #self['command'] = lambda: self.message_upstream(Message(self.name, "I Got Clicked"))
+
+        #do widget declarations
+        #self.widgets = []
+
+    def message_downstream(self, message):
+        #for widget in self.widgets:
+        #    widget.receive_message(message)
+        pass
+
+    def message_upstream(self, message):
+        #self.master.message_upstream(self, message)
+        pass
+
+    def _command(self):
+        if self.config('relief')[-1] == 'sunken':
+            self.config(relief="raised", text=self.txtr, image=self.imgr)
+        else:
+            self.config(relief="sunken", text=self.txtt, image=self.imgt)
+
+        if self.command != None:
+            self.command()
+        pass
+
+if __name__ == "__main__":
+    root=tk.Tk()
+
+    img_ledon=tk.PhotoImage(file="ledred-on.gif")
+    img_ledoff=tk.PhotoImage(file="ledred-off.gif")
+
+    def tracebtn():
+        if b1.config('relief')[-1] == 'sunken':
+            L.debug("pressed!")
+        else:
+            L.debug("released!")
+
+    b1 = ToggleButton(root, txtt="ON", txtr="OFF", imgt=img_ledon, imgr=img_ledoff, command=tracebtn)
+    b1.pack(pady=5)
+
+    root.mainloop()
