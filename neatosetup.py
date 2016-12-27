@@ -227,11 +227,11 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         combobox_client_port.grid(row=line, column=1, padx=5, pady=5, sticky=tk.N+tk.S+tk.W)
         combobox_client_port.current(0)
         # Buttons
-        btn_cli_connect = tk.Button(frame_cli, text="Connect", command=self.do_cli_connect)
-        btn_cli_connect.grid(row=line, column=2, columnspan=1, padx=5, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.btn_cli_connect = tk.Button(frame_cli, text="Connect", command=self.do_cli_connect)
+        self.btn_cli_connect.grid(row=line, column=2, columnspan=1, padx=5, sticky=tk.N+tk.S+tk.W+tk.E)
         #btn_cli_connect.pack(side="left", fill="both", padx=5, pady=5, expand=True)
-        btn_cli_disconnect = tk.Button(frame_cli, text="Disconnect", command=self.do_cli_disconnect)
-        btn_cli_disconnect.grid(row=line, column=3, columnspan=1, padx=5, sticky=tk.N+tk.S+tk.W+tk.E)
+        self.btn_cli_disconnect = tk.Button(frame_cli, text="Disconnect", state=tk.DISABLED, command=self.do_cli_disconnect)
+        self.btn_cli_disconnect.grid(row=line, column=3, columnspan=1, padx=5, sticky=tk.N+tk.S+tk.W+tk.E)
         #btn_cli_disconnect.pack(side="left", fill="both", padx=5, pady=5, expand=True)
         frame_cli.pack(side="top", fill="x", pady=10)
 
@@ -372,6 +372,49 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         lbl_sensor_head = tk.Label(page_sensors, text="Sensors", font=LARGE_FONT)
         lbl_sensor_head.pack(side="top", fill="x", pady=10)
 
+        self.mid_query_digitalsensors = -1
+        self.buttons_sensors_isactive = False
+
+        # power DC connection: GetDigitalSensors:SNSR_DC_JACK_CONNECT,0
+        devstr = "Power DC Jack"
+        self.btn_status_powerdc = guilog.ToggleButton(page_sensors, txtt="Connected: "+devstr, txtr="Disconnected: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
+        self.btn_status_powerdc.pack(pady=5)
+
+        # Dustbin In: GetDigitalSensors:SNSR_DUSTBIN_IS_IN,1
+        devstr = "Dustbin"
+        self.btn_status_dustbin = guilog.ToggleButton(page_sensors, txtt="Out: "+devstr, txtr="In: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
+        self.btn_status_dustbin.pack(pady=5)
+
+        # Left Wheel Extended: GetDigitalSensors:SNSR_LEFT_WHEEL_EXTENDED,0
+        devstr = "Left Wheel"
+        self.btn_status_leftwheel = guilog.ToggleButton(page_sensors, txtt="Extended: "+devstr, txtr="In: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
+        self.btn_status_leftwheel.pack(pady=5)
+
+        # Right Wheel Extended: GetDigitalSensors:SNSR_RIGHT_WHEEL_EXTENDED,0
+        devstr = "Right Wheel"
+        self.btn_status_rightwheel = guilog.ToggleButton(page_sensors, txtt="Extended: "+devstr, txtr="In: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
+        self.btn_status_rightwheel.pack(pady=5)
+
+        # Left Side Key: GetDigitalSensors:LSIDEBIT,0
+        devstr = "Left Side Key"
+        self.btn_status_leftsidekey = guilog.ToggleButton(page_sensors, txtt="Kicked: "+devstr, txtr="Released: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
+        self.btn_status_leftsidekey.pack(pady=5)
+
+        # Left Front Key: GetDigitalSensors:LFRONTBIT,0
+        devstr = "Left Front Key"
+        self.btn_status_leftfrontkey = guilog.ToggleButton(page_sensors, txtt="Kicked: "+devstr, txtr="Released: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
+        self.btn_status_leftfrontkey.pack(pady=5)
+
+        # Right Side Key: GetDigitalSensors:RSIDEBIT,0
+        devstr = "Right Side Key"
+        self.btn_status_rightsidekey = guilog.ToggleButton(page_sensors, txtt="Kicked: "+devstr, txtr="Released: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
+        self.btn_status_rightsidekey.pack(pady=5)
+
+        # Right Front Key: GetDigitalSensors:RFRONTBIT,0
+        devstr = "Right Front Key"
+        self.btn_status_rightfrontkey = guilog.ToggleButton(page_sensors, txtt="Kicked: "+devstr, txtr="Released: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
+        self.btn_status_rightfrontkey.pack(pady=5)
+
         # page for LiDAR
         page_lidar = ttk.Frame(nb)
         #   graph for current data
@@ -455,11 +498,12 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         lbl_recharge_head = tk.Label(page_recharge, text="Recharge", font=LARGE_FONT)
         lbl_recharge_head.pack(side="top", fill="x", pady=10)
 
+        self.tabtxt_sensors = "Sensors"
         self.tabtxt_lidar = "LiDAR"
         nb.add(page_conn, text='Connection')
         nb.add(page_command, text='Commands')
         nb.add(page_sche, text='Schedule')
-        nb.add(page_sensors, text='Sensors')
+        nb.add(page_sensors, text=self.tabtxt_sensors)
         nb.add(page_lidar, text=self.tabtxt_lidar)
         nb.add(page_moto, text='Moto')
         nb.add(page_statlog, text='LifeStatLog')
@@ -491,9 +535,11 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
             b1['fg'] = "red"
             self.canvas_lidar_isactive=True
             self.canvas_lidar_isfocused=False
+            self._enable_lidar_moto(True)
             self.guiloop_process_lidar(True)
         else:
             b1['fg'] = "green"
+            self._enable_lidar_moto(False)
             self.canvas_lidar_isactive=False
 
     def guiloop_enable_leftwheel(self):
@@ -526,6 +572,13 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
             else:
                 self.serv_cli.request(["SetMotor RWheelDisable", self.mid_cli_command])
 
+    def _enable_lidar_moto(self, enable=False):
+        if self.serv_cli != None and self.mid_cli_command >= 0:
+            self.set_robot_testmode(True)
+            if enable:
+                self.serv_cli.request(["SetLDSRotation On", self.mid_cli_command])
+            else:
+                self.serv_cli.request(["SetLDSRotation Off", self.mid_cli_command])
     def guiloop_enable_lidarmoto(self):
         enable = False
         b1 = self.btn_enable_lidarmoto
@@ -534,12 +587,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
             enable = True
         else:
             b1['fg'] = "green"
-        if self.serv_cli != None and self.mid_cli_command >= 0:
-            self.set_robot_testmode(True)
-            if enable:
-                self.serv_cli.request(["SetLDSRotation On", self.mid_cli_command])
-            else:
-                self.serv_cli.request(["SetLDSRotation Off", self.mid_cli_command])
+        self._enable_lidar_moto(enable)
 
     def guiloop_enable_vacuum(self):
         enable = False
@@ -586,12 +634,24 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
             else:
                 self.serv_cli.request(["SetMotor BrushDisable", self.mid_cli_command])
 
+    # called by GUI when the tab is changed
     def guiloop_nb_tabchanged(self, event):
         cur_focus = False
         if event.widget.tab(event.widget.index("current"),"text") == self.tabtxt_lidar:
             cur_focus = True
         self.guiloop_process_lidar(cur_focus)
+        cur_focus = False
+        if event.widget.tab(event.widget.index("current"),"text") == self.tabtxt_sensors:
+            cur_focus = True
+        self.guiloop_process_sensors(cur_focus)
 
+    # called by GUI when the tab is changed to sensors
+    def guiloop_process_sensors(self, cur_focus):
+        L.info('switched to tab sensor: previous=' + str(self.buttons_sensors_isactive) + ", current=" + str(cur_focus))
+        self.buttons_sensors_isactive = cur_focus
+        self.buttons_sensors_request()
+
+    # called by GUI when the tab is changed to lidar
     def guiloop_process_lidar(self, cur_focus):
         if self.canvas_lidar_isactive == False:
             self.canvas_lidar_isfocused = cur_focus
@@ -605,12 +665,24 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
                 self.canvas_lidar_isfocused = cur_focus
                 self._canvas_lidar_process_focus()
 
+    # the periodical routine for the widgets of Sensors
+    def buttons_sensors_request(self):
+        if self.buttons_sensors_isactive:
+            if self.serv_cli != None:
+                if self.mid_query_digitalsensors < 0 :
+                    L.info('create mid_query_digitalsensors')
+                    self.mid_query_digitalsensors = self.serv_cli.mailbox.declair()
+                if self.mid_query_digitalsensors >= 0:
+                    L.info('Request GetDigitalSensors ...')
+                    self.serv_cli.request(["GetDigitalSensors\n", self.mid_query_digitalsensors])
+            L.info('setup next call buttons_sensors_request ...')
+            self.after(1000, self.buttons_sensors_request)
+
+    # the periodical routine for the widgets of LiDAR
     def canvas_lidar_request(self):
         if self.serv_cli != None and self.mid_query_lidar >= 0:
             if self.canvas_lidar_isfocused:
                 self.serv_cli.request(["GetLDSScan\n", self.mid_query_lidar])
-            else:
-                self.serv_cli.request(["SetLDSRotation Off", self.mid_cli_command])
 
         if self.canvas_lidar_isfocused and self.canvas_lidar_isactive:
             self.after(5000, self.canvas_lidar_request)
@@ -622,11 +694,87 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
                 if self.mid_query_lidar < 0 :
                     L.info('LiDAR canvas focus <---')
                     self.mid_query_lidar = self.serv_cli.mailbox.declair()
-                self.serv_cli.request(["SetLDSRotation On", self.mid_cli_command])
                 self.canvas_lidar_request()
         #else:
             #self.canvas_lidar_isactive = False
             #self.serv_cli.mailbox.close(self.mid_query_lidar)
+
+
+    def mailpipe_process_digitalsensors(self):
+        if self.serv_cli != None and self.mid_query_digitalsensors >= 0:
+            try:
+                pre=None
+                while True:
+                    # remove all of items in the queue
+                    try:
+                        respstr = self.serv_cli.mailbox.get(self.mid_query_digitalsensors, False)
+                        if respstr == None:
+                            break
+                        L.info('digital sensors data pulled out!')
+                        pre = respstr
+                    except queue.Empty:
+                        # ignore
+                        break
+                respstr = pre
+                if respstr == None:
+                    return
+                retlines = respstr.strip() + '\n'
+                responses = retlines.split('\n')
+                for i in range(0,len(responses)):
+                    response = responses[i].strip()
+                    if len(response) < 1:
+                        break
+                    lst = response.split(',')
+                    if len(lst) < 2:
+                        continue
+                    label = lst[0].strip().lower()
+                    if label == 'SNSR_DC_JACK_CONNECT'.lower():
+                        # do power dc jack ...
+                        if lst[1].strip() == "1":
+                            self.btn_status_powerdc.config(relief='sunken')
+                        else:
+                            self.btn_status_powerdc.config(relief='raised')
+                    elif label == 'SNSR_DUSTBIN_IS_IN'.lower():
+                        # do dustbin ...
+                        if lst[1].strip() == "1":
+                            self.btn_status_dustbin.config(relief='sunken')
+                        else:
+                            self.btn_status_dustbin.config(relief='raised')
+                    elif label == 'SNSR_LEFT_WHEEL_EXTENDED'.lower():
+                        if lst[1].strip() == "1":
+                            self.btn_status_leftwheel.config(relief='sunken')
+                        else:
+                            self.btn_status_leftwheel.config(relief='raised')
+                    elif label == 'SNSR_RIGHT_WHEEL_EXTENDED'.lower():
+                        if lst[1].strip() == "1":
+                            self.btn_status_rightwheel.config(relief='sunken')
+                        else:
+                            self.btn_status_rightwheel.config(relief='raised')
+                    elif label == 'LSIDEBIT'.lower():
+                        if lst[1].strip() == "1":
+                            self.btn_status_leftsidekey.config(relief='sunken')
+                        else:
+                            self.btn_status_leftsidekey.config(relief='raised')
+                    elif label == 'LFRONTBIT'.lower():
+                        if lst[1].strip() == "1":
+                            self.btn_status_leftfrontkey.config(relief='sunken')
+                        else:
+                            self.btn_status_leftfrontkey.config(relief='raised')
+                    elif label == 'RSIDEBIT'.lower():
+                        if lst[1].strip() == "1":
+                            self.btn_status_rightsidekey.config(relief='sunken')
+                        else:
+                            self.btn_status_rightsidekey.config(relief='raised')
+                    elif label == 'RFRONTBIT'.lower():
+                        if lst[1].strip() == "1":
+                            self.btn_status_rightfrontkey.config(relief='sunken')
+                        else:
+                            self.btn_status_rightfrontkey.config(relief='raised')
+
+                L.info('digital sensors updated!')
+            except queue.Empty:
+                # ignore
+                pass
 
     def mailpipe_process_lidar(self):
         if self.serv_cli != None and self.mid_query_lidar >= 0:
@@ -755,6 +903,8 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         self.guiloop_check_rightnow()
         self.guiloop_check_per1sec()
         self.guiloop_check_per30sec()
+        self.btn_cli_connect.config(state=tk.DISABLED)
+        self.btn_cli_disconnect.config(state=tk.NORMAL)
         return
 
     def do_cli_disconnect(self):
@@ -772,7 +922,8 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         self.mid_query_time = -1;
         self.mid_query_battery = -1;
         self.mid_query_statlog = -1
-        return
+        self.btn_cli_connect.config(state=tk.NORMAL)
+        self.btn_cli_disconnect.config(state=tk.DISABLED)
 
     def do_cli_run(self):
         if self.serv_cli == None:
@@ -863,6 +1014,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         if self.serv_cli != None:
             self.mailpipe_process_conn_cmd()
             self.mailpipe_process_lidar()
+            self.mailpipe_process_digitalsensors()
             # setup next
             self.after(500, self.guiloop_check_rightnow)
         return
@@ -901,7 +1053,9 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         self.istestmode = istest
         self.show_robot_testmode(istest)
 
-def demo():
+def neatosetup_main():
+    guilog.set_log_stderr()
+
     root = tk.Tk()
     root.title(str_progname + " - " + str_version)
 
@@ -911,22 +1065,8 @@ def demo():
     ttk.Sizegrip(root).pack(side="right")
     root.mainloop()
 
-
 if __name__ == "__main__":
-    demo()
-
-
-
-
-
-
-
-
-
-
-
-
-
+    neatosetup_main()
 
 
 
