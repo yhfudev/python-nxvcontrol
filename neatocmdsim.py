@@ -4676,6 +4676,18 @@ SumInG,0.000
                 response = "Run Vacuum Motor @ % 99\n"
             elif requestlist[1].strip().lower() == "VacuumOff".lower():
                 response = "Stop Vacuum Motor\n"
+            elif requestlist[1].strip().lower() == "BrushEnable".lower():
+                response = "Enable/Disable Commands used in this command. Ignoring all other.\n"
+            elif requestlist[1].strip().lower() == "BrushDisable".lower():
+                response = "Enable/Disable Commands used in this command. Ignoring all other.\n"
+            elif requestlist[1].strip().lower() == "LWheelEnable".lower():
+                response = "Enable/Disable Commands used in this command. Ignoring all other.\n"
+            elif requestlist[1].strip().lower() == "LWheelDisable".lower():
+                response = "Enable/Disable Commands used in this command. Ignoring all other.\n"
+            elif requestlist[1].strip().lower() == "RWheelEnable".lower():
+                response = "Enable/Disable Commands used in this command. Ignoring all other.\n"
+            elif requestlist[1].strip().lower() == "RWheelDisable".lower():
+                response = "Enable/Disable Commands used in this command. Ignoring all other.\n"
             else:
                 response = 'SetMotor accepted: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
         else:

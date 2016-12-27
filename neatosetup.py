@@ -555,7 +555,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         if self.serv_cli != None and self.mid_cli_command >= 0:
             self.set_robot_testmode(True)
             if enable:
-                self.serv_cli.request(["SetMotor LWheelEnable", self.mid_cli_command])
+                self.serv_cli.request(["SetMotor LWheelEnable\nSetMotor LWheelDist 200 Speed 100", self.mid_cli_command])
             else:
                 self.serv_cli.request(["SetMotor LWheelDisable", self.mid_cli_command])
 
@@ -570,7 +570,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         if self.serv_cli != None and self.mid_cli_command >= 0:
             self.set_robot_testmode(True)
             if enable:
-                self.serv_cli.request(["SetMotor RWheelEnable", self.mid_cli_command])
+                self.serv_cli.request(["SetMotor RWheelEnable\nSetMotor RWheelDist 200 Speed 100", self.mid_cli_command])
             else:
                 self.serv_cli.request(["SetMotor RWheelDisable", self.mid_cli_command])
 
@@ -617,7 +617,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         if self.serv_cli != None and self.mid_cli_command >= 0:
             self.set_robot_testmode(True)
             if enable:
-                self.serv_cli.request(["SetMotor BrushEnable", self.mid_cli_command])
+                self.serv_cli.request(["SetMotor BrushEnable\nSetMotor Brush RPM 250", self.mid_cli_command])
             else:
                 self.serv_cli.request(["SetMotor BrushDisable", self.mid_cli_command])
 
@@ -632,7 +632,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         if self.serv_cli != None and self.mid_cli_command >= 0:
             self.set_robot_testmode(True)
             if enable:
-                self.serv_cli.request(["SetMotor BrushEnable", self.mid_cli_command])
+                self.serv_cli.request(["SetMotor BrushEnable\nSetMotor Brush RPM 250", self.mid_cli_command])
             else:
                 self.serv_cli.request(["SetMotor BrushDisable", self.mid_cli_command])
 
