@@ -115,6 +115,7 @@ class NCISerial(NeatoCommandInterface):
                 if response[0] == '\x1A':
                     break
             response = response.replace('\x1A', '\n')
+            response = response.replace('\r\n', '\n')
             retval += response + "\n"
         return retval.strip() + "\n\n"
 
@@ -175,8 +176,13 @@ class NCINetwork(NeatoCommandInterface):
                 self.data += "\n\n"
             else:
                 #L.debug(cli_log_head + "recv  size=" + str(len(recvdat)))
-                self.data += str(recvdat, 'ascii')
+                recvstr = str(recvdat, 'ascii')
+                recvstr = recvstr.replace('\x1A', '\n')
+                recvstr = recvstr.replace('\r\n', '\n')
+                self.data += recvstr
 
+            # TODO: clean the lines, remove blanks for each line from the begin and end
+            # ...
             if self.data.find("\n\n") >= 0:
                 break
 
