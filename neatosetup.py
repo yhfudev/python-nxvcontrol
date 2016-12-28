@@ -1212,7 +1212,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
                 if istest:
                     self.serv_cli.request(["TestMode On", self.mid_cli_command])
                 else:
-                    self.serv_cli.request(["SetLDSRotation Off\nTestMode Off", self.mid_cli_command])
+                    self.serv_cli.request(["SetLDSRotation Off\nSetMotor LWheelDisable RWheelDisable BrushDisable VacuumOff\nTestMode Off", self.mid_cli_command])
         self.istestmode = istest
         self.show_robot_testmode(istest)
 
