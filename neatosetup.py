@@ -285,22 +285,23 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         self.text_version.grid(row=line, column=1, columnspan=2, padx=5)
         self.text_version.bind("<1>", lambda event: self.text_version.focus_set()) # enable highlighting and copying
 
-        line += 1
-        self.use_logfile = tk.StringVar()
-        self.check_logfile = ttk.Checkbutton(self.frame_status, text='Use Log File',
-            command=self.onLogfileCheckChanged, variable=self.use_logfile,
-            onvalue='metric', offvalue='imperial')
-        self.check_logfile.grid(row=line, column=0, padx=5)
-        sellogfiles = tk.StringVar()
-        self.combobox_logfile = ttk.Combobox(self.frame_status, textvariable=sellogfiles)
-        self.combobox_logfile.bind('<<ComboboxSelected>>', self.onLogfileSelected)
-        self.combobox_logfile.bind("<Control-Key-a>", self.onSelectAllLogname)
-        self.combobox_logfile.bind("<Control-Key-A>", self.onSelectAllLogname)
-        self.combobox_logfile['values'] = ('neatologfile.txt', '/tmp/neatologfile.txt', '$HOME/logfile.txt')
-        self.combobox_logfile.current(0)
-        self.combobox_logfile.grid(row=line, column=1, sticky=tk.W+tk.E)
-        self.button_select_logfile = tk.Button(self.frame_status, text=" ... ", command=self.onSelectLogfile)
-        self.button_select_logfile.grid(row=line, column=2, sticky=tk.W)
+        # save log file?
+        #line += 1
+        #self.use_logfile = tk.StringVar()
+        #self.check_logfile = ttk.Checkbutton(self.frame_status, text='Use Log File',
+            #command=self.onLogfileCheckChanged, variable=self.use_logfile,
+            #onvalue='metric', offvalue='imperial')
+        #self.check_logfile.grid(row=line, column=0, padx=5)
+        #sellogfiles = tk.StringVar()
+        #self.combobox_logfile = ttk.Combobox(self.frame_status, textvariable=sellogfiles)
+        #self.combobox_logfile.bind('<<ComboboxSelected>>', self.onLogfileSelected)
+        #self.combobox_logfile.bind("<Control-Key-a>", self.onSelectAllLogname)
+        #self.combobox_logfile.bind("<Control-Key-A>", self.onSelectAllLogname)
+        #self.combobox_logfile['values'] = ('neatologfile.txt', '/tmp/neatologfile.txt', '$HOME/logfile.txt')
+        #self.combobox_logfile.current(0)
+        #self.combobox_logfile.grid(row=line, column=1, sticky=tk.W+tk.E)
+        #self.button_select_logfile = tk.Button(self.frame_status, text=" ... ", command=self.onSelectLogfile)
+        #self.button_select_logfile.grid(row=line, column=2, sticky=tk.W)
 
         frame_cli.pack(side="top", fill="x", pady=10)
         self.frame_status.pack(side="top", fill="both", pady=10)
@@ -342,25 +343,6 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         self.combobox_cli_command.current(0)
         btn_run_cli_command = tk.Button(frame_bottom, text="Run", command=self.do_cli_run)
         btn_run_cli_command.pack(side="right", fill="x", padx=5, pady=5, expand=False)
-
-
-#    txt_about = tk.Text(page_about)
-#    scroll_about = tk.Scrollbar(page_about, command=txt_about.yview)
-#    txt_about.configure(yscrollcommand=scroll_about.set)
-#    txt_about.tag_configure('bold_italics', font=('Arial', 12, 'bold', 'italic'))
-#    txt_about.tag_configure('big', font=('Verdana', 20, 'bold'))
-#    txt_about.tag_configure('color', foreground='#476042', font=('Tempus Sans ITC', 12, 'bold'))
-#    txt_about.insert(tk.END,'\n' + str_progname + '\n', 'big')
-#
-#    txt_about.insert(tk.END,"""
-#        Setup your Neato Robot
-#
-#        Copyright © 2015–2016 The NeatoSetup Authors
-#
-#        This program comes with absolutely no warranty.
-#        See the GNU General Public License, version 2 or later for details.""", 'color')
-#    txt_about.pack(side=tk.LEFT)
-#    scroll_about.pack(side=tk.RIGHT, fill=tk.Y)
 
         # page for scheduler
         page_sche = tk.Frame(nb)
