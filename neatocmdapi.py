@@ -40,6 +40,10 @@ class NCISimulator(NeatoCommandInterface):
         response = ""
         for i in range(0,len(requests)):
             retline = nsim.fake_respose(requests[i].strip())
+            retline.strip() + "\n"
+            retline = retline.replace('\x1A', '\n')
+            retline = retline.replace('\r\n', '\n')
+            retline = retline.replace('\n\n', '\n')
             response += retline
 
         return response
@@ -118,7 +122,9 @@ class NCISerial(NeatoCommandInterface):
                     break
             response = response.replace('\x1A', '\n')
             response = response.replace('\r\n', '\n')
+            #response = response.replace('\n\n', '\n')
             retval += response + "\n"
+        retval = retval.replace('\n\n', '\n')
         return retval.strip() + "\n\n"
 
 import socket

@@ -10,11 +10,7 @@ from multiprocessing import Queue, Lock
 
 import neatocmdapi
 
-#L.basicConfig(filename='logserial.txt', level=L.DEBUG, format='%(asctime)s %(levelname)s:%(message)s')
-ch = L.StreamHandler(sys.stderr)
-ch.setLevel(L.WARNING) #(L.WARNING) #(L.DEBUG)
-ch.setFormatter(L.Formatter('%(levelname)s:%(message)s'))
-L.getLogger().addHandler(ch)
+L.basicConfig(level=L.DEBUG, format='%(levelname)s:%(message)s')
 
 parser=argparse.ArgumentParser(description='Log battery data from USB port(serial) of a Neato Xv robot.')
 #parser.add_argument('intergers', metavar='N', type=int, nargs='+', help='an integer for the accumulator')
@@ -34,7 +30,11 @@ else:
 if args.fnlog == "/dev/stderr":
     L.info ("output log to standard error")
 else:
-    L.basicConfig(filename=args.fnlog, level=L.DEBUG, format='%(asctime)s %(levelname)s:%(message)s')
+    L.info ("output log to " + args.fnlog)
+    ch = L.FileHandler(args.fnlog)
+    ch.setLevel(L.DEBUG)
+    ch.setFormatter(L.Formatter('%(asctime)s %(levelname)s:%(message)s'))
+    L.getLogger().addHandler(ch)
 
 serv = None
 L.debug('serv.open() ...')
