@@ -28,6 +28,19 @@ LARGE_FONT= ("Verdana", 18)
 NORM_FONT = ("Helvetica", 12)
 SMALL_FONT = ("Helvetica", 8)
 
+# key for state machine wheel
+KEY_NONE=0
+KEY_LEFT=1
+KEY_RIGHT=2
+KEY_UP=3
+KEY_DOWN=4
+KEY_BACK=5
+# the states
+STATE_STOP=1
+STATE_FORWARD=2
+STATE_BACK=3
+STATE_LEFT=4
+STATE_RIGHT=5
 
 # TODO:
 #   the background thread to handle the communication with the neato
@@ -175,11 +188,8 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
         self.img_ledoff=tk.PhotoImage(file="ledred-off.gif")
 
         # page for test pack()
-        page_testpack = tk.Frame(nb)
-        #lbl_test_head = tk.Label(page_testpack, text="Test pack()", font=LARGE_FONT)
-        #lbl_test_head.pack(side="top", fill="x", pady=10)
-        #main_container = page_testpack
-        test_pack(page_testpack)
+        #page_testpack = tk.Frame(nb)
+        #test_pack(page_testpack)
 
         # page for test grid
         #page_testgrid = tk.Frame(nb)
@@ -188,7 +198,7 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
         #test_grid(myParent, main_container)
 
         # page for About
-        page_about = ttk.Frame(nb)
+        page_about = tk.Frame(nb)
         lbl_about_head = tk.Label(page_about, text="About", font=LARGE_FONT)
         lbl_about_head.pack(side="top", fill="x", pady=10)
         lbl_about_main = tk.Label(page_about, text="\n" + str_progname + "\n" + str_version + "\n" + """
@@ -202,7 +212,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
 
         # adding Frames as pages for the ttk.Notebook 
         # first page, which would get widgets gridded into it
-        page_conn = ttk.Frame(nb)
+        page_conn = tk.Frame(nb)
         # includes:
         #   connect with port selection or Serial-TCP connection;
         #   button to shutdown
@@ -303,7 +313,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         #b1 = tk.Button(page_about, text="Button 1")
 
         # page for commands
-        page_command = ttk.Frame(nb)
+        page_command = tk.Frame(nb)
         #   combox list for all available know commands, select one will show the help message in text area
         #   edit line which supports history
         #   output
@@ -357,7 +367,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
 #    scroll_about.pack(side=tk.RIGHT, fill=tk.Y)
 
         # page for scheduler
-        page_sche = ttk.Frame(nb)
+        page_sche = tk.Frame(nb)
         #   indicator, enable/disable button
         #   save/load file
         #   the list of scheduler
@@ -365,7 +375,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         lbl_sche_head.pack(side="top", fill="x", pady=10)
 
         # page for sensors
-        page_sensors = ttk.Frame(nb)
+        page_sensors = tk.Frame(nb)
         #   the list of sensor status, includes sensor and value
         #   indicator of testmode, no control
         #   indicator, enable/disable auto update
@@ -417,7 +427,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         self.btn_status_rightfrontkey.pack(pady=5)
 
         # page for LiDAR
-        page_lidar = ttk.Frame(nb)
+        page_lidar = tk.Frame(nb)
         #   graph for current data
         #   indicator, enable/disable scanning
         #   buttons to remote control: left/right/up/down/rotate
@@ -442,12 +452,15 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         self.canvas_lidar_isfocused = False
         self.canvas_lidar_isactive = False
         self.canvas_lidar_request_full = False
+        self.state_wheel = STATE_STOP
+        self.speed_wheel = 0
 
         self.btn_lidar_enable = guilog.ToggleButton(frame_bottom, txtt="ON: LiDAR", txtr="OFF: LiDAR", imgt=self.img_ledon, imgr=self.img_ledoff, command=self.guiloop_lidar_enable )
         self.btn_lidar_enable.pack(pady=5)
+        self.setup_keypad_navigate(self.canvas_lidar)
 
         # page for motors
-        page_moto = ttk.Frame(nb)
+        page_moto = tk.Frame(nb)
         #   list of motors and each has indicator, start/stop button
         #   warnning message: flip the robot upside down so the wheels are faceing up, before enable wheels moto!
         lbl_moto_head = tk.Label(page_moto, text="Motors", font=LARGE_FONT)
@@ -479,7 +492,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         self.btn_enable_sidebrush.pack(pady=5)
 
         # page for LifeStatLog
-        page_statlog = ttk.Frame(nb)
+        page_statlog = tk.Frame(nb)
         #   list of motors and each has indicator, start/stop button
         #   warnning message: flip the robot upside down so the wheels are faceing up, before enable wheels moto!
         lbl_statlog_head = tk.Label(page_statlog, text="LifeStatLog", font=LARGE_FONT)
@@ -495,7 +508,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         btn_statlog_get.pack(side=tk.BOTTOM)
 
         # page for Recharge
-        page_recharge = ttk.Frame(nb)
+        page_recharge = tk.Frame(nb)
         # only available when connected to Serial port directly, not for TCP
         lbl_recharge_head = tk.Label(page_recharge, text="Recharge", font=LARGE_FONT)
         lbl_recharge_head.pack(side="top", fill="x", pady=10)
@@ -504,15 +517,15 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         self.tabtxt_lidar = "LiDAR"
         nb.add(page_conn, text='Connection')
         nb.add(page_command, text='Commands')
-        nb.add(page_sche, text='Schedule')
+        #nb.add(page_sche, text='Schedule')
         nb.add(page_sensors, text=self.tabtxt_sensors)
         nb.add(page_lidar, text=self.tabtxt_lidar)
         nb.add(page_moto, text='Moto')
         nb.add(page_statlog, text='LifeStatLog')
-        nb.add(page_recharge, text='Recharge')
+        #nb.add(page_recharge, text='Recharge')
         nb.add(page_about, text='About')
         #nb.add(page_testgrid, text='TestGrid')
-        nb.add(page_testpack, text='TestPack')
+        #nb.add(page_testpack, text='TestPack')
         nb.bind('<<NotebookTabChanged>>', self.guiloop_nb_tabchanged)
 
         self.do_cli_disconnect()
@@ -641,6 +654,8 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         cur_focus = False
         if event.widget.tab(event.widget.index("current"),"text") == self.tabtxt_lidar:
             cur_focus = True
+            self.canvas_lidar.focus_set() # when switch to the lidar page, use the canvas as the front widget to receive key events!
+
         self.guiloop_process_lidar(cur_focus)
         cur_focus = False
         if event.widget.tab(event.widget.index("current"),"text") == self.tabtxt_sensors:
@@ -652,6 +667,127 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         L.info('switched to tab sensor: previous=' + str(self.buttons_sensors_isactive) + ", current=" + str(cur_focus))
         self.buttons_sensors_isactive = cur_focus
         self.buttons_sensors_request()
+
+    def smachine_wheelctrl(self, key):
+        #try:
+        #    {
+        #        STATE_STOP:    case_wheelctrl_ststop,
+        #        STATE_FORWARD: case_wheelctrl_stforword,
+        #        STATE_BACK:    case_wheelctrl_stback,
+        #        STATE_LEFT:    case_wheelctrl_stleft,
+        #        STATE_RIGHT:   case_wheelctrl_stright,
+        #    }[self.state_wheel](key)
+        #except KeyError:
+        #    # default action
+        #    L.error("no such state: " + str(self.state_wheel))
+        if key == KEY_UP:
+            if self.state_wheel == STATE_BACK:
+                self.state_wheel = STATE_STOP
+                if self.serv_cli != None and self.mid_cli_command >= 0:
+                    self.set_robot_testmode(True)
+                    self.serv_cli.request(["SetMotor LWheelDisable RWheelDisable", self.mid_cli_command])
+                    #self.serv_cli.request(["SetMotor RWheelEnable LWheelEnable\nSetMotor LWheelDist 2500 RWheelDist -2500 Speed 100", self.mid_cli_command])
+            elif self.state_wheel == STATE_FORWARD:
+                if self.speed_wheel < 300:
+                    self.speed_wheel += 50
+                if self.serv_cli != None and self.mid_cli_command >= 0:
+                    self.set_robot_testmode(True)
+                    self.serv_cli.request(["SetMotor LWheelDist 5000 RWheelDist 5000 Speed " + str(self.speed_wheel), self.mid_cli_command])
+            else:
+                self.state_wheel = STATE_FORWARD
+                self.speed_wheel = 50
+                if self.serv_cli != None and self.mid_cli_command >= 0:
+                    self.set_robot_testmode(True)
+                    self.serv_cli.request(["SetMotor RWheelEnable LWheelEnable\nSetMotor LWheelDist 5000 RWheelDist 5000 Speed " + str(self.speed_wheel), self.mid_cli_command])
+        elif key == KEY_DOWN:
+            if self.state_wheel == STATE_STOP:
+                self.state_wheel = STATE_BACK
+                if self.serv_cli != None and self.mid_cli_command >= 0:
+                    self.set_robot_testmode(True)
+                    self.serv_cli.request(["SetMotor RWheelEnable LWheelEnable\nSetMotor LWheelDist -5000 RWheelDist -5000 Speed 100", self.mid_cli_command])
+            else:
+                self.state_wheel = STATE_STOP
+                if self.serv_cli != None and self.mid_cli_command >= 0:
+                    self.set_robot_testmode(True)
+                    self.serv_cli.request(["SetMotor LWheelDisable RWheelDisable", self.mid_cli_command])
+        elif key == KEY_LEFT:
+            if self.state_wheel == STATE_RIGHT:
+                self.state_wheel = STATE_STOP
+                if self.serv_cli != None and self.mid_cli_command >= 0:
+                    self.set_robot_testmode(True)
+                    self.serv_cli.request(["SetMotor LWheelDisable RWheelDisable", self.mid_cli_command])
+            else:
+                self.state_wheel = STATE_LEFT
+                if self.serv_cli != None and self.mid_cli_command >= 0:
+                    self.set_robot_testmode(True)
+                    self.serv_cli.request(["SetMotor RWheelEnable LWheelEnable\nSetMotor LWheelDist -2500 RWheelDist 2500 Speed 100", self.mid_cli_command])
+        elif key == KEY_RIGHT:
+            if self.state_wheel == STATE_LEFT:
+                self.state_wheel = STATE_STOP
+                if self.serv_cli != None and self.mid_cli_command >= 0:
+                    self.set_robot_testmode(True)
+                    self.serv_cli.request(["SetMotor LWheelDisable RWheelDisable", self.mid_cli_command])
+            else:
+                self.state_wheel = STATE_RIGHT
+                if self.serv_cli != None and self.mid_cli_command >= 0:
+                    self.set_robot_testmode(True)
+                    self.serv_cli.request(["SetMotor RWheelEnable LWheelEnable\nSetMotor LWheelDist 2500 RWheelDist -2500 Speed 100", self.mid_cli_command])
+        elif key == KEY_BACK:
+            self.state_wheel = STATE_STOP
+            if self.serv_cli != None and self.mid_cli_command >= 0:
+                self.set_robot_testmode(True)
+                self.serv_cli.request(["SetMotor LWheelDisable RWheelDisable", self.mid_cli_command])
+
+    # keypad for navigation
+    #def keyup_navigate(self, event):
+    #    L.info('key up' + event.char)
+    def keydown_navigate(self, event):
+        #L.info('key down ' + event.char)
+        # WSAD
+        key = KEY_NONE
+        if event.keysym == 'Right':
+            L.info('key down: Arrow Right')
+            key = KEY_RIGHT
+            pass
+        elif event.keysym == 'Left':
+            L.info('key down: Arrow Left')
+            key = KEY_LEFT
+            pass
+        elif event.keysym == 'Up':
+            L.info('key down: Arrow Up')
+            key = KEY_UP
+            pass
+        elif event.keysym == 'Down':
+            L.info('key down: Arrow Down')
+            key = KEY_DOWN
+            pass
+        elif event.keysym == 'space' or event.keysym == 'BackSpace' or event.keysym == 'Escape':
+            L.info('key down: Esc')
+            key = KEY_BACK
+            pass
+        elif event.char == 'w' or event.char == 'W':
+            L.info('key: w')
+            key = KEY_UP
+            pass
+        elif event.char == 's' or event.char == 'S':
+            L.info('key: s')
+            key = KEY_DOWN
+            pass
+        elif event.char == 'a' or event.char == 'A':
+            L.info('key: a')
+            key = KEY_LEFT
+            pass
+        elif event.char == 'd' or event.char == 'D':
+            L.info('key: d')
+            key = KEY_RIGHT
+            pass
+        else:
+            L.info('other key down: ' + event.char)
+        self.smachine_wheelctrl(key)
+
+    def setup_keypad_navigate(self, widget):
+        #widget.bind("<KeyRelease>", self.keyup_navigate)
+        widget.bind("<KeyPress>", self.keydown_navigate)
 
     # called by GUI when the tab is changed to lidar
     def guiloop_process_lidar(self, cur_focus):
