@@ -227,7 +227,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         # connection
         frame_cli = ttk.LabelFrame(page_conn, text='Conection')
         line=0
-        client_port_history = ('dev://ttyACM0:115200', 'dev://ttyUSB0:115200', 'dev://COM11:115200', 'dev://COM12:115200', 'sim:', 'tcp://localhost:3333', 'tcp://0.0.0.0:3333')
+        client_port_history = ('tcp://192.168.3.163:3333', 'dev://ttyACM0:115200', 'dev://ttyUSB0:115200', 'dev://COM11:115200', 'dev://COM12:115200', 'sim:', 'tcp://localhost:3333')
         self.client_port = tk.StringVar()
         lbl_cli_port = tk.Label(frame_cli, text="Connect to:")
         lbl_cli_port.grid(row=line, column=0, padx=5, sticky=tk.N+tk.S+tk.W)
@@ -830,7 +830,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
                 self.canvas_lidar_request_full = True
 
         if self.canvas_lidar_isfocused and self.canvas_lidar_isactive:
-            self.after(1000, self.canvas_lidar_request)
+            self.after(300, self.canvas_lidar_request)
 
     def _canvas_lidar_process_focus(self):
         if self.canvas_lidar_isfocused == True:
@@ -1182,7 +1182,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
             self.mailpipe_process_lidar()
             self.mailpipe_process_digitalsensors()
             # setup next
-            self.after(500, self.guiloop_check_rightnow)
+            self.after(100, self.guiloop_check_rightnow)
         return
 
     def guiloop_check_per1sec(self):
@@ -1211,6 +1211,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         self.serv_cli.request([cmdstr, self.mid_2b_ignored])
 
     def set_robot_testmode (self, istest = False):
+        L.info('call set_robot_testmode("' + str(istest) + '")!')
         if self.istestmode != istest:
             if self.serv_cli != None and self.mid_2b_ignored >= 0:
                 if istest:

@@ -4651,6 +4651,7 @@ SumInG,0.000
             response = 'SetLCD accepted: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
         else:
             response = 'SetLCD rejected: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
+
     elif request.lower() == "SetLDSRotation".lower():
         if is_test_mode:
             if requestlist[1].strip().lower() == "on":
@@ -4661,10 +4662,9 @@ SumInG,0.000
                 is_lidar_motor_running=False
             else:
                 response = 'SetLDSRotation unknow arg: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
-
-            #response = 'SetLDSRotation accepted: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
         else:
             response = 'SetLDSRotation rejected: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
+
     elif request.lower() == "SetLED".lower():
         if is_test_mode:
             response = 'SetLED accepted: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
@@ -4708,7 +4708,7 @@ SumInG,0.000
 
     elif request.lower() == "GetLDSScan".lower():
         tmnow = time.time()
-        if is_lidar_motor_running == True and tmnow > tm_lidar_motor_start + 5:
+        if is_lidar_motor_running == True and tmnow > tm_lidar_motor_start + 2:
             response = get_lds_data()
         else:
             response = get_lds_data_zero()

@@ -69,6 +69,8 @@ class NCISerial(NeatoCommandInterface):
         except Exception as e:
             L.error("[NCISerial] Error open serial port: " + str(e))
             self.isready = False
+            return False
+        return True
 
     def close(self):
         self.isready = False
@@ -126,22 +128,31 @@ class NCINetwork(NeatoCommandInterface):
         self.address = address
         self.port = port
         self.timeout = timeout
+        self.isready = False
 
     def open(self):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.connect((self.address, self.port))
+        self.sock.settimeout(15)
+        try:
+            self.sock.connect((self.address, self.port))
+            self.isready = True
+        except socket.timeout:
+            self.sock = None
+            self.isready = False
+            return False;
+        self.sock.settimeout(None)
         L.debug ('[NCINetwork] Client has been assigned socket name' + str(self.sock.getsockname()))
         self.sock.setblocking(True)
         self.sock.settimeout(self.timeout)
         self.data = ""
+        return True
 
     def close(self):
+        self.isready = False
         self.sock.close()
 
     def ready(self):
-        #return False
-        #time.sleep(1)
-        return True
+        return self.isready
 
     def flush(self):
         #self.sock.flush()
@@ -385,7 +396,7 @@ class AtomTaskScheduler(object):
                 break;
             self.heap_time.push (newreq)
         # if heap_time has expired tasks need to execute, move the tasks(priority=1) to heap_priority
-        wait_time=10.3 # seconds, wait time for cond
+        wait_time=0.5 # seconds, wait time for cond
         while (self.heap_time.size() > 0):
             newreq = self.heap_time.pop()
             tmnow = datetime.now()
@@ -412,7 +423,7 @@ class AtomTaskScheduler(object):
     def do_wait_queue(self, wait_time):
         # if has task in heap_time, wait_time = wait time for the top task
         try:
-            L.debug("waiting queues for " + str(wait_time) + " seconds ...")
+            #L.debug("waiting queues for " + str(wait_time) + " seconds ...")
             with self.apicond:
                 self.apicond.wait(wait_time)
             #L.debug("endof wait!")
@@ -489,6 +500,7 @@ class NCIService(object):
                 time.sleep(1)
                 cnt += 1
             if self.api.ready() == False:
+                self.api = None
                 return False
             self.api.flush()
 
@@ -509,7 +521,8 @@ class NCIService(object):
         isrun = False;
         if self.th_sche != None:
             if self.th_sche.isAlive():
-                self.sche.stop()
+                if self.sche != None:
+                    self.sche.stop()
                 isrun = True
         if isrun:
             while self.th_sche.isAlive():
