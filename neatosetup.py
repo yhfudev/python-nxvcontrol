@@ -121,7 +121,10 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
         #self.progress_batt.update_idletasks()
 
     def show_robot_version(self, msg):
-        set_readonly_text(self.text_version, msg)
+        if msg.find("GetVersion") >= 0:
+            set_readonly_text(self.text_version, msg)
+        else:
+            guilog.textarea_append(self.text_version, "\n\n" + msg)
 
     def show_robot_time(self, msg):
         self.lbl_synctime['text'] = msg
@@ -240,6 +243,8 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         self.btn_cli_disconnect.grid(row=line, column=3, columnspan=1, padx=5, sticky=tk.N+tk.S+tk.W+tk.E)
         #btn_cli_disconnect.pack(side="left", fill="both", padx=5, pady=5, expand=True)
         frame_cli.pack(side="top", fill="x", pady=10)
+
+        self.status_isactive = False # shall we refresh the time and battery info?
 
         # status
         line = 0 # line
@@ -493,7 +498,8 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
 
         self.tabtxt_sensors = "Sensors"
         self.tabtxt_lidar = "LiDAR"
-        nb.add(page_conn, text='Connection')
+        self.tabtxt_status = "Connection"
+        nb.add(page_conn, text=self.tabtxt_status)
         nb.add(page_command, text='Commands')
         #nb.add(page_sche, text='Schedule')
         nb.add(page_sensors, text=self.tabtxt_sensors)
@@ -547,12 +553,12 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
             enable = True
         else:
             b1['fg'] = "green"
-        if self.serv_cli != None and self.mid_cli_command >= 0:
+        if self.serv_cli != None and self.mid_2b_ignored >= 0:
             self.set_robot_testmode(True)
             if enable:
-                self.serv_cli.request(["SetMotor LWheelEnable\nSetMotor LWheelDist 200 Speed 100", self.mid_cli_command])
+                self.serv_cli.request(["SetMotor LWheelEnable\nSetMotor LWheelDist 200 Speed 100", self.mid_2b_ignored])
             else:
-                self.serv_cli.request(["SetMotor LWheelDisable", self.mid_cli_command])
+                self.serv_cli.request(["SetMotor LWheelDisable", self.mid_2b_ignored])
 
     def guiloop_enable_rightwheel(self):
         enable = False
@@ -562,20 +568,20 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
             enable = True
         else:
             b1['fg'] = "green"
-        if self.serv_cli != None and self.mid_cli_command >= 0:
+        if self.serv_cli != None and self.mid_2b_ignored >= 0:
             self.set_robot_testmode(True)
             if enable:
-                self.serv_cli.request(["SetMotor RWheelEnable\nSetMotor RWheelDist 200 Speed 100", self.mid_cli_command])
+                self.serv_cli.request(["SetMotor RWheelEnable\nSetMotor RWheelDist 200 Speed 100", self.mid_2b_ignored])
             else:
-                self.serv_cli.request(["SetMotor RWheelDisable", self.mid_cli_command])
+                self.serv_cli.request(["SetMotor RWheelDisable", self.mid_2b_ignored])
 
     def _enable_lidar_moto(self, enable=False):
-        if self.serv_cli != None and self.mid_cli_command >= 0:
+        if self.serv_cli != None and self.mid_2b_ignored >= 0:
             self.set_robot_testmode(True)
             if enable:
-                self.serv_cli.request(["SetLDSRotation On", self.mid_cli_command])
+                self.serv_cli.request(["SetLDSRotation On", self.mid_2b_ignored])
             else:
-                self.serv_cli.request(["SetLDSRotation Off", self.mid_cli_command])
+                self.serv_cli.request(["SetLDSRotation Off", self.mid_2b_ignored])
     def guiloop_enable_lidarmoto(self):
         enable = False
         b1 = self.btn_enable_lidarmoto
@@ -594,12 +600,12 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
             enable = True
         else:
             b1['fg'] = "green"
-        if self.serv_cli != None and self.mid_cli_command >= 0:
+        if self.serv_cli != None and self.mid_2b_ignored >= 0:
             self.set_robot_testmode(True)
             if enable:
-                self.serv_cli.request(["SetMotor VacuumOn", self.mid_cli_command])
+                self.serv_cli.request(["SetMotor VacuumOn", self.mid_2b_ignored])
             else:
-                self.serv_cli.request(["SetMotor VacuumOff", self.mid_cli_command])
+                self.serv_cli.request(["SetMotor VacuumOff", self.mid_2b_ignored])
 
     def guiloop_enable_brush(self):
         enable = False
@@ -609,12 +615,12 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
             enable = True
         else:
             b1['fg'] = "green"
-        if self.serv_cli != None and self.mid_cli_command >= 0:
+        if self.serv_cli != None and self.mid_2b_ignored >= 0:
             self.set_robot_testmode(True)
             if enable:
-                self.serv_cli.request(["SetMotor BrushEnable\nSetMotor Brush RPM 250", self.mid_cli_command])
+                self.serv_cli.request(["SetMotor BrushEnable\nSetMotor Brush RPM 250", self.mid_2b_ignored])
             else:
-                self.serv_cli.request(["SetMotor BrushDisable", self.mid_cli_command])
+                self.serv_cli.request(["SetMotor BrushDisable", self.mid_2b_ignored])
 
     def guiloop_enable_sidebrush(self):
         enable = False
@@ -624,25 +630,39 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
             enable = True
         else:
             b1['fg'] = "green"
-        if self.serv_cli != None and self.mid_cli_command >= 0:
+        if self.serv_cli != None and self.mid_2b_ignored >= 0:
             self.set_robot_testmode(True)
             if enable:
-                self.serv_cli.request(["SetMotor BrushEnable\nSetMotor Brush RPM 250", self.mid_cli_command])
+                self.serv_cli.request(["SetMotor BrushEnable\nSetMotor Brush RPM 250", self.mid_2b_ignored])
             else:
-                self.serv_cli.request(["SetMotor BrushDisable", self.mid_cli_command])
+                self.serv_cli.request(["SetMotor BrushDisable", self.mid_2b_ignored])
 
     # called by GUI when the tab is changed
     def guiloop_nb_tabchanged(self, event):
+        # check if the LiDAR tab is open
         cur_focus = False
         if event.widget.tab(event.widget.index("current"),"text") == self.tabtxt_lidar:
             cur_focus = True
             self.canvas_lidar.focus_set() # when switch to the lidar page, use the canvas as the front widget to receive key events!
-
         self.guiloop_process_lidar(cur_focus)
+
+        # check if the Sensors tab is open
         cur_focus = False
         if event.widget.tab(event.widget.index("current"),"text") == self.tabtxt_sensors:
             cur_focus = True
         self.guiloop_process_sensors(cur_focus)
+
+        # check if the Status tab is open
+        cur_focus = False
+        if event.widget.tab(event.widget.index("current"),"text") == self.tabtxt_status:
+            cur_focus = True
+        self.guiloop_process_status(cur_focus)
+
+    # called by GUI when the tab is changed to status
+    def guiloop_process_status(self, cur_focus):
+        L.info('switched to tab status: previous=' + str(self.status_isactive) + ", current=" + str(cur_focus))
+        self.status_isactive = cur_focus
+        #self.status_request()
 
     # called by GUI when the tab is changed to sensors
     def guiloop_process_sensors(self, cur_focus):
@@ -666,60 +686,60 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         if key == KEY_UP:
             if self.state_wheel == STATE_BACK:
                 self.state_wheel = STATE_STOP
-                if self.serv_cli != None and self.mid_cli_command >= 0:
+                if self.serv_cli != None and self.mid_2b_ignored >= 0:
                     self.set_robot_testmode(True)
-                    self.serv_cli.request(["SetMotor LWheelDisable RWheelDisable", self.mid_cli_command])
-                    #self.serv_cli.request(["SetMotor RWheelEnable LWheelEnable\nSetMotor LWheelDist 2500 RWheelDist -2500 Speed 100", self.mid_cli_command])
+                    self.serv_cli.request(["SetMotor LWheelDisable RWheelDisable", self.mid_2b_ignored])
+                    #self.serv_cli.request(["SetMotor RWheelEnable LWheelEnable\nSetMotor LWheelDist 2500 RWheelDist -2500 Speed 100", self.mid_2b_ignored])
             elif self.state_wheel == STATE_FORWARD:
                 if self.speed_wheel < 300:
                     self.speed_wheel += 50
-                if self.serv_cli != None and self.mid_cli_command >= 0:
+                if self.serv_cli != None and self.mid_2b_ignored >= 0:
                     self.set_robot_testmode(True)
-                    self.serv_cli.request(["SetMotor LWheelDist 5000 RWheelDist 5000 Speed " + str(self.speed_wheel), self.mid_cli_command])
+                    self.serv_cli.request(["SetMotor LWheelDist 5000 RWheelDist 5000 Speed " + str(self.speed_wheel), self.mid_2b_ignored])
             else:
                 self.state_wheel = STATE_FORWARD
                 self.speed_wheel = 50
-                if self.serv_cli != None and self.mid_cli_command >= 0:
+                if self.serv_cli != None and self.mid_2b_ignored >= 0:
                     self.set_robot_testmode(True)
-                    self.serv_cli.request(["SetMotor RWheelEnable LWheelEnable\nSetMotor LWheelDist 5000 RWheelDist 5000 Speed " + str(self.speed_wheel), self.mid_cli_command])
+                    self.serv_cli.request(["SetMotor RWheelEnable LWheelEnable\nSetMotor LWheelDist 5000 RWheelDist 5000 Speed " + str(self.speed_wheel), self.mid_2b_ignored])
         elif key == KEY_DOWN:
             if self.state_wheel == STATE_STOP:
                 self.state_wheel = STATE_BACK
-                if self.serv_cli != None and self.mid_cli_command >= 0:
+                if self.serv_cli != None and self.mid_2b_ignored >= 0:
                     self.set_robot_testmode(True)
-                    self.serv_cli.request(["SetMotor RWheelEnable LWheelEnable\nSetMotor LWheelDist -5000 RWheelDist -5000 Speed 100", self.mid_cli_command])
+                    self.serv_cli.request(["SetMotor RWheelEnable LWheelEnable\nSetMotor LWheelDist -5000 RWheelDist -5000 Speed 100", self.mid_2b_ignored])
             else:
                 self.state_wheel = STATE_STOP
-                if self.serv_cli != None and self.mid_cli_command >= 0:
+                if self.serv_cli != None and self.mid_2b_ignored >= 0:
                     self.set_robot_testmode(True)
-                    self.serv_cli.request(["SetMotor LWheelDisable RWheelDisable", self.mid_cli_command])
+                    self.serv_cli.request(["SetMotor LWheelDisable RWheelDisable", self.mid_2b_ignored])
         elif key == KEY_LEFT:
             if self.state_wheel == STATE_RIGHT:
                 self.state_wheel = STATE_STOP
-                if self.serv_cli != None and self.mid_cli_command >= 0:
+                if self.serv_cli != None and self.mid_2b_ignored >= 0:
                     self.set_robot_testmode(True)
-                    self.serv_cli.request(["SetMotor LWheelDisable RWheelDisable", self.mid_cli_command])
+                    self.serv_cli.request(["SetMotor LWheelDisable RWheelDisable", self.mid_2b_ignored])
             else:
                 self.state_wheel = STATE_LEFT
-                if self.serv_cli != None and self.mid_cli_command >= 0:
+                if self.serv_cli != None and self.mid_2b_ignored >= 0:
                     self.set_robot_testmode(True)
-                    self.serv_cli.request(["SetMotor RWheelEnable LWheelEnable\nSetMotor LWheelDist -2500 RWheelDist 2500 Speed 100", self.mid_cli_command])
+                    self.serv_cli.request(["SetMotor RWheelEnable LWheelEnable\nSetMotor LWheelDist -2500 RWheelDist 2500 Speed 100", self.mid_2b_ignored])
         elif key == KEY_RIGHT:
             if self.state_wheel == STATE_LEFT:
                 self.state_wheel = STATE_STOP
-                if self.serv_cli != None and self.mid_cli_command >= 0:
+                if self.serv_cli != None and self.mid_2b_ignored >= 0:
                     self.set_robot_testmode(True)
-                    self.serv_cli.request(["SetMotor LWheelDisable RWheelDisable", self.mid_cli_command])
+                    self.serv_cli.request(["SetMotor LWheelDisable RWheelDisable", self.mid_2b_ignored])
             else:
                 self.state_wheel = STATE_RIGHT
-                if self.serv_cli != None and self.mid_cli_command >= 0:
+                if self.serv_cli != None and self.mid_2b_ignored >= 0:
                     self.set_robot_testmode(True)
-                    self.serv_cli.request(["SetMotor RWheelEnable LWheelEnable\nSetMotor LWheelDist 2500 RWheelDist -2500 Speed 100", self.mid_cli_command])
+                    self.serv_cli.request(["SetMotor RWheelEnable LWheelEnable\nSetMotor LWheelDist 2500 RWheelDist -2500 Speed 100", self.mid_2b_ignored])
         elif key == KEY_BACK:
             self.state_wheel = STATE_STOP
-            if self.serv_cli != None and self.mid_cli_command >= 0:
+            if self.serv_cli != None and self.mid_2b_ignored >= 0:
                 self.set_robot_testmode(True)
-                self.serv_cli.request(["SetMotor LWheelDisable RWheelDisable", self.mid_cli_command])
+                self.serv_cli.request(["SetMotor LWheelDisable RWheelDisable", self.mid_2b_ignored])
 
     # keypad for navigation
     #def keyup_navigate(self, event):
@@ -1020,11 +1040,15 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
             L.error ('Error in open serial')
             return
         L.info ('serial opened')
-        self.mid_cli_command = self.serv_cli.mailbox.declair()
-        self.mid_query_version = self.serv_cli.mailbox.declair()
-        self.mid_query_time = self.serv_cli.mailbox.declair()
-        self.mid_query_battery = self.serv_cli.mailbox.declair()
-        self.serv_cli.request(["GetVersion\nGetWarranty\n", self.mid_query_version]) # query the time
+
+        self.mid_2b_ignored = self.serv_cli.mailbox.declair()  # the index of the return data Queue for any command that don't need to be parsed the data
+        self.mid_cli_command = self.serv_cli.mailbox.declair() # the index of the return data Queue for 'Commands' tab
+        self.mid_query_version = self.serv_cli.mailbox.declair() # the index of the return data Queue for version textarea
+        self.mid_query_time = self.serv_cli.mailbox.declair()    # the index of the return data Queue for robot time label
+        self.mid_query_battery = self.serv_cli.mailbox.declair() # the index of the return data Queue for robot battery % ratio
+
+        self.serv_cli.request(["GetVersion", self.mid_query_version])
+        self.serv_cli.request(["GetWarranty", self.mid_query_version])
         self.guiloop_check_rightnow()
         self.guiloop_check_per1sec()
         self.guiloop_check_per30sec()
@@ -1042,10 +1066,11 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         else:
             L.info('client is not connected, skip.')
         self.serv_cli = None
-        self.mid_cli_command = -1;
-        self.mid_query_version = -1;
-        self.mid_query_time = -1;
-        self.mid_query_battery = -1;
+        self.mid_2b_ignored = -1
+        self.mid_cli_command = -1
+        self.mid_query_version = -1
+        self.mid_query_time = -1
+        self.mid_query_battery = -1
         self.mid_query_lidar = -1
         self.mid_query_digitalsensors = -1
 
@@ -1070,6 +1095,22 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         return
 
     def mailpipe_process_conn_cmd(self):
+
+        if self.mid_2b_ignored >= 0:
+            try:
+                while True:
+                    # remove all of items in the queue
+                    try:
+                        respstr = self.serv_cli.mailbox.get(self.mid_2b_ignored, False)
+                        if respstr == None:
+                            break
+                        L.info('ignore the response: ' + respstr)
+                    except queue.Empty:
+                        break
+            except queue.Empty:
+                # ignore
+                pass
+
         if self.mid_cli_command >= 0:
             try:
                 resp = self.serv_cli.mailbox.get(self.mid_cli_command, False)
@@ -1080,6 +1121,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
             except queue.Empty:
                 # ignore
                 pass
+
         if self.mid_query_version >= 0:
             try:
                 resp = self.serv_cli.mailbox.get(self.mid_query_version, False)
@@ -1088,6 +1130,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
             except queue.Empty:
                 # ignore
                 pass
+
         if self.mid_query_battery >= 0:
             try:
                 while True:
@@ -1109,6 +1152,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
             except queue.Empty:
                 # ignore
                 pass
+
         if self.mid_query_time >= 0:
             import re
             try:
@@ -1124,7 +1168,8 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
                         if len(response) < 1:
                             #L.debug('read null 2')
                             break
-                        if not re.match("GetTime".lower(), response.lower()):
+                        lst1 = response.split(' ')
+                        if lst1[0] in {'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday',}:
                             L.debug("gettime: " + response)
                             self.show_robot_time(response)
             except queue.Empty:
@@ -1143,14 +1188,16 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
     def guiloop_check_per1sec(self):
         if self.serv_cli != None:
             # setup next
-            self.serv_cli.request(["GetTime\n", self.mid_query_time]) # query the time
+            if self.status_isactive == True:
+                self.serv_cli.request(["GetTime", self.mid_query_time]) # query the time
             self.after(5000, self.guiloop_check_per1sec)
         return
 
     def guiloop_check_per30sec(self):
         if self.serv_cli != None:
             # setup next
-            self.serv_cli.request(["GetCharger\n", self.mid_query_battery]) # query the level of battery
+            if self.status_isactive == True:
+                self.serv_cli.request(["GetCharger", self.mid_query_battery]) # query the level of battery
             self.after(30000, self.guiloop_check_per30sec)
         return
 
@@ -1161,16 +1208,15 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         import time
         tm_now = time.localtime()
         cmdstr = time.strftime("SetTime Day %w Hour %H Min %M Sec %S", tm_now)
-        self.serv_cli.request([cmdstr, self.mid_cli_command])
-        self.serv_cli.request(["GetVersion\nGetWarranty\n", self.mid_query_version])
+        self.serv_cli.request([cmdstr, self.mid_2b_ignored])
 
     def set_robot_testmode (self, istest = False):
         if self.istestmode != istest:
-            if self.serv_cli != None and self.mid_cli_command >= 0:
+            if self.serv_cli != None and self.mid_2b_ignored >= 0:
                 if istest:
-                    self.serv_cli.request(["TestMode On", self.mid_cli_command])
+                    self.serv_cli.request(["TestMode On", self.mid_2b_ignored])
                 else:
-                    self.serv_cli.request(["SetLDSRotation Off\nSetMotor LWheelDisable RWheelDisable BrushDisable VacuumOff\nTestMode Off", self.mid_cli_command])
+                    self.serv_cli.request(["SetLDSRotation Off\nSetMotor LWheelDisable RWheelDisable BrushDisable VacuumOff\nTestMode Off", self.mid_2b_ignored])
         self.istestmode = istest
         self.show_robot_testmode(istest)
 
