@@ -123,10 +123,6 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
     def show_robot_version(self, msg):
         set_readonly_text(self.text_version, msg)
 
-    def show_robot_statlog(self, msg):
-        set_readonly_text(self.text_statlog, msg)
-
-
     def show_robot_time(self, msg):
         self.lbl_synctime['text'] = msg
 
@@ -382,49 +378,59 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         lbl_sensor_head = tk.Label(page_sensors, text="Sensors", font=LARGE_FONT)
         lbl_sensor_head.pack(side="top", fill="x", pady=10)
 
+        frame_top = tk.Frame(page_sensors)#, background="green")
+        frame_bottom = tk.Frame(page_sensors)#, background="yellow")
+        frame_top.pack(side="top", fill="both", expand=True)
+        frame_bottom.pack(side="bottom", fill="x", expand=False)
+
         self.mid_query_digitalsensors = -1
         self.buttons_sensors_isactive = False
         self.buttons_sensors_request_full = False # flag to signal the command is finished
 
         # power DC connection: GetDigitalSensors:SNSR_DC_JACK_CONNECT,0
         devstr = "Power DC Jack"
-        self.btn_status_powerdc = guilog.ToggleButton(page_sensors, txtt="Connected: "+devstr, txtr="Disconnected: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
+        self.btn_status_powerdc = guilog.ToggleButton(frame_top, txtt="Connected: "+devstr, txtr="Disconnected: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
         self.btn_status_powerdc.pack(pady=5)
 
         # Dustbin In: GetDigitalSensors:SNSR_DUSTBIN_IS_IN,1
         devstr = "Dustbin"
-        self.btn_status_dustbin = guilog.ToggleButton(page_sensors, txtt="In: "+devstr, txtr="Out: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
+        self.btn_status_dustbin = guilog.ToggleButton(frame_top, txtt="In: "+devstr, txtr="Out: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
         self.btn_status_dustbin.pack(pady=5)
 
         # Left Wheel Extended: GetDigitalSensors:SNSR_LEFT_WHEEL_EXTENDED,0
         devstr = "Left Wheel"
-        self.btn_status_leftwheel = guilog.ToggleButton(page_sensors, txtt="Extended: "+devstr, txtr="In: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
+        self.btn_status_leftwheel = guilog.ToggleButton(frame_top, txtt="Extended: "+devstr, txtr="In: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
         self.btn_status_leftwheel.pack(pady=5)
 
         # Right Wheel Extended: GetDigitalSensors:SNSR_RIGHT_WHEEL_EXTENDED,0
         devstr = "Right Wheel"
-        self.btn_status_rightwheel = guilog.ToggleButton(page_sensors, txtt="Extended: "+devstr, txtr="In: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
+        self.btn_status_rightwheel = guilog.ToggleButton(frame_top, txtt="Extended: "+devstr, txtr="In: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
         self.btn_status_rightwheel.pack(pady=5)
 
         # Left Side Key: GetDigitalSensors:LSIDEBIT,0
         devstr = "Left Side Key"
-        self.btn_status_leftsidekey = guilog.ToggleButton(page_sensors, txtt="Kicked: "+devstr, txtr="Released: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
+        self.btn_status_leftsidekey = guilog.ToggleButton(frame_top, txtt="Kicked: "+devstr, txtr="Released: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
         self.btn_status_leftsidekey.pack(pady=5)
 
         # Left Front Key: GetDigitalSensors:LFRONTBIT,0
         devstr = "Left Front Key"
-        self.btn_status_leftfrontkey = guilog.ToggleButton(page_sensors, txtt="Kicked: "+devstr, txtr="Released: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
+        self.btn_status_leftfrontkey = guilog.ToggleButton(frame_top, txtt="Kicked: "+devstr, txtr="Released: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
         self.btn_status_leftfrontkey.pack(pady=5)
 
         # Right Side Key: GetDigitalSensors:RSIDEBIT,0
         devstr = "Right Side Key"
-        self.btn_status_rightsidekey = guilog.ToggleButton(page_sensors, txtt="Kicked: "+devstr, txtr="Released: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
+        self.btn_status_rightsidekey = guilog.ToggleButton(frame_top, txtt="Kicked: "+devstr, txtr="Released: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
         self.btn_status_rightsidekey.pack(pady=5)
 
         # Right Front Key: GetDigitalSensors:RFRONTBIT,0
         devstr = "Right Front Key"
-        self.btn_status_rightfrontkey = guilog.ToggleButton(page_sensors, txtt="Kicked: "+devstr, txtr="Released: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
+        self.btn_status_rightfrontkey = guilog.ToggleButton(frame_top, txtt="Kicked: "+devstr, txtr="Released: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
         self.btn_status_rightfrontkey.pack(pady=5)
+
+        self.sensors_update_isactive = False
+        devstr = "Update Sensors"
+        self.btn_sensors_update_enable = guilog.ToggleButton(frame_bottom, txtt="ON: "+devstr, txtr="OFF: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, command=self.guiloop_sensors_update_enable)
+        self.btn_sensors_update_enable.pack(pady=5, side="right")
 
         # page for LiDAR
         page_lidar = tk.Frame(nb)
@@ -497,22 +503,6 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         self.btn_enable_sidebrush = guilog.ToggleButton(page_moto, txtt="ON: "+devstr, txtr="OFF: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, command=self.guiloop_enable_sidebrush )
         self.btn_enable_sidebrush.pack(pady=5)
 
-        # page for LifeStatLog
-        page_statlog = tk.Frame(nb)
-        #   list of motors and each has indicator, start/stop button
-        #   warnning message: flip the robot upside down so the wheels are faceing up, before enable wheels moto!
-        lbl_statlog_head = tk.Label(page_statlog, text="LifeStatLog", font=LARGE_FONT)
-        lbl_statlog_head.pack(side="top", fill="x", pady=10)
-
-        self.text_statlog = ScrolledText(page_statlog, wrap=tk.WORD)
-        #self.text_statlog.insert(tk.END, "Some Text\ntest 1\ntest 2\n")
-        self.text_statlog.configure(state='disabled')
-        self.text_statlog.pack(expand=True, fill="both", side="top")
-        self.text_statlog.bind("<1>", lambda event: self.text_statlog.focus_set())
-
-        btn_statlog_get = tk.Button(page_statlog, text="Get Log", command=self.do_statlog)
-        btn_statlog_get.pack(side=tk.BOTTOM)
-
         # page for Recharge
         page_recharge = tk.Frame(nb)
         # only available when connected to Serial port directly, not for TCP
@@ -527,7 +517,6 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         nb.add(page_sensors, text=self.tabtxt_sensors)
         nb.add(page_lidar, text=self.tabtxt_lidar)
         nb.add(page_moto, text='Moto')
-        nb.add(page_statlog, text='LifeStatLog')
         #nb.add(page_recharge, text='Recharge')
         nb.add(page_about, text='About')
         #nb.add(page_testgrid, text='TestGrid')
@@ -537,19 +526,16 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         self.do_cli_disconnect()
 
     #
-    # statlog: support functions
-    #
-    def do_statlog(self):
-        if self.serv_cli == None:
-            L.error('client is not connected, please connect it first!')
-            return
-        L.info('get stat log ...')
-        self.serv_cli.request(["GetLifeStatLog", self.mid_query_statlog])
-        return
-
-    #
     # lidar: support functions
     #
+    def guiloop_sensors_update_enable(self):
+        b1 = self.btn_sensors_update_enable
+        if b1.config('relief')[-1] == 'sunken':
+            b1['fg'] = "red"
+            self.sensors_update_isactive=True
+        else:
+            b1['fg'] = "green"
+            self.sensors_update_isactive=False
     def guiloop_wheelctrl_enable(self):
         b1 = self.btn_wheelctrl_enable
         if b1.config('relief')[-1] == 'sunken':
@@ -682,6 +668,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         self.buttons_sensors_isactive = cur_focus
         self.buttons_sensors_request()
 
+    # the state machine for controling the wheel's movement
     def smachine_wheelctrl(self, key):
         #try:
         #    {
@@ -826,11 +813,11 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
                 if self.mid_query_digitalsensors < 0 :
                     L.info('create mid_query_digitalsensors')
                     self.mid_query_digitalsensors = self.serv_cli.mailbox.declair()
-                if self.mid_query_digitalsensors >= 0 and self.buttons_sensors_request_full == False:
+                if self.mid_query_digitalsensors >= 0 and self.buttons_sensors_request_full == False and self.sensors_update_isactive:
                     L.info('Request GetDigitalSensors ...')
                     self.buttons_sensors_request_full = True
                     self.serv_cli.request(["GetDigitalSensors\n", self.mid_query_digitalsensors])
-            L.info('setup next call buttons_sensors_request ...')
+            #L.info('setup next call buttons_sensors_request ...')
             self.after(500, self.buttons_sensors_request)
 
     # the periodical routine for the widgets of LiDAR
@@ -1055,7 +1042,6 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         self.mid_query_version = self.serv_cli.mailbox.declair()
         self.mid_query_time = self.serv_cli.mailbox.declair()
         self.mid_query_battery = self.serv_cli.mailbox.declair()
-        self.mid_query_statlog = self.serv_cli.mailbox.declair()
         self.serv_cli.request(["GetVersion\nGetWarranty\n", self.mid_query_version]) # query the time
         self.guiloop_check_rightnow()
         self.guiloop_check_per1sec()
@@ -1078,7 +1064,6 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         self.mid_query_version = -1;
         self.mid_query_time = -1;
         self.mid_query_battery = -1;
-        self.mid_query_statlog = -1
         self.mid_query_lidar = -1
         self.mid_query_digitalsensors = -1
 
@@ -1118,15 +1103,6 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
                 resp = self.serv_cli.mailbox.get(self.mid_query_version, False)
                 respstr = resp.strip()
                 self.show_robot_version (respstr)
-            except queue.Empty:
-                # ignore
-                pass
-        if self.mid_query_statlog >= 0:
-            try:
-                resp = self.serv_cli.mailbox.get(self.mid_query_statlog, False)
-                respstr = resp.strip()
-                L.debug('got statlog sz=' + str(len(respstr)) )
-                self.show_robot_statlog (respstr)
             except queue.Empty:
                 # ignore
                 pass
