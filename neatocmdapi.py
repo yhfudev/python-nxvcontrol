@@ -334,7 +334,8 @@ class AtomTaskScheduler(object):
 
         self._counter = count()
         self.idlock = Lock()
-        self.api_ev = threading.Event()
+        self.apilock = Lock()
+        self.apicond = threading.Condition(self.apilock)
 
     # create a new request id
     def getNewId(self):
@@ -350,7 +351,8 @@ class AtomTaskScheduler(object):
         newreq = AtomTask(req=req, newid=newid, priority=priority)
         newreq.setRequestTime(datetime.now())
         self.queue_priority.put(newreq)
-        self.api_ev.set()
+        with self.apicond:
+            self.apicond.notifyAll()
         return newid
 
     # request for a task, with the exact time
@@ -360,7 +362,8 @@ class AtomTaskScheduler(object):
         newreq.setRequestTime(datetime.now())
         newreq.setExecuteTime(exacttime)
         self.queue_time.put(newreq)
-        self.api_ev.set()
+        with self.apicond:
+            self.apicond.notifyAll()
         return newid
 
     def do_work_once (self):
@@ -409,8 +412,9 @@ class AtomTaskScheduler(object):
     def do_wait_queue(self, wait_time):
         # if has task in heap_time, wait_time = wait time for the top task
         try:
-            #L.debug("waiting queues for " + str(wait_time) + " seconds ...")
-            self.api_ev.wait(wait_time)
+            L.debug("waiting queues for " + str(wait_time) + " seconds ...")
+            with self.apicond:
+                self.apicond.wait(wait_time)
             #L.debug("endof wait!")
         except RuntimeError:
             #L.debug("wait timeout!")
