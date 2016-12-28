@@ -455,9 +455,15 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         self.state_wheel = STATE_STOP
         self.speed_wheel = 0
 
-        self.btn_lidar_enable = guilog.ToggleButton(frame_bottom, txtt="ON: LiDAR", txtr="OFF: LiDAR", imgt=self.img_ledon, imgr=self.img_ledoff, command=self.guiloop_lidar_enable )
-        self.btn_lidar_enable.pack(pady=5)
+        devstr = "LiDAR"
+        self.btn_lidar_enable = guilog.ToggleButton(frame_bottom, txtt="ON: "+devstr, txtr="OFF: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, command=self.guiloop_lidar_enable)
+        self.btn_lidar_enable.pack(pady=5, side="left")
         self.setup_keypad_navigate(self.canvas_lidar)
+
+        self.wheelctrl_isactive = False
+        devstr = "Wheel Controled by Keypad"
+        self.btn_wheelctrl_enable = guilog.ToggleButton(frame_bottom, txtt="ON: "+devstr, txtr="OFF: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, command=self.guiloop_wheelctrl_enable)
+        self.btn_wheelctrl_enable.pack(pady=5, side="right")
 
         # page for motors
         page_moto = tk.Frame(nb)
@@ -544,6 +550,14 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
     #
     # lidar: support functions
     #
+    def guiloop_wheelctrl_enable(self):
+        b1 = self.btn_wheelctrl_enable
+        if b1.config('relief')[-1] == 'sunken':
+            b1['fg'] = "red"
+            self.wheelctrl_isactive=True
+        else:
+            b1['fg'] = "green"
+            self.wheelctrl_isactive=False
     def guiloop_lidar_enable(self):
         b1 = self.btn_lidar_enable
         if b1.config('relief')[-1] == 'sunken':
@@ -742,6 +756,8 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
     #def keyup_navigate(self, event):
     #    L.info('key up' + event.char)
     def keydown_navigate(self, event):
+        if self.wheelctrl_isactive == False:
+            return
         #L.info('key down ' + event.char)
         # WSAD
         key = KEY_NONE
