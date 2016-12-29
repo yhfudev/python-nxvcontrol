@@ -343,7 +343,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         btn_clear_cli_command.pack(side="left", fill="x", padx=5, pady=5, expand=False)
         self.cli_command = tk.StringVar()
         self.combobox_cli_command = ttk.Combobox(frame_bottom, textvariable=self.cli_command)
-        self.combobox_cli_command['values'] = ('Help', 'GetAccel', 'GetButtons', 'GetCalInfo', 'GetCharger', 'GetDigitalSensors', 'GetErr', 'GetLDSScan', 'GetLifeStatLog', 'GetMotors', 'GetSchedule', 'GetTime', 'GetVersion', 'GetWarranty', 'PlaySound 0')
+        self.combobox_cli_command['values'] = ('Help', 'GetAccel', 'GetButtons', 'GetCalInfo', 'GetCharger', 'GetDigitalSensors', 'GetErr', 'GetLDSScan', 'GetLifeStatLog', 'GetMotors', 'GetSchedule', 'GetTime', 'GetVersion', 'GetWarranty', 'PlaySound 0', 'Clean House', 'DiagTest MoveAndBump', 'DiagTest DropTest', 'RestoreDefaults', 'SetDistanceCal DropMinimum', 'SetFuelGauge Percent 100', 'SetIEC FloorSelection carpet', 'SetLCD BGWhite', 'SetLDSRotation On', 'SetLED BacklightOn', 'SetMotor VacuumOn', 'SetSchedule Day Sunday Hour 17 Min 0 House ON', 'SetSystemMode Shutdown', 'SetTime Day Sunday Hour 12 Min 5 Sec 25', 'SetWallFollower Enable', 'TestMode On', 'Upload' )
         self.combobox_cli_command.pack(side="left", fill="both", padx=5, pady=5, expand=True)
         self.combobox_cli_command.bind("<Return>", self.do_cli_run_ev)
         self.combobox_cli_command.bind("<<ComboboxSelected>>", self.do_select_clicmd)
