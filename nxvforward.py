@@ -22,14 +22,14 @@ from threading import Thread
 import queue
 
 import logging as L
-L.basicConfig(filename='tcpserver.log', level=L.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
+L.basicConfig(filename='nxvforward.log', level=L.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
 # if we use the textarea to output log. There's problem when multiple threads output to the same textarea
 config_use_textarea_log=False
 
 import neatocmdapi
 import guilog
 
-str_progname="TCPServer"
+str_progname="nxvForward"
 str_version="0.1"
 
 LARGE_FONT= ("Verdana", 18)
@@ -371,7 +371,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         self.after(300, self.check_mid_cli_command)
         return
 
-def tcpserver_main():
+def nxvforward_main():
     global config_use_textarea_log
     guilog.set_log_stderr()
 
@@ -387,5 +387,5 @@ def tcpserver_main():
     root.mainloop()
 
 if __name__ == "__main__":
-    tcpserver_main()
+    nxvforward_main()
 

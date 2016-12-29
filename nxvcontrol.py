@@ -16,12 +16,12 @@ else:
 import queue
 
 import logging as L
-L.basicConfig(filename='neatosetup.log', level=L.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
+L.basicConfig(filename='nxvcontrol.log', level=L.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
 
 import neatocmdapi
 import guilog
 
-str_progname="NeatoSetup"
+str_progname="nxvControl"
 str_version="0.1"
 
 LARGE_FONT= ("Verdana", 18)
@@ -205,7 +205,7 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
         lbl_about_main = tk.Label(page_about, text="\n" + str_progname + "\n" + str_version + "\n" + """
 Setup your Neato Robot
 
-Copyright © 2015–2016 The NeatoSetup Authors
+Copyright © 2015–2016 The nxvControl Authors
 
 This program comes with absolutely no warranty.
 See the GNU General Public License, version 2 or later for details.""", font=NORM_FONT)
@@ -1223,7 +1223,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         self.istestmode = istest
         self.show_robot_testmode(istest)
 
-def neatosetup_main():
+def nxvcontrol_main():
     guilog.set_log_stderr()
 
     root = tk.Tk()
@@ -1236,7 +1236,7 @@ def neatosetup_main():
     root.mainloop()
 
 if __name__ == "__main__":
-    neatosetup_main()
+    nxvcontrol_main()
 
 
 
