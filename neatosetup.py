@@ -186,6 +186,8 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
         self.img_ledon=tk.PhotoImage(file="ledred-on.gif")
         self.img_ledoff=tk.PhotoImage(file="ledred-off.gif")
 
+        guilog.rClickbinder(tk_frame_parent)
+
         # page for test pack()
         #page_testpack = tk.Frame(nb)
         #test_pack(page_testpack)
@@ -502,9 +504,9 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         nb.add(page_conn, text=self.tabtxt_status)
         nb.add(page_command, text='Commands')
         #nb.add(page_sche, text='Schedule')
+        nb.add(page_moto, text='Moto')
         nb.add(page_sensors, text=self.tabtxt_sensors)
         nb.add(page_lidar, text=self.tabtxt_lidar)
-        nb.add(page_moto, text='Moto')
         #nb.add(page_recharge, text='Recharge')
         nb.add(page_about, text='About')
         #nb.add(page_testgrid, text='TestGrid')
