@@ -184,9 +184,9 @@ class MyTkAppFrame(ttk.Notebook):
         lbl_about_head = tk.Label(page_about, text="About", font=LARGE_FONT)
         lbl_about_head.pack(side="top", fill="x", pady=10)
         lbl_about_main = tk.Label(page_about, text="\n" + str_progname + "\n" + str_version + "\n" + """
-TCP Echo Server
+Forward Neato XV control over network
 
-Copyright © 2015–2016 The NeatoSetup Authors
+Copyright © 2015–2016 The nxvForward Authors
 
 This program comes with absolutely no warranty.
 See the GNU General Public License, version 2 or later for details.""", font=NORM_FONT)
