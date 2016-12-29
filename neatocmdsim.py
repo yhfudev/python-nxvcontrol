@@ -4624,7 +4624,10 @@ ZInG,0.000
 SumInG,0.000
 """
     elif request.lower() == "PlaySound".lower():
-        response = 'PlaySound accepted: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
+        if int(requestlist[1]) > 4:
+            "SoundID '" + requestlist[1] + "' is out of range."
+        else:
+            response = 'PlaySound accepted: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
     elif request.lower() == "TestMode".lower():
         isprocessed = False
         if requestlist[1].strip().lower() == "on":
