@@ -119,7 +119,7 @@ class ToggleButton(tk.Button):
             self.command()
         pass
 
-if __name__ == "__main__":
+def test_togglebutton():
     root=tk.Tk()
 
     img_ledon=tk.PhotoImage(file="ledred-on.gif")
@@ -137,6 +137,7 @@ if __name__ == "__main__":
     root.mainloop()
 
 
+
 def rClicker(e):
     ''' right click context menu for all Tk Entry and Text widgets
     '''
@@ -151,11 +152,18 @@ def rClicker(e):
         def rClick_Paste(e):
             e.widget.event_generate('<Control-v>')
 
+        def rClick_SelectAll(e):
+            e.widget.focus_force()
+            e.widget.tag_add("sel","1.0","end")
+            if "selection_range" in dir(e.widget):
+                e.widget.selection_range(0, tk.END)
+
         e.widget.focus()
 
         nclst=[
-               (' Cut', lambda e=e: rClick_Cut(e)),
+               (' Select All', lambda e=e: rClick_SelectAll(e)),
                (' Copy', lambda e=e: rClick_Copy(e)),
+               (' Cut', lambda e=e: rClick_Cut(e)),
                (' Paste', lambda e=e: rClick_Paste(e)),
                ]
 
@@ -184,7 +192,7 @@ def rClickbinder(r):
         pass
 
 
-if __name__ == '__main__':
+def test_mouserightclick():
     master = tk.Tk()
     ent = tk.Entry(master, width=50)
     ent.pack(anchor="w")
@@ -195,4 +203,12 @@ if __name__ == '__main__':
     #rClickbinder(master)
 
     master.mainloop()
+
+
+
+
+
+if __name__ == "__main__":
+    #test_togglebutton()
+    test_mouserightclick()
 
