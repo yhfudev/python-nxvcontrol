@@ -156,8 +156,6 @@ EOF
     gnuplot "${FN_GPOUT}.gp"
 }
 
-
-
 # 2016-12-07 10: m2 upgrade to 3.4
 LIST_DATA=(
     # <prefix>, <1: plot VBattV*400/%>, <brand>, <serial>, <comments>
@@ -179,10 +177,10 @@ LIST_DATA=(
     "nxvlogbatt-data-charging-powerextra-r2-m1-2,1,Powerextra Ni-MH 7.2V 4000mAh for Neato XV x2,1,powerextra battery-round2-second charging-machine1-firmware 3.4" #TODO: the second round of battery, with firmware 3.4 and updated hardware(capacitors)
     "nxvlogbatt-data-charging-powerextra-r2-m2-1,1,Powerextra Ni-MH 7.2V 4000mAh for Neato XV x2,1,powerextra battery-round2-third charging-machine2-firmware 3.4" #TODO: the second round of battery, with firmware 3.4 and updated hardware(capacitors)
     )
-LIST_DATA=(
+LIST_DATA1=(
     "nxvlogbatt-data-charging-oem-m2-3,1,OEM Ni-MH 7.2V 3200mAh for Neato XV x2,1,OEM battery old-in the machine-third charging-machine2-firmware 3.4"
     )
-function do_work() {
+function do_workplot_test_data {
     local i=0
     while (( ${i} < ${#LIST_DATA[*]} )); do
         local LINE1="${LIST_DATA[${i}]}"
@@ -198,4 +196,11 @@ function do_work() {
     done
 }
 
-do_work
+
+if [ "$1" = "" ]; then
+    do_workplot_test_data
+
+else
+    plot_charging "$1" "$2" "$3" "$4" "$5"
+fi
+
