@@ -69,6 +69,9 @@ class MyTkAppFrame(ttk.Notebook):
             self.serv.close()
             self.serv = None
 
+        self.btn_svr_start.config(state=tk.NORMAL)
+        self.btn_svr_stop.config(state=tk.DISABLED)
+
         #return
 
     def do_start(self):
@@ -139,13 +142,13 @@ class MyTkAppFrame(ttk.Notebook):
         if self.runth_svr != None:
             if self.runth_svr.isAlive():
                 L.info('server is already running. skip')
-                return
+                return True
 
         L.info('connect to ' + self.conn_port.get())
         self.serv = neatocmdapi.NCIService(target=self.conn_port.get().strip(), timeout=0.5)
         if self.serv.open(self.cb_task) == False:
             L.error ('Error in open serial')
-            return
+            return False
 
         L.info('start server ' + self.bind_port.get())
         b = self.bind_port.get().split(":")
@@ -159,14 +162,17 @@ class MyTkAppFrame(ttk.Notebook):
             self.server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler, self.serv)
         except Exception as e:
             L.error("Error in starting service: " + str(e))
-            return
+            return False
         ip, port = self.server.server_address
         L.info("server listened to: " + str(ip) + ":" + str(port))
         self.runth_svr = Thread(target=self.server.serve_forever)
         self.runth_svr.setDaemon(True) # When closing the main thread, which is our GUI, all daemons will automatically be stopped as well.
         self.runth_svr.start()
+
+        self.btn_svr_start.config(state=tk.DISABLED)
+        self.btn_svr_stop.config(state=tk.NORMAL)
         L.info('server started.')
-        return
+        return True
 
     def get_log_text(self):
         return self.text_log
@@ -178,6 +184,8 @@ class MyTkAppFrame(ttk.Notebook):
         self.runth_svr = None
         self.serv = None
         self.serv_cli = None
+
+        guilog.rClickbinder(tk_frame_parent)
 
         # page for About
         page_about = ttk.Frame(nb)
@@ -219,6 +227,16 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         combobox_conn_port.grid(row=line, column=1, padx=5, pady=5, sticky=tk.N+tk.S+tk.W)
         combobox_conn_port.current(0)
 
+        line -= 1
+        self.btn_svr_start = tk.Button(frame_svr, text="Start", command=self.do_start)
+        self.btn_svr_start.grid(row=line, column=2, padx=5, sticky=tk.N+tk.S+tk.W+tk.E)
+        #self.btn_svr_start.pack(side="right", fill="both", padx=5, pady=5, expand=True)
+
+        line += 1
+        self.btn_svr_stop = tk.Button(frame_svr, text="Stop", command=self.do_stop)
+        self.btn_svr_stop.grid(row=line, column=2, padx=5, sticky=tk.N+tk.S+tk.W+tk.E)
+        #self.btn_svr_stop.pack(side="right", fill="both", padx=5, pady=5, expand=True)
+
         frame_svr.pack(side="top", fill="x", pady=10)
 
         self.text_log = None
@@ -230,14 +248,9 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
             self.text_log.bind("<1>", lambda event: self.text_log.focus_set()) # enable highlighting and copying
             #set_readonly_text(self.text_log, "Version Info\nver 1\nver 2\n")
 
-        btn_svr_start = tk.Button(page_server, text="Start", command=self.do_start)
-        #btn_svr_start.grid(row=line, column=0, columnspan=2, padx=5, sticky=tk.N+tk.S+tk.W+tk.E)
-        btn_svr_start.pack(side="left", fill="both", padx=5, pady=5, expand=True)
-
-        btn_svr_stop = tk.Button(page_server, text="Stop", command=self.do_stop)
-        #btn_svr_stop.grid(row=line, column=0, columnspan=2, padx=5, sticky=tk.N+tk.S+tk.W+tk.E)
-        btn_svr_stop.pack(side="left", fill="both", padx=5, pady=5, expand=True)
-
+            btn_log_clear = tk.Button(page_server, text="Clear", command=lambda: (set_readonly_text(self.text_log, ""), self.text_log.update_idletasks()))
+            #btn_log_clear.grid(row=line, column=0, columnspan=2, padx=5, sticky=tk.N+tk.S+tk.W+tk.E)
+            btn_log_clear.pack(side="right", fill="both", padx=5, pady=5, expand=True)
 
         # page for client
         page_client = ttk.Frame(nb)
@@ -256,13 +269,13 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         combobox_client_port.grid(row=line, column=1, padx=5, pady=5, sticky=tk.N+tk.S+tk.W)
         combobox_client_port.current(0)
 
-        btn_cli_connect = tk.Button(frame_cli, text="Connect", command=self.do_cli_connect)
-        btn_cli_connect.grid(row=line, column=2, columnspan=1, padx=5, sticky=tk.N+tk.S+tk.W+tk.E)
-        #btn_cli_connect.pack(side="left", fill="both", padx=5, pady=5, expand=True)
+        self.btn_cli_connect = tk.Button(frame_cli, text="Connect", command=self.do_cli_connect)
+        self.btn_cli_connect.grid(row=line, column=2, columnspan=1, padx=5, sticky=tk.N+tk.S+tk.W+tk.E)
+        #self.btn_cli_connect.pack(side="left", fill="both", padx=5, pady=5, expand=True)
 
-        btn_cli_disconnect = tk.Button(frame_cli, text="Disconnect", command=self.do_cli_disconnect)
-        btn_cli_disconnect.grid(row=line, column=3, columnspan=1, padx=5, sticky=tk.N+tk.S+tk.W+tk.E)
-        #btn_cli_disconnect.pack(side="left", fill="both", padx=5, pady=5, expand=True)
+        self.btn_cli_disconnect = tk.Button(frame_cli, text="Disconnect", command=self.do_cli_disconnect)
+        self.btn_cli_disconnect.grid(row=line, column=3, columnspan=1, padx=5, sticky=tk.N+tk.S+tk.W+tk.E)
+        #self.btn_cli_disconnect.pack(side="left", fill="both", padx=5, pady=5, expand=True)
 
         frame_cli.pack(side="top", fill="x", pady=10)
 
@@ -301,6 +314,9 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         nb.add(page_client, text='Client')
         nb.add(page_about, text='About')
         combobox_bind_port.focus()
+
+        self.do_stop()
+        self.do_cli_disconnect()
         return
 
     #
@@ -330,6 +346,8 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
             return
         self.mid_cli_command = self.serv_cli.mailbox.declair();
         L.info ('serial opened')
+        self.btn_cli_connect.config(state=tk.DISABLED)
+        self.btn_cli_disconnect.config(state=tk.NORMAL)
         return
 
     def do_cli_disconnect(self):
@@ -340,6 +358,8 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
             L.info('client is not connected, skip.')
         self.serv_cli = None
         self.mid_cli_command = -1;
+        self.btn_cli_connect.config(state=tk.NORMAL)
+        self.btn_cli_disconnect.config(state=tk.DISABLED)
         return
 
     def do_cli_run(self):
