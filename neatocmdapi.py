@@ -457,11 +457,16 @@ import neatocmdapi
 class NCIService(object):
     "Neato Command Interface all"
 
+    def ready(self):
+        return self.isready
+
     # target: example: tcp://localhost:3333 sim://
     def __init__(self, target="tcp://localhost:3333", timeout=2):
         "target accepts: 'tcp://localhost:3333', 'dev://ttyUSB0:115200', 'dev://COM12:115200', 'sim:' "
         self.api = None
         self.th_sche = None
+        self.sche = None
+        self.isready = False
         self.mailbox = MailPipe()
 
         result = urlparse(target)
@@ -521,6 +526,7 @@ class NCIService(object):
             L.error ('Error in read serial: ' + str(e1))
             return False
 
+        self.isready = True
         return True
 
     def close(self):
@@ -537,14 +543,15 @@ class NCIService(object):
         self.api = None
         self.sche = None
         self.th_sche = None
+        self.isready = False
 
     def request(self, req):
-        if self.sche != None:
+        if self.ready() and self.sche != None:
             return self.sche.request(req, 5)
         return -1
 
     def request_time (self, req, exacttime):
-        if self.sche != None:
+        if self.ready() and self.sche != None:
             return self.sche.request_time(req, exacttime)
         return -1
 
