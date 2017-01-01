@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  00job-2015\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-01 14:04-0500\n"
+"POT-Creation-Date: 2017-01-01 14:58-0500\n"
 "PO-Revision-Date: 2016-12-31 14:10-0500\n"
 "Last-Translator: yhfu <yhfudev@gmail.com>\n"
 "Language-Team: Chinese (simplified)\n"
@@ -16,7 +16,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: nxvcontrol.py:156 nxvcontrol.py:654 nxvcontrol.py:769
+#: nxvcontrol.py:156 nxvcontrol.py:703 nxvcontrol.py:820
 msgid "Sensors"
 msgstr "传感器"
 
@@ -36,7 +36,7 @@ msgstr "模拟传感器"
 msgid "Buttons"
 msgstr "按钮"
 
-#: nxvcontrol.py:163 nxvcontrol.py:735 nxvcontrol.py:775
+#: nxvcontrol.py:163 nxvcontrol.py:786 nxvcontrol.py:826
 msgid "Motors"
 msgstr "电动机"
 
@@ -44,167 +44,171 @@ msgstr "电动机"
 msgid "Accelerometer"
 msgstr "加速计"
 
-#: nxvcontrol.py:212 nxvcontrol.py:551
+#: nxvcontrol.py:165
+msgid "Charger"
+msgstr "充电"
+
+#: nxvcontrol.py:219 nxvcontrol.py:600
 msgid "Unknown"
 msgstr "未知"
 
-#: nxvcontrol.py:242 nxvcontrol.py:265
+#: nxvcontrol.py:251 nxvcontrol.py:274
 msgid "Released"
 msgstr "已释放"
 
-#: nxvcontrol.py:243 nxvcontrol.py:266
+#: nxvcontrol.py:252 nxvcontrol.py:275
 msgid "Pressed"
 msgstr "已按住"
 
-#: nxvcontrol.py:418
+#: nxvcontrol.py:467
 msgid "ON"
 msgstr "开"
 
-#: nxvcontrol.py:421
+#: nxvcontrol.py:470
 msgid "OFF"
 msgstr "关"
 
-#: nxvcontrol.py:452
+#: nxvcontrol.py:501
 msgid "Text files"
 msgstr "文本文件"
 
-#: nxvcontrol.py:453
+#: nxvcontrol.py:502
 msgid "All files"
 msgstr "全部文件"
 
-#: nxvcontrol.py:487 nxvcontrol.py:779 nxvforward.py:221 nxvforward.py:347
+#: nxvcontrol.py:536 nxvcontrol.py:830 nxvforward.py:221 nxvforward.py:347
 msgid "About"
 msgstr "关于"
 
-#: nxvcontrol.py:492
+#: nxvcontrol.py:541
 msgid "Setup your Neato Robot"
 msgstr "设置你的 Neato 机器人"
 
-#: nxvcontrol.py:494
+#: nxvcontrol.py:543
 msgid "Copyright © 2015-2016 The nxvControl Authors"
 msgstr "版权所有 © 2015–2016 nxvControl 作者"
 
-#: nxvcontrol.py:496 nxvforward.py:230
+#: nxvcontrol.py:545 nxvforward.py:230
 msgid "This program comes with absolutely no warranty."
 msgstr "本程序完全不提供保障。"
 
-#: nxvcontrol.py:497 nxvforward.py:231
+#: nxvcontrol.py:546 nxvforward.py:231
 msgid "See the GNU General Public License, version 3 or later for details."
 msgstr "参看 GNU 通用公众协议版本3或之后版本"
 
-#: nxvcontrol.py:511 nxvcontrol.py:771 nxvforward.py:292
+#: nxvcontrol.py:560 nxvcontrol.py:822 nxvforward.py:292
 msgid "Connection"
 msgstr "连接"
 
-#: nxvcontrol.py:513
+#: nxvcontrol.py:562
 msgid "Status"
 msgstr "状态"
 
-#: nxvcontrol.py:517
+#: nxvcontrol.py:566
 msgid "Conection"
 msgstr "连接"
 
-#: nxvcontrol.py:521 nxvforward.py:255 nxvforward.py:297
+#: nxvcontrol.py:570 nxvforward.py:255 nxvforward.py:297
 msgid "Connect to:"
 msgstr "连接到："
 
-#: nxvcontrol.py:528 nxvforward.py:304
+#: nxvcontrol.py:577 nxvforward.py:304
 msgid "Connect"
 msgstr "连接"
 
-#: nxvcontrol.py:531 nxvforward.py:308
+#: nxvcontrol.py:580 nxvforward.py:308
 msgid "Disconnect"
 msgstr "断开"
 
-#: nxvcontrol.py:540
+#: nxvcontrol.py:589
 msgid "Robot Time:"
 msgstr "机器时间："
 
-#: nxvcontrol.py:545
+#: nxvcontrol.py:594
 msgid "Sync PC time to robot"
 msgstr "同步PC时间到机器"
 
-#: nxvcontrol.py:549
+#: nxvcontrol.py:598
 msgid "Test Mode:"
 msgstr "测试模式："
 
-#: nxvcontrol.py:553
+#: nxvcontrol.py:602
 msgid "Test ON"
 msgstr "开启测试模式"
 
-#: nxvcontrol.py:554
+#: nxvcontrol.py:603
 msgid "Test OFF"
 msgstr "关闭测试模式"
 
-#: nxvcontrol.py:558
+#: nxvcontrol.py:607
 msgid "Battery Status:"
 msgstr "电池状态："
 
-#: nxvcontrol.py:574
+#: nxvcontrol.py:623
 msgid "Version:"
 msgstr "版本："
 
-#: nxvcontrol.py:612 nxvcontrol.py:773
+#: nxvcontrol.py:661 nxvcontrol.py:824
 msgid "Commands"
 msgstr "命令"
 
-#: nxvcontrol.py:629 nxvforward.py:283 nxvforward.py:329
+#: nxvcontrol.py:678 nxvforward.py:283 nxvforward.py:329
 msgid "Clear"
 msgstr "清除"
 
-#: nxvcontrol.py:638 nxvforward.py:338
+#: nxvcontrol.py:687 nxvforward.py:338
 msgid "Run"
 msgstr "运行"
 
-#: nxvcontrol.py:681
+#: nxvcontrol.py:732
 msgid "Update Sensors"
 msgstr "更新传感器"
 
-#: nxvcontrol.py:682 nxvcontrol.py:722 nxvcontrol.py:728 nxvcontrol.py:740
-#: nxvcontrol.py:744 nxvcontrol.py:748 nxvcontrol.py:752 nxvcontrol.py:756
-#: nxvcontrol.py:760
+#: nxvcontrol.py:733 nxvcontrol.py:773 nxvcontrol.py:779 nxvcontrol.py:791
+#: nxvcontrol.py:795 nxvcontrol.py:799 nxvcontrol.py:803 nxvcontrol.py:807
+#: nxvcontrol.py:811
 msgid "OFF: "
 msgstr "关闭："
 
-#: nxvcontrol.py:682 nxvcontrol.py:722 nxvcontrol.py:728 nxvcontrol.py:740
-#: nxvcontrol.py:744 nxvcontrol.py:748 nxvcontrol.py:752 nxvcontrol.py:756
-#: nxvcontrol.py:760
+#: nxvcontrol.py:733 nxvcontrol.py:773 nxvcontrol.py:779 nxvcontrol.py:791
+#: nxvcontrol.py:795 nxvcontrol.py:799 nxvcontrol.py:803 nxvcontrol.py:807
+#: nxvcontrol.py:811
 msgid "ON: "
 msgstr "开启："
 
-#: nxvcontrol.py:697 nxvcontrol.py:721 nxvcontrol.py:770
+#: nxvcontrol.py:748 nxvcontrol.py:772 nxvcontrol.py:821
 msgid "LiDAR"
 msgstr "光达"
 
-#: nxvcontrol.py:727
+#: nxvcontrol.py:778
 msgid "Wheels Controled by Keypad"
 msgstr "键盘控制轮子"
 
-#: nxvcontrol.py:739
+#: nxvcontrol.py:790
 msgid "Left Wheel"
 msgstr "左轮"
 
-#: nxvcontrol.py:743
+#: nxvcontrol.py:794
 msgid "Right Wheel"
 msgstr "右轮"
 
-#: nxvcontrol.py:747
+#: nxvcontrol.py:798
 msgid "LiDAR Motor"
 msgstr "光达电动机"
 
-#: nxvcontrol.py:751
+#: nxvcontrol.py:802
 msgid "Vacuum"
 msgstr "真空吸尘"
 
-#: nxvcontrol.py:755
+#: nxvcontrol.py:806
 msgid "Brush"
 msgstr "刷子"
 
-#: nxvcontrol.py:759
+#: nxvcontrol.py:810
 msgid "Side Brush"
 msgstr "边刷"
 
-#: nxvcontrol.py:766
+#: nxvcontrol.py:817
 msgid "Recharge"
 msgstr "充电"
 
