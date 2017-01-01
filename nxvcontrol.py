@@ -735,10 +735,18 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
 
         self.sensor_tree_status = SensorTreeview(frame_top)
         self.sensor_tree_status.initUI()
-        self.sensor_tree_status.pack(pady=5, fill="both", expand=True)
+        self.sensor_tree_status.pack(pady=5, fill="both", side="left", expand=True)
         # <<TreeviewOpen>> <<TreeviewClose>>
         self.sensor_tree_status.bind('<<TreeviewOpen>>', lambda ev:self.guiloop_sensors_changed_to(ev,True))
         self.sensor_tree_status.bind('<<TreeviewClose>>', lambda ev:self.guiloop_sensors_changed_to(ev,False))
+        scrollbar_y_tree = ttk.Scrollbar(frame_top, orient="vertical")
+        scrollbar_y_tree.configure(command=self.sensor_tree_status.yview)
+        self.sensor_tree_status.configure(yscrollcommand=scrollbar_y_tree.set)
+        scrollbar_y_tree.pack( side = tk.RIGHT, fill=tk.Y )
+        #scrollbar_x_tree = ttk.Scrollbar(frame_top, orient="horizontal")
+        #scrollbar_x_tree.configure(command=self.sensor_tree_status.xview)
+        #self.sensor_tree_status.configure(xscrollcommand=scrollbar_x_tree.set)
+        #scrollbar_x_tree.pack( side = tk.BOTTOM, fill=tk.X )
 
         # page for LiDAR
         page_lidar = tk.Frame(nb)
