@@ -21,6 +21,32 @@ L.basicConfig(filename='nxvcontrol.log', level=L.DEBUG, format='%(asctime)s %(le
 import neatocmdapi
 import guilog
 
+import locale
+import gettext
+_=gettext.gettext
+
+def gettext_init():
+    global _
+    langs = []
+
+    local_path = os.path.realpath(os.path.dirname(sys.argv[0]))
+    lc, encoding = locale.getdefaultlocale()
+    if (lc):
+        langs += [lc]
+    language = os.environ.get('LANGUAGE', None)
+    # we know that we have
+    langs += ["zh_CN"]
+    if (language):
+        langs += language.split(":")
+    local_path = "languages/"
+    APP_NAME="nxvcontrol"
+    gettext.bindtextdomain(APP_NAME, local_path)
+    gettext.textdomain(APP_NAME)
+    lang = gettext.translation(APP_NAME, local_path, languages=langs, fallback = True)
+    #_=gettext.gettext
+    _=lang.gettext
+    L.debug("local=" + str(lc) + ", encoding=" + str(encoding) + ", langs=" + str(langs) + ", lang=" + str(lang) )
+
 str_progname="nxvControl"
 str_version="0.1"
 
@@ -131,10 +157,10 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
 
     def show_robot_testmode(self, onoff=False):
         if onoff:
-            self.lbl_testmode['text'] = "ON"
+            self.lbl_testmode['text'] = _("ON")
             self.lbl_testmode['fg'] = "red"
         else:
-            self.lbl_testmode['text'] = "OFF"
+            self.lbl_testmode['text'] = _("OFF")
             self.lbl_testmode['fg'] = "green"
 
     # the functions for log file in status
@@ -165,8 +191,8 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
         fname = fd.askopenfilename(
                               initialdir=dir_path,
                               filetypes=(
-                                            ("Text files", "*.txt"),
-                                            ("All files", "*.*")
+                                            (_("Text files"), "*.txt"),
+                                            (_("All files"), "*.*")
                                         )
                                   )
         if fname:
@@ -200,15 +226,18 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
 
         # page for About
         page_about = tk.Frame(nb)
-        lbl_about_head = tk.Label(page_about, text="About", font=LARGE_FONT)
+        lbl_about_head = tk.Label(page_about, text=_("About"), font=LARGE_FONT)
         lbl_about_head.pack(side="top", fill="x", pady=10)
-        lbl_about_main = tk.Label(page_about, text="\n" + str_progname + "\n" + str_version + "\n" + """
-Setup your Neato Robot
-
-Copyright © 2015–2016 The nxvControl Authors
-
-This program comes with absolutely no warranty.
-See the GNU General Public License, version 2 or later for details.""", font=NORM_FONT)
+        lbl_about_main = tk.Label(page_about
+            , font=NORM_FONT
+            , text="\n" + str_progname + "\n" + str_version + "\n"
+                + _("Setup your Neato Robot") + "\n"
+                + "\n"
+                + _("Copyright © 2015-2016 The nxvControl Authors") + "\n"
+                + "\n"
+                + _("This program comes with absolutely no warranty.") + "\n"
+                + _("See the GNU General Public License, version 3 or later for details.") + "\n"
+            )
         lbl_about_main.pack(side="top", fill="x", pady=10)
 
         # adding Frames as pages for the ttk.Notebook 
@@ -221,27 +250,27 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         #   the robot time, sync with pc
         #   textarea of version info
         #   log file name, enable/disable: all of connection message and input output will be here!
-        lbl_conn_head = tk.Label(page_conn, text="Connection", font=LARGE_FONT)
+        lbl_conn_head = tk.Label(page_conn, text=_("Connection"), font=LARGE_FONT)
         lbl_conn_head.pack(side="top", fill="x", pady=10)
-        self.frame_status = ttk.LabelFrame(page_conn, text='Status')
+        self.frame_status = ttk.LabelFrame(page_conn, text=_("Status"))
 
 
         # connection
-        frame_cli = ttk.LabelFrame(page_conn, text='Conection')
+        frame_cli = ttk.LabelFrame(page_conn, text=_("Conection"))
         line=0
         client_port_history = ('tcp://192.168.3.163:3333', 'dev://ttyACM0:115200', 'dev://ttyUSB0:115200', 'dev://COM11:115200', 'dev://COM12:115200', 'sim:', 'tcp://localhost:3333')
         self.client_port = tk.StringVar()
-        lbl_cli_port = tk.Label(frame_cli, text="Connect to:")
+        lbl_cli_port = tk.Label(frame_cli, text=_("Connect to:"))
         lbl_cli_port.grid(row=line, column=0, padx=5, sticky=tk.N+tk.S+tk.W)
         combobox_client_port = ttk.Combobox(frame_cli, textvariable=self.client_port)
         combobox_client_port['values'] = client_port_history
         combobox_client_port.grid(row=line, column=1, padx=5, pady=5, sticky=tk.N+tk.S+tk.W)
         combobox_client_port.current(0)
         # Buttons
-        self.btn_cli_connect = tk.Button(frame_cli, text="Connect", command=self.do_cli_connect)
+        self.btn_cli_connect = tk.Button(frame_cli, text=_("Connect"), command=self.do_cli_connect)
         self.btn_cli_connect.grid(row=line, column=2, columnspan=1, padx=5, sticky=tk.N+tk.S+tk.W+tk.E)
         #btn_cli_connect.pack(side="left", fill="both", padx=5, pady=5, expand=True)
-        self.btn_cli_disconnect = tk.Button(frame_cli, text="Disconnect", state=tk.DISABLED, command=self.do_cli_disconnect)
+        self.btn_cli_disconnect = tk.Button(frame_cli, text=_("Disconnect"), state=tk.DISABLED, command=self.do_cli_disconnect)
         self.btn_cli_disconnect.grid(row=line, column=3, columnspan=1, padx=5, sticky=tk.N+tk.S+tk.W+tk.E)
         #btn_cli_disconnect.pack(side="left", fill="both", padx=5, pady=5, expand=True)
         frame_cli.pack(side="top", fill="x", pady=10)
@@ -250,25 +279,25 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
 
         # status
         line = 0 # line
-        lbl_synctime_conn = tk.Label(self.frame_status, text="Robot Time:")
+        lbl_synctime_conn = tk.Label(self.frame_status, text=_("Robot Time:"))
         lbl_synctime_conn.grid(row=line, column=0, padx=5, sticky=tk.N+tk.S+tk.W)
         self.lbl_synctime = tk.Label(self.frame_status, text="00:00:00")
         self.lbl_synctime.grid(row=line, column=1, padx=5)
         #self.lbl_synctime.pack(side="right", fill="x", pady=10)
-        btn_synctime = tk.Button(self.frame_status, text="Sync PC time to robot", command=self.set_robot_time_from_pc)
+        btn_synctime = tk.Button(self.frame_status, text=_("Sync PC time to robot"), command=self.set_robot_time_from_pc)
         btn_synctime.grid(row=line, column=2, padx=5, sticky=tk.N+tk.S+tk.E+tk.W)
         #btn_synctime.pack(side="right", fill="x", pady=10)
         line += 1
-        lbl_testmode_conn = tk.Label(self.frame_status, text="Test Mode:")
+        lbl_testmode_conn = tk.Label(self.frame_status, text=_("Test Mode:"))
         lbl_testmode_conn.grid(row=line, column=0, padx=5)
-        self.lbl_testmode = tk.Label(self.frame_status, text="Unknown")
+        self.lbl_testmode = tk.Label(self.frame_status, text=_("Unknown"))
         self.lbl_testmode.grid(row=line, column=1, padx=5)
-        btn_testmode_on = tk.Button(self.frame_status, text="Test ON", command=lambda: self.set_robot_testmode(True))
-        btn_testmode_off = tk.Button(self.frame_status, text="Test OFF", command=lambda: self.set_robot_testmode(False))
+        btn_testmode_on = tk.Button(self.frame_status, text=_("Test ON"), command=lambda: self.set_robot_testmode(True))
+        btn_testmode_off = tk.Button(self.frame_status, text=_("Test OFF"), command=lambda: self.set_robot_testmode(False))
         btn_testmode_on.grid(row=line, column=2, padx=5, sticky=tk.N+tk.S+tk.W)
         btn_testmode_off.grid(row=line, column=2, padx=5, sticky=tk.N+tk.S+tk.E)
         line += 1
-        lbl_battstat_conn = tk.Label(self.frame_status, text="Battery Status:")
+        lbl_battstat_conn = tk.Label(self.frame_status, text=_("Battery Status:"))
         lbl_battstat_conn.grid(row=line, column=0, padx=5)
         self.style_battstat = ttk.Style(self.frame_status)
         # add the label to the progressbar style
@@ -284,7 +313,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         #btn_battstat = tk.Button(self.frame_status, text="")
         #btn_battstat.grid(row=line, column=2, padx=5, sticky=tk.E)
         line += 1
-        lbl_battstat_conn = tk.Label(self.frame_status, text="Version:")
+        lbl_battstat_conn = tk.Label(self.frame_status, text=_("Version:"))
         lbl_battstat_conn.grid(row=line, column=0, padx=5)
         self.text_version = ScrolledText(self.frame_status, wrap=tk.WORD, height=10)
         self.text_version.configure(state='disabled')
@@ -295,7 +324,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         # save log file?
         #line += 1
         #self.use_logfile = tk.StringVar()
-        #self.check_logfile = ttk.Checkbutton(self.frame_status, text='Use Log File',
+        #self.check_logfile = ttk.Checkbutton(self.frame_status, text=_("Use Log File"),
             #command=self.onLogfileCheckChanged, variable=self.use_logfile,
             #onvalue='metric', offvalue='imperial')
         #self.check_logfile.grid(row=line, column=0, padx=5)
@@ -314,7 +343,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         self.frame_status.pack(side="top", fill="both", pady=10)
 
         #ttk.Separator(page_conn, orient=HORIZONTAL).pack()
-        #b1 = tk.Button(page_about, text="Button 1")
+        #b1 = tk.Button(page_about, text=_("Button 1"))
 
         # page for commands
         page_command = tk.Frame(nb)
@@ -322,7 +351,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         #   edit line which supports history
         #   output
         #   help message area
-        lbl_command_head = tk.Label(page_command, text="Commands", font=LARGE_FONT)
+        lbl_command_head = tk.Label(page_command, text=_("Commands"), font=LARGE_FONT)
         lbl_command_head.pack(side="top", fill="x", pady=10)
 
         frame_top = tk.Frame(page_command)#, background="green")
@@ -339,7 +368,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         # clipboard.
         self.text_cli_command.bind("<1>", lambda event: self.text_cli_command.focus_set())
 
-        btn_clear_cli_command = tk.Button(frame_bottom, text="Clear", command=lambda: (set_readonly_text(self.text_cli_command, ""), self.text_cli_command.update_idletasks()) )
+        btn_clear_cli_command = tk.Button(frame_bottom, text=_("Clear"), command=lambda: (set_readonly_text(self.text_cli_command, ""), self.text_cli_command.update_idletasks()) )
         btn_clear_cli_command.pack(side="left", fill="x", padx=5, pady=5, expand=False)
         self.cli_command = tk.StringVar()
         self.combobox_cli_command = ttk.Combobox(frame_bottom, textvariable=self.cli_command)
@@ -348,7 +377,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         self.combobox_cli_command.bind("<Return>", self.do_cli_run_ev)
         self.combobox_cli_command.bind("<<ComboboxSelected>>", self.do_select_clicmd)
         self.combobox_cli_command.current(0)
-        btn_run_cli_command = tk.Button(frame_bottom, text="Run", command=self.do_cli_run)
+        btn_run_cli_command = tk.Button(frame_bottom, text=_("Run"), command=self.do_cli_run)
         btn_run_cli_command.pack(side="right", fill="x", padx=5, pady=5, expand=False)
 
         # page for scheduler
@@ -356,15 +385,15 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         #   indicator, enable/disable button
         #   save/load file
         #   the list of scheduler
-        lbl_sche_head = tk.Label(page_sche, text="Schedule", font=LARGE_FONT)
-        lbl_sche_head.pack(side="top", fill="x", pady=10)
+        #lbl_sche_head = tk.Label(page_sche, text=_("Schedule"), font=LARGE_FONT)
+        #lbl_sche_head.pack(side="top", fill="x", pady=10)
 
         # page for sensors
         page_sensors = tk.Frame(nb)
         #   the list of sensor status, includes sensor and value
         #   indicator of testmode, no control
         #   indicator, enable/disable auto update
-        lbl_sensor_head = tk.Label(page_sensors, text="Sensors", font=LARGE_FONT)
+        lbl_sensor_head = tk.Label(page_sensors, text=_("Sensors"), font=LARGE_FONT)
         lbl_sensor_head.pack(side="top", fill="x", pady=10)
 
         frame_top = tk.Frame(page_sensors)#, background="green")
@@ -377,48 +406,48 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         self.buttons_sensors_request_full = False # flag to signal the command is finished
 
         # power DC connection: GetDigitalSensors:SNSR_DC_JACK_CONNECT,0
-        devstr = "Power DC Jack"
-        self.btn_status_powerdc = guilog.ToggleButton(frame_top, txtt="Connected: "+devstr, txtr="Disconnected: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
+        devstr = _("Power DC Jack")
+        self.btn_status_powerdc = guilog.ToggleButton(frame_top, txtt=_("Connected: ")+devstr, txtr=_("Disconnected: ")+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
         self.btn_status_powerdc.pack(pady=5)
 
         # Dustbin In: GetDigitalSensors:SNSR_DUSTBIN_IS_IN,1
-        devstr = "Dustbin"
-        self.btn_status_dustbin = guilog.ToggleButton(frame_top, txtt="In: "+devstr, txtr="Out: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
+        devstr = _("Dustbin")
+        self.btn_status_dustbin = guilog.ToggleButton(frame_top, txtt=_("In: ")+devstr, txtr=_("Out: ")+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
         self.btn_status_dustbin.pack(pady=5)
 
         # Left Wheel Extended: GetDigitalSensors:SNSR_LEFT_WHEEL_EXTENDED,0
-        devstr = "Left Wheel"
-        self.btn_status_leftwheel = guilog.ToggleButton(frame_top, txtt="Extended: "+devstr, txtr="In: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
+        devstr = _("Left Wheel")
+        self.btn_status_leftwheel = guilog.ToggleButton(frame_top, txtt=_("Extended: ")+devstr, txtr=_("In: ")+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
         self.btn_status_leftwheel.pack(pady=5)
 
         # Right Wheel Extended: GetDigitalSensors:SNSR_RIGHT_WHEEL_EXTENDED,0
-        devstr = "Right Wheel"
-        self.btn_status_rightwheel = guilog.ToggleButton(frame_top, txtt="Extended: "+devstr, txtr="In: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
+        devstr = _("Right Wheel")
+        self.btn_status_rightwheel = guilog.ToggleButton(frame_top, txtt=_("Extended: ")+devstr, txtr=_("In: ")+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
         self.btn_status_rightwheel.pack(pady=5)
 
         # Left Side Key: GetDigitalSensors:LSIDEBIT,0
-        devstr = "Left Side Key"
-        self.btn_status_leftsidekey = guilog.ToggleButton(frame_top, txtt="Kicked: "+devstr, txtr="Released: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
+        devstr = _("Left Side Key")
+        self.btn_status_leftsidekey = guilog.ToggleButton(frame_top, txtt=_("Kicked: ")+devstr, txtr=_("Released: ")+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
         self.btn_status_leftsidekey.pack(pady=5)
 
         # Left Front Key: GetDigitalSensors:LFRONTBIT,0
-        devstr = "Left Front Key"
-        self.btn_status_leftfrontkey = guilog.ToggleButton(frame_top, txtt="Kicked: "+devstr, txtr="Released: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
+        devstr = _("Left Front Key")
+        self.btn_status_leftfrontkey = guilog.ToggleButton(frame_top, txtt=_("Kicked: ")+devstr, txtr=_("Released: ")+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
         self.btn_status_leftfrontkey.pack(pady=5)
 
         # Right Side Key: GetDigitalSensors:RSIDEBIT,0
-        devstr = "Right Side Key"
-        self.btn_status_rightsidekey = guilog.ToggleButton(frame_top, txtt="Kicked: "+devstr, txtr="Released: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
+        devstr = _("Right Side Key")
+        self.btn_status_rightsidekey = guilog.ToggleButton(frame_top, txtt=_("Kicked: ")+devstr, txtr=_("Released: ")+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
         self.btn_status_rightsidekey.pack(pady=5)
 
         # Right Front Key: GetDigitalSensors:RFRONTBIT,0
-        devstr = "Right Front Key"
-        self.btn_status_rightfrontkey = guilog.ToggleButton(frame_top, txtt="Kicked: "+devstr, txtr="Released: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
+        devstr = _("Right Front Key")
+        self.btn_status_rightfrontkey = guilog.ToggleButton(frame_top, txtt=_("Kicked: ")+devstr, txtr=_("Released: ")+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
         self.btn_status_rightfrontkey.pack(pady=5)
 
         self.sensors_update_isactive = False
-        devstr = "Update Sensors"
-        self.btn_sensors_update_enable = guilog.ToggleButton(frame_bottom, txtt="ON: "+devstr, txtr="OFF: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, command=self.guiloop_sensors_update_enable)
+        devstr = _("Update Sensors")
+        self.btn_sensors_update_enable = guilog.ToggleButton(frame_bottom, txtt=_("ON: ")+devstr, txtr=_("OFF: ")+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, command=self.guiloop_sensors_update_enable)
         self.btn_sensors_update_enable.pack(pady=5, side="right")
 
         # page for LiDAR
@@ -426,7 +455,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         #   graph for current data
         #   indicator, enable/disable scanning
         #   buttons to remote control: left/right/up/down/rotate
-        lbl_lidar_head = tk.Label(page_lidar, text="LiDAR", font=LARGE_FONT)
+        lbl_lidar_head = tk.Label(page_lidar, text=_("LiDAR"), font=LARGE_FONT)
         lbl_lidar_head.pack(side="top", fill="x", pady=10)
 
         frame_top = tk.Frame(page_lidar)#, background="green")
@@ -450,65 +479,65 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         self.state_wheel = STATE_STOP
         self.speed_wheel = 0
 
-        devstr = "LiDAR"
-        self.btn_lidar_enable = guilog.ToggleButton(frame_bottom, txtt="ON: "+devstr, txtr="OFF: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, command=self.guiloop_lidar_enable)
+        devstr = _("LiDAR")
+        self.btn_lidar_enable = guilog.ToggleButton(frame_bottom, txtt=_("ON: ")+devstr, txtr=_("OFF: ")+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, command=self.guiloop_lidar_enable)
         self.btn_lidar_enable.pack(pady=5, side="left")
         self.setup_keypad_navigate(self.canvas_lidar)
 
         self.wheelctrl_isactive = False
-        devstr = "Wheel Controled by Keypad"
-        self.btn_wheelctrl_enable = guilog.ToggleButton(frame_bottom, txtt="ON: "+devstr, txtr="OFF: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, command=self.guiloop_wheelctrl_enable)
+        devstr = _("Wheel Controled by Keypad")
+        self.btn_wheelctrl_enable = guilog.ToggleButton(frame_bottom, txtt=_("ON: ")+devstr, txtr=_("OFF: ")+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, command=self.guiloop_wheelctrl_enable)
         self.btn_wheelctrl_enable.pack(pady=5, side="right")
 
         # page for motors
         page_moto = tk.Frame(nb)
         #   list of motors and each has indicator, start/stop button
         #   warnning message: flip the robot upside down so the wheels are faceing up, before enable wheels moto!
-        lbl_moto_head = tk.Label(page_moto, text="Motors", font=LARGE_FONT)
+        lbl_moto_head = tk.Label(page_moto, text=_("Motors"), font=LARGE_FONT)
         lbl_moto_head.pack(side="top", fill="x", pady=10)
         s = ttk.Scale(page_moto, orient=tk.HORIZONTAL, length=200, from_=1.0, to=100.0)
 
-        devstr = "Left Wheel"
-        self.btn_enable_leftwheel = guilog.ToggleButton(page_moto, txtt="ON: "+devstr, txtr="OFF: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, command=self.guiloop_enable_leftwheel)
+        devstr = _("Left Wheel")
+        self.btn_enable_leftwheel = guilog.ToggleButton(page_moto, txtt=_("ON: ")+devstr, txtr=_("OFF: ")+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, command=self.guiloop_enable_leftwheel)
         self.btn_enable_leftwheel.pack(pady=5)
 
-        devstr = "Right Wheel"
-        self.btn_enable_rightwheel = guilog.ToggleButton(page_moto, txtt="ON: "+devstr, txtr="OFF: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, command=self.guiloop_enable_rightwheel )
+        devstr = _("Right Wheel")
+        self.btn_enable_rightwheel = guilog.ToggleButton(page_moto, txtt=_("ON: ")+devstr, txtr=_("OFF: ")+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, command=self.guiloop_enable_rightwheel )
         self.btn_enable_rightwheel.pack(pady=5)
 
-        devstr = "LiDAR Motor"
-        self.btn_enable_lidarmoto = guilog.ToggleButton(page_moto, txtt="ON: "+devstr, txtr="OFF: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, command=self.guiloop_enable_lidarmoto )
+        devstr = _("LiDAR Motor")
+        self.btn_enable_lidarmoto = guilog.ToggleButton(page_moto, txtt=_("ON: ")+devstr, txtr=_("OFF: ")+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, command=self.guiloop_enable_lidarmoto )
         self.btn_enable_lidarmoto.pack(pady=5)
 
-        devstr = "Vacuum"
-        self.btn_enable_vacuum = guilog.ToggleButton(page_moto, txtt="ON: "+devstr, txtr="OFF: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, command=self.guiloop_enable_vacuum )
+        devstr = _("Vacuum")
+        self.btn_enable_vacuum = guilog.ToggleButton(page_moto, txtt=_("ON: ")+devstr, txtr=_("OFF: ")+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, command=self.guiloop_enable_vacuum )
         self.btn_enable_vacuum.pack(pady=5)
 
-        devstr = "Brush"
-        self.btn_enable_brush = guilog.ToggleButton(page_moto, txtt="ON: "+devstr, txtr="OFF: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, command=self.guiloop_enable_brush )
+        devstr = _("Brush")
+        self.btn_enable_brush = guilog.ToggleButton(page_moto, txtt=_("ON: ")+devstr, txtr=_("OFF: ")+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, command=self.guiloop_enable_brush )
         self.btn_enable_brush.pack(pady=5)
 
-        devstr = "Side Brush"
-        self.btn_enable_sidebrush = guilog.ToggleButton(page_moto, txtt="ON: "+devstr, txtr="OFF: "+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, command=self.guiloop_enable_sidebrush )
+        devstr = _("Side Brush")
+        self.btn_enable_sidebrush = guilog.ToggleButton(page_moto, txtt=_("ON: ")+devstr, txtr=_("OFF: ")+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, command=self.guiloop_enable_sidebrush )
         self.btn_enable_sidebrush.pack(pady=5)
 
         # page for Recharge
         page_recharge = tk.Frame(nb)
         # only available when connected to Serial port directly, not for TCP
-        lbl_recharge_head = tk.Label(page_recharge, text="Recharge", font=LARGE_FONT)
+        lbl_recharge_head = tk.Label(page_recharge, text=_("Recharge"), font=LARGE_FONT)
         lbl_recharge_head.pack(side="top", fill="x", pady=10)
 
-        self.tabtxt_sensors = "Sensors"
-        self.tabtxt_lidar = "LiDAR"
-        self.tabtxt_status = "Connection"
+        self.tabtxt_sensors = _("Sensors")
+        self.tabtxt_lidar = _("LiDAR")
+        self.tabtxt_status = _("Connection")
         nb.add(page_conn, text=self.tabtxt_status)
-        nb.add(page_command, text='Commands')
+        nb.add(page_command, text=_("Commands"))
         #nb.add(page_sche, text='Schedule')
-        nb.add(page_moto, text='Moto')
+        nb.add(page_moto, text=_("Motors"))
         nb.add(page_sensors, text=self.tabtxt_sensors)
         nb.add(page_lidar, text=self.tabtxt_lidar)
         #nb.add(page_recharge, text='Recharge')
-        nb.add(page_about, text='About')
+        nb.add(page_about, text=_("About"))
         #nb.add(page_testgrid, text='TestGrid')
         #nb.add(page_testpack, text='TestPack')
         nb.bind('<<NotebookTabChanged>>', self.guiloop_nb_tabchanged)
@@ -1226,6 +1255,8 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
 def nxvcontrol_main():
     guilog.set_log_stderr()
 
+    gettext_init()
+
     root = tk.Tk()
     root.title(str_progname + " - " + str_version)
 
@@ -1237,6 +1268,3 @@ def nxvcontrol_main():
 
 if __name__ == "__main__":
     nxvcontrol_main()
-
-
-

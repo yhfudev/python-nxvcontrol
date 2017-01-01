@@ -17,6 +17,10 @@ else:
     import multiprocessing
     from multiprocessing import Queue
 
+import importlib.util as importutil
+#if None != importlib.find_loader("intl"):
+#if None != importutil.find_spec("intl"):
+
 import time
 from threading import Thread
 import queue
@@ -29,7 +33,33 @@ config_use_textarea_log=False
 import neatocmdapi
 import guilog
 
-str_progname="nxvForward"
+import locale
+import gettext
+_=gettext.gettext
+
+def gettext_init():
+    global _
+    langs = []
+
+    local_path = os.path.realpath(os.path.dirname(sys.argv[0]))
+    lc, encoding = locale.getdefaultlocale()
+    if (lc):
+        langs += [lc]
+    language = os.environ.get('LANGUAGE', None)
+    # we know that we have
+    langs += ["zh_CN"]
+    if (language):
+        langs += language.split(":")
+    local_path = "languages/"
+    APP_NAME="nxvcontrol"
+    gettext.bindtextdomain(APP_NAME, local_path)
+    gettext.textdomain(APP_NAME)
+    lang = gettext.translation(APP_NAME, local_path, languages=langs, fallback = True)
+    #_=gettext.gettext
+    _=lang.gettext
+    L.debug("local=" + str(lc) + ", encoding=" + str(encoding) + ", langs=" + str(langs) + ", lang=" + str(lang) )
+
+str_progname=_("nxvForward")
 str_version="0.1"
 
 LARGE_FONT= ("Verdana", 18)
@@ -189,15 +219,18 @@ class MyTkAppFrame(ttk.Notebook):
 
         # page for About
         page_about = ttk.Frame(nb)
-        lbl_about_head = tk.Label(page_about, text="About", font=LARGE_FONT)
+        lbl_about_head = tk.Label(page_about, text=_("About"), font=LARGE_FONT)
         lbl_about_head.pack(side="top", fill="x", pady=10)
-        lbl_about_main = tk.Label(page_about, text="\n" + str_progname + "\n" + str_version + "\n" + """
-Forward Neato XV control over network
-
-Copyright © 2015–2016 The nxvForward Authors
-
-This program comes with absolutely no warranty.
-See the GNU General Public License, version 2 or later for details.""", font=NORM_FONT)
+        lbl_about_main = tk.Label(page_about
+                , font=NORM_FONT
+                , text="\n" + str_progname + "\n" + str_version + "\n"
+                    + _("Forward Neato XV control over network") + "\n"
+                    + "\n"
+                    + _("Copyright © 2015–2016 The nxvForward Authors") + "\n"
+                    + "\n"
+                    + _("This program comes with absolutely no warranty.") + "\n"
+                    + _("See the GNU General Public License, version 3 or later for details.")
+                )
         lbl_about_main.pack(side="top", fill="x", pady=10)
 
         # page for server
@@ -210,7 +243,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         line=0
         bind_port_history = ('localhost:3333', '127.0.0.1:4444', '0.0.0.0:3333')
         self.bind_port = tk.StringVar()
-        lbl_svr_port = tk.Label(frame_svr, text="Bind Address:")
+        lbl_svr_port = tk.Label(frame_svr, text=_("Bind Address:"))
         lbl_svr_port.grid(row=line, column=0, padx=5, sticky=tk.N+tk.S+tk.W)
         combobox_bind_port = ttk.Combobox(frame_svr, textvariable=self.bind_port)
         combobox_bind_port['values'] = bind_port_history
@@ -220,7 +253,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         line += 1
         conn_port_history = ('dev://ttyACM0:115200', 'dev://ttyUSB0:115200', 'dev://COM11:115200', 'dev://COM12:115200', 'sim:', 'tcp://localhost:3333', 'tcp://192.168.3.163:3333')
         self.conn_port = tk.StringVar()
-        lbl_svr_port = tk.Label(frame_svr, text="Connect to:")
+        lbl_svr_port = tk.Label(frame_svr, text=_("Connect to:"))
         lbl_svr_port.grid(row=line, column=0, padx=5, sticky=tk.N+tk.S+tk.W)
         combobox_conn_port = ttk.Combobox(frame_svr, textvariable=self.conn_port)
         combobox_conn_port['values'] = conn_port_history
@@ -228,12 +261,12 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         combobox_conn_port.current(0)
 
         line -= 1
-        self.btn_svr_start = tk.Button(frame_svr, text="Start", command=self.do_start)
+        self.btn_svr_start = tk.Button(frame_svr, text=_("Start"), command=self.do_start)
         self.btn_svr_start.grid(row=line, column=2, padx=5, sticky=tk.N+tk.S+tk.W+tk.E)
         #self.btn_svr_start.pack(side="right", fill="both", padx=5, pady=5, expand=True)
 
         line += 1
-        self.btn_svr_stop = tk.Button(frame_svr, text="Stop", command=self.do_stop)
+        self.btn_svr_stop = tk.Button(frame_svr, text=_("Stop"), command=self.do_stop)
         self.btn_svr_stop.grid(row=line, column=2, padx=5, sticky=tk.N+tk.S+tk.W+tk.E)
         #self.btn_svr_stop.pack(side="right", fill="both", padx=5, pady=5, expand=True)
 
@@ -248,32 +281,32 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
             self.text_log.bind("<1>", lambda event: self.text_log.focus_set()) # enable highlighting and copying
             #set_readonly_text(self.text_log, "Version Info\nver 1\nver 2\n")
 
-            btn_log_clear = tk.Button(page_server, text="Clear", command=lambda: (set_readonly_text(self.text_log, ""), self.text_log.update_idletasks()))
+            btn_log_clear = tk.Button(page_server, text=_("Clear"), command=lambda: (set_readonly_text(self.text_log, ""), self.text_log.update_idletasks()))
             #btn_log_clear.grid(row=line, column=0, columnspan=2, padx=5, sticky=tk.N+tk.S+tk.W+tk.E)
             btn_log_clear.pack(side="right", fill="both", padx=5, pady=5, expand=True)
 
         # page for client
         page_client = ttk.Frame(nb)
-        lbl_cli_head = tk.Label(page_client, text="Client", font=LARGE_FONT)
+        lbl_cli_head = tk.Label(page_client, text=_("Test Client"), font=LARGE_FONT)
         lbl_cli_head.pack(side="top", fill="x", pady=10)
 
-        frame_cli = ttk.LabelFrame(page_client, text='Connection')
+        frame_cli = ttk.LabelFrame(page_client, text=_("Connection"))
 
         line=0
         client_port_history = ('tcp://192.168.3.163:3333', 'dev://ttyACM0:115200', 'dev://ttyUSB0:115200', 'dev://COM11:115200', 'dev://COM12:115200', 'sim:', 'tcp://localhost:3333')
         self.client_port = tk.StringVar()
-        lbl_cli_port = tk.Label(frame_cli, text="Connect to:")
+        lbl_cli_port = tk.Label(frame_cli, text=_("Connect to:"))
         lbl_cli_port.grid(row=line, column=0, padx=5, sticky=tk.N+tk.S+tk.W)
         combobox_client_port = ttk.Combobox(frame_cli, textvariable=self.client_port)
         combobox_client_port['values'] = client_port_history
         combobox_client_port.grid(row=line, column=1, padx=5, pady=5, sticky=tk.N+tk.S+tk.W)
         combobox_client_port.current(0)
 
-        self.btn_cli_connect = tk.Button(frame_cli, text="Connect", command=self.do_cli_connect)
+        self.btn_cli_connect = tk.Button(frame_cli, text=_("Connect"), command=self.do_cli_connect)
         self.btn_cli_connect.grid(row=line, column=2, columnspan=1, padx=5, sticky=tk.N+tk.S+tk.W+tk.E)
         #self.btn_cli_connect.pack(side="left", fill="both", padx=5, pady=5, expand=True)
 
-        self.btn_cli_disconnect = tk.Button(frame_cli, text="Disconnect", command=self.do_cli_disconnect)
+        self.btn_cli_disconnect = tk.Button(frame_cli, text=_("Disconnect"), command=self.do_cli_disconnect)
         self.btn_cli_disconnect.grid(row=line, column=3, columnspan=1, padx=5, sticky=tk.N+tk.S+tk.W+tk.E)
         #self.btn_cli_disconnect.pack(side="left", fill="both", padx=5, pady=5, expand=True)
 
@@ -294,7 +327,7 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         # clipboard.
         self.text_cli_command.bind("<1>", lambda event: self.text_cli_command.focus_set())
 
-        btn_clear_cli_command = tk.Button(frame_bottom, text="Clear", command=lambda: (set_readonly_text(self.text_cli_command, ""), self.text_cli_command.update_idletasks()) )
+        btn_clear_cli_command = tk.Button(frame_bottom, text=_("Clear"), command=lambda: (set_readonly_text(self.text_cli_command, ""), self.text_cli_command.update_idletasks()) )
         btn_clear_cli_command.pack(side="left", fill="x", padx=5, pady=5, expand=False)
         self.cli_command = tk.StringVar()
         self.combobox_cli_command = ttk.Combobox(frame_bottom, textvariable=self.cli_command)
@@ -303,16 +336,16 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
         self.combobox_cli_command.bind("<Return>", self.do_cli_run_ev)
         self.combobox_cli_command.bind("<<ComboboxSelected>>", self.do_select_clicmd)
         self.combobox_cli_command.current(0)
-        btn_run_cli_command = tk.Button(frame_bottom, text="Run", command=self.do_cli_run)
+        btn_run_cli_command = tk.Button(frame_bottom, text=_("Run"), command=self.do_cli_run)
         btn_run_cli_command.pack(side="right", fill="x", padx=5, pady=5, expand=False)
 
         self.check_mid_cli_command()
 
 
         # last
-        nb.add(page_server, text='Server')
-        nb.add(page_client, text='Client')
-        nb.add(page_about, text='About')
+        nb.add(page_server, text=_("Server"))
+        nb.add(page_client, text=_("Test Client"))
+        nb.add(page_about, text=_("About"))
         combobox_bind_port.focus()
 
         self.do_stop()
@@ -394,6 +427,8 @@ See the GNU General Public License, version 2 or later for details.""", font=NOR
 def nxvforward_main():
     global config_use_textarea_log
     guilog.set_log_stderr()
+
+    gettext_init()
 
     root = tk.Tk()
     root.title(str_progname + " - " + str_version)

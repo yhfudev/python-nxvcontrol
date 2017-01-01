@@ -1,4 +1,6 @@
 #!/usr/bin/python3
+
+import logging as L
 import time
 
 lds_list=(
@@ -4628,6 +4630,7 @@ SumInG,0.000
             "SoundID '" + requestlist[1] + "' is out of range."
         else:
             response = 'PlaySound accepted: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
+
     elif request.lower() == "TestMode".lower():
         isprocessed = False
         if requestlist[1].strip().lower() == "on":
@@ -4711,6 +4714,7 @@ SumInG,0.000
 
     elif request.lower() == "GetLDSScan".lower():
         tmnow = time.time()
+        L.debug("GetLDSScan motor run=" + str(is_lidar_motor_running) + ", time start=" + str(tm_lidar_motor_start) + ", time now=" + str(tmnow))
         if is_lidar_motor_running == True and tmnow > tm_lidar_motor_start + 2:
             response = get_lds_data()
         else:

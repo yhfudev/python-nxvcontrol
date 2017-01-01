@@ -1,6 +1,9 @@
 Neato XV Robot Setup Utilities
 ==============================
 
+[![Python 2, 3](https://img.shields.io/badge/python-2%2C%203-blue.svg)](https://www.python.org/downloads/)
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](http://www.gnu.org/licenses/gpl-3.0)
+
 The tool sets includes the followings
 
     nxvcontrol -- control Neato XV robot from GUI, supports functions include moto control, show sensors, LiDAR show and move control etc.
