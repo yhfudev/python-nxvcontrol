@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 
-import os
-import sys
-if sys.version_info[0] < 3:
+try:
     import Tkinter as tk
     import ttk
     import ScrolledText
     import tkFileDialog as fd
-else:
+except ImportError:
     import tkinter as tk
     from tkinter import ttk
     from tkinter.scrolledtext import ScrolledText
     import tkinter.filedialog as fd
+
+import os
+import sys
 
 import queue
 
@@ -138,6 +139,263 @@ import math
 MAXDIST=16700 # the maxmium allowed of the distance value of lidar
 MAXDIST=4000 # the maxmium allowed of the distance value of lidar
 CONST_RAD=math.pi / 180
+
+class SensorTreeview(ttk.Treeview):
+
+    def __init__(self, parent):
+        ttk.Treeview.__init__(self, parent)
+        self.parent = parent
+
+    def initUI(self):
+        tree = self
+        tree["columns"]=("value")#,"max","min")
+        tree.column("value", anchor='center') #, width=100 )
+        #tree.column("max", width=100)
+        #tree.column("min", width=100)
+        tree.column('#0', anchor='w')
+        tree.heading('#0', text=_("Sensors"), anchor='w')
+        tree.heading("value", text=_("Value"))
+        #tree.heading("max", text=_("Max Value"))
+        #tree.heading("min", text=_("Min Value"))
+        self.subtree_digital = tree.insert('', 'end', "digital", text=_("Digital Sensors"))
+        self.subtree_analogy = tree.insert('', 'end', "analogy", text=_("Analog Sensors"))
+        self.subtree_buttons = tree.insert('', 'end', "buttons", text=_("Buttons"))
+        self.subtree_motors  = tree.insert('', 'end', "motors", text=_("Motors"))
+        self.subtree_accel  = tree.insert('', 'end', "accel", text=_("Accelerometer"))
+        self.updateDigitalSensors("")
+        self.updateButtons("")
+        self.updateAnalogSensors("")
+        self.updateMotors("")
+        self.updateAccel("")
+        # <<TreeviewOpen>> <<TreeviewClose>>
+
+    def getType(self, node):
+        if node == self.subtree_digital:
+            return "digital"
+        elif node == self.subtree_analogy:
+            return "analogy"
+        elif node == self.subtree_buttons:
+            return "buttons"
+        elif node == self.subtree_motors:
+            return "motors"
+        elif node == self.subtree_accel:
+            return "accel"
+        return "unknown"
+
+    def _updateDigitalSensors(self, nxvretstr, subtree, nxvretstr_default, list_keys, list_values):
+        tree = self
+        if nxvretstr == "":
+            # remove all of items in the tree
+            tree.delete(*tree.get_children(subtree))
+            # init the structure
+            nxvretstr=nxvretstr_default
+
+        items_children = self.get_children(subtree)
+        if items_children == None or len(items_children) < 1:
+            # create children
+            for itemstr in list_keys:
+                L.debug("Digital Sensors add key: " + itemstr)
+                tree.insert(subtree, 'end', text=itemstr, values=(""))
+            items_children = self.get_children(subtree)
+
+        # parse the string
+        linestr = nxvretstr.strip() + '\n'
+        linelst = linestr.split('\n')
+        for i in range(0, len(linelst)):
+            line = linelst[i].strip()
+            if len(line) < 1:
+                break
+            columnlst = line.split(',')
+            if len(columnlst) > 1:
+                if columnlst[0] in list_keys:
+                    idx = list_keys[columnlst[0]]
+                    value = _("Unknown")
+                    if columnlst[1] in list_values:
+                        value = list_values[columnlst[1]]
+                    L.debug("Digital Sensors add key value: [" + str(idx) + "] " + str(items_children[idx]) + ": " + columnlst[0] + "=" + columnlst[1])
+                    tree.item(items_children[idx], values=(value), text=columnlst[0])
+        pass
+
+    def updateDigitalSensors(self, nxvretstr):
+        subtree = self.subtree_digital
+        nxvretstr_default="""Digital Sensor Name, Value
+SNSR_DC_JACK_CONNECT,-1
+SNSR_DUSTBIN_IS_IN,-1
+SNSR_LEFT_WHEEL_EXTENDED,-1
+SNSR_RIGHT_WHEEL_EXTENDED,-1
+LSIDEBIT,-1
+LFRONTBIT,-1
+RSIDEBIT,-1
+RFRONTBIT,-1
+"""
+        list_keys = {
+            "SNSR_DC_JACK_CONNECT":0,
+            "SNSR_DUSTBIN_IS_IN":1,
+            "SNSR_LEFT_WHEEL_EXTENDED":2,
+            "SNSR_RIGHT_WHEEL_EXTENDED":3,
+            "LSIDEBIT":4,
+            "LFRONTBIT":5,
+            "RSIDEBIT":6,
+            "RFRONTBIT":7,
+            }
+        list_values = {
+            "0": _("Released"),
+            "1": _("Pressed"),
+            }
+        self._updateDigitalSensors(nxvretstr, subtree, nxvretstr_default, list_keys, list_values)
+
+    def updateButtons(self, nxvretstr):
+        subtree = self.subtree_buttons
+        nxvretstr_default="""Button Name,Pressed
+BTN_SOFT_KEY,0
+BTN_SCROLL_UP,0
+BTN_START,0
+BTN_BACK,0
+BTN_SCROLL_DOWN,0
+"""
+
+        list_keys = {
+            "BTN_SOFT_KEY":0,
+            "BTN_SCROLL_UP":1,
+            "BTN_START":2,
+            "BTN_BACK":3,
+            "BTN_SCROLL_DOWN":4,
+            }
+        list_values = {
+            "0": _("Released"),
+            "1": _("Pressed"),
+            }
+
+        self._updateDigitalSensors(nxvretstr, subtree, nxvretstr_default, list_keys, list_values)
+
+    def _updateAnalogSensors(self, nxvretstr, subtree, nxvretstr_default, list_keys):
+        tree = self
+        if nxvretstr == "":
+            # remove all of items in the tree
+            tree.delete(*tree.get_children(subtree))
+            # init the structure
+            nxvretstr=nxvretstr_default
+
+        items_children = self.get_children(subtree)
+        if items_children == None or len(items_children) < 1:
+            # create children
+            for itemstr in list_keys:
+                tree.insert(subtree, 'end', text=itemstr, values=(""))
+            items_children = self.get_children(subtree)
+
+        # parse the string
+        linestr = nxvretstr.strip() + '\n'
+        linelst = linestr.split('\n')
+        for i in range(0, len(linelst)):
+            line = linelst[i].strip()
+            if len(line) < 1:
+                break
+            columnlst = line.split(',')
+            if len(columnlst) > 1:
+                if columnlst[0] in list_keys:
+                    idx = list_keys[columnlst[0]]
+                    tree.item(items_children[idx], values=(columnlst[1]), text=columnlst[0])
+        pass
+
+    def updateAnalogSensors(self, nxvretstr):
+        subtree = self.subtree_analogy
+        nxvretstr_default="""SensorName,Value
+WallSensorInMM,-1,
+BatteryVoltageInmV,-1,
+LeftDropInMM,-1,
+RightDropInMM,-1,
+LeftMagSensor,-1,
+RightMagSensor,-1,
+UIButtonInmV,-1,
+VacuumCurrentInmA,-1,
+ChargeVoltInmV,-1,
+BatteryTemp0InC,-1,
+BatteryTemp1InC,-1,
+CurrentInmA,-1,
+SideBrushCurrentInmA,-1,
+VoltageReferenceInmV,-1,
+AccelXInmG,-1,
+AccelYInmG,-1,
+AccelZInmG,-1,
+"""
+
+        list_keys = {
+            "WallSensorInMM":0,
+            "BatteryVoltageInmV":1,
+            "LeftDropInMM":2,
+            "RightDropInMM":3,
+            "LeftMagSensor":4,
+            "RightMagSensor":5,
+            "UIButtonInmV":6,
+            "VacuumCurrentInmA":7,
+            "ChargeVoltInmV":8,
+            "BatteryTemp0InC":9,
+            "BatteryTemp1InC":10,
+            "CurrentInmA":11,
+            "SideBrushCurrentInmA":12,
+            "VoltageReferenceInmV":13,
+            "AccelXInmG":14,
+            "AccelYInmG":15,
+            "AccelZInmG":16,
+            }
+        self._updateAnalogSensors(nxvretstr, subtree, nxvretstr_default, list_keys)
+
+
+    def updateMotors(self, nxvretstr):
+        subtree = self.subtree_motors
+        nxvretstr_default="""Parameter,Value
+Brush_RPM,0
+Brush_mA,0
+Vacuum_RPM,0
+Vacuum_mA,0
+LeftWheel_RPM,0
+LeftWheel_Load%,0
+LeftWheel_PositionInMM,0
+LeftWheel_Speed,0
+RightWheel_RPM,0
+RightWheel_Load%,0
+RightWheel_PositionInMM,0
+RightWheel_Speed,0
+Charger_mAH, 0
+SideBrush_mA,0
+"""
+        list_keys = {
+            "Brush_RPM":0,
+            "Brush_mA":1,
+            "Vacuum_RPM":2,
+            "Vacuum_mA":3,
+            "LeftWheel_RPM":4,
+            "LeftWheel_Load%":5,
+            "LeftWheel_PositionInMM":6,
+            "LeftWheel_Speed":7,
+            "RightWheel_RPM":8,
+            "RightWheel_Load%":9,
+            "RightWheel_PositionInMM":10,
+            "RightWheel_Speed":11,
+            "Charger_mAH":12,
+            "SideBrush_mA":13,
+            }
+        self._updateAnalogSensors(nxvretstr, subtree, nxvretstr_default, list_keys)
+
+    def updateAccel(self, nxvretstr):
+        subtree = self.subtree_accel
+        nxvretstr_default="""Label,Value
+PitchInDegrees,0.00
+RollInDegrees,0.00
+XInG,0.000
+YInG,0.000
+ZInG,0.000
+SumInG,0.000
+"""
+        list_keys = {
+            "PitchInDegrees":0,
+            "RollInDegrees":1,
+            "XInG":2,
+            "YInG":3,
+            "ZInG":4,
+            "SumInG%":5,
+            }
+        self._updateAnalogSensors(nxvretstr, subtree, nxvretstr_default, list_keys)
 
 class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
     def show_battery_level(self, level):
@@ -402,53 +660,34 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
         frame_bottom.pack(side="bottom", fill="x", expand=False)
 
         self.mid_query_digitalsensors = -1
-        self.buttons_sensors_isactive = False
-        self.buttons_sensors_request_full = False # flag to signal the command is finished
-
-        # power DC connection: GetDigitalSensors:SNSR_DC_JACK_CONNECT,0
-        devstr = _("Power DC Jack")
-        self.btn_status_powerdc = guilog.ToggleButton(frame_top, txtt=_("Connected: ")+devstr, txtr=_("Disconnected: ")+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
-        self.btn_status_powerdc.pack(pady=5)
-
-        # Dustbin In: GetDigitalSensors:SNSR_DUSTBIN_IS_IN,1
-        devstr = _("Dustbin")
-        self.btn_status_dustbin = guilog.ToggleButton(frame_top, txtt=_("In: ")+devstr, txtr=_("Out: ")+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
-        self.btn_status_dustbin.pack(pady=5)
-
-        # Left Wheel Extended: GetDigitalSensors:SNSR_LEFT_WHEEL_EXTENDED,0
-        devstr = _("Left Wheel")
-        self.btn_status_leftwheel = guilog.ToggleButton(frame_top, txtt=_("Extended: ")+devstr, txtr=_("In: ")+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
-        self.btn_status_leftwheel.pack(pady=5)
-
-        # Right Wheel Extended: GetDigitalSensors:SNSR_RIGHT_WHEEL_EXTENDED,0
-        devstr = _("Right Wheel")
-        self.btn_status_rightwheel = guilog.ToggleButton(frame_top, txtt=_("Extended: ")+devstr, txtr=_("In: ")+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
-        self.btn_status_rightwheel.pack(pady=5)
-
-        # Left Side Key: GetDigitalSensors:LSIDEBIT,0
-        devstr = _("Left Side Key")
-        self.btn_status_leftsidekey = guilog.ToggleButton(frame_top, txtt=_("Kicked: ")+devstr, txtr=_("Released: ")+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
-        self.btn_status_leftsidekey.pack(pady=5)
-
-        # Left Front Key: GetDigitalSensors:LFRONTBIT,0
-        devstr = _("Left Front Key")
-        self.btn_status_leftfrontkey = guilog.ToggleButton(frame_top, txtt=_("Kicked: ")+devstr, txtr=_("Released: ")+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
-        self.btn_status_leftfrontkey.pack(pady=5)
-
-        # Right Side Key: GetDigitalSensors:RSIDEBIT,0
-        devstr = _("Right Side Key")
-        self.btn_status_rightsidekey = guilog.ToggleButton(frame_top, txtt=_("Kicked: ")+devstr, txtr=_("Released: ")+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
-        self.btn_status_rightsidekey.pack(pady=5)
-
-        # Right Front Key: GetDigitalSensors:RFRONTBIT,0
-        devstr = _("Right Front Key")
-        self.btn_status_rightfrontkey = guilog.ToggleButton(frame_top, txtt=_("Kicked: ")+devstr, txtr=_("Released: ")+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, state=tk.DISABLED)
-        self.btn_status_rightfrontkey.pack(pady=5)
+        self.mid_query_analogysensors = -1
+        self.mid_query_buttonssensors = -1
+        self.mid_query_motorssensors = -1
+        self.mid_query_accelsensors = -1
+        self.tab_sensors_isactive = False # if the tab is "Sensors status"
+        # flag to signal the command is finished
+        self.sensors_request_full_digital = False
+        self.sensors_request_full_analogy = False
+        self.sensors_request_full_buttons = False
+        self.sensors_request_full_motors = False
+        self.sensors_request_full_accel = False
+        self.sensors_update_isopen_digital = False # if the tree is open?
+        self.sensors_update_isopen_analogy = False
+        self.sensors_update_isopen_buttons = False
+        self.sensors_update_isopen_motors = False
+        self.sensors_update_isopen_accel = False
 
         self.sensors_update_isactive = False
         devstr = _("Update Sensors")
         self.btn_sensors_update_enable = guilog.ToggleButton(frame_bottom, txtt=_("ON: ")+devstr, txtr=_("OFF: ")+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, command=self.guiloop_sensors_update_enable)
         self.btn_sensors_update_enable.pack(pady=5, side="right")
+
+        self.sensor_tree_status = SensorTreeview(frame_top)
+        self.sensor_tree_status.initUI()
+        self.sensor_tree_status.pack(pady=5, fill="both", expand=True)
+        # <<TreeviewOpen>> <<TreeviewClose>>
+        self.sensor_tree_status.bind('<<TreeviewOpen>>', lambda ev:self.guiloop_sensors_changed_to(ev,True))
+        self.sensor_tree_status.bind('<<TreeviewClose>>', lambda ev:self.guiloop_sensors_changed_to(ev,False))
 
         # page for LiDAR
         page_lidar = tk.Frame(nb)
@@ -485,7 +724,7 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
         self.setup_keypad_navigate(self.canvas_lidar)
 
         self.wheelctrl_isactive = False
-        devstr = _("Wheel Controled by Keypad")
+        devstr = _("Wheels Controled by Keypad")
         self.btn_wheelctrl_enable = guilog.ToggleButton(frame_bottom, txtt=_("ON: ")+devstr, txtr=_("OFF: ")+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, command=self.guiloop_wheelctrl_enable)
         self.btn_wheelctrl_enable.pack(pady=5, side="right")
 
@@ -547,6 +786,23 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
     #
     # lidar: support functions
     #
+    def guiloop_sensors_changed_to(self, event, isopen):
+        tree = event.widget
+        node = tree.focus()
+        trtype = tree.getType(node)
+        L.debug("treeview " + trtype + " changed to: " + str(isopen) + "; sensor update=" + str(self.sensors_update_isactive))
+        if trtype == "digital":
+            self.sensors_update_isopen_digital = isopen
+        elif node == "analogy":
+            self.sensors_update_isopen_analogy = isopen
+        elif node == "buttons":
+            self.sensors_update_isopen_buttons = isopen
+        elif node == "motors":
+            self.sensors_update_isopen_motors = isopen
+        elif node == "accel":
+            self.sensors_update_isopen_accel = isopen
+        pass
+
     def guiloop_sensors_update_enable(self):
         b1 = self.btn_sensors_update_enable
         if b1.config('relief')[-1] == 'sunken':
@@ -697,8 +953,8 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
 
     # called by GUI when the tab is changed to sensors
     def guiloop_process_sensors(self, cur_focus):
-        L.info('switched to tab sensor: previous=' + str(self.buttons_sensors_isactive) + ", current=" + str(cur_focus))
-        self.buttons_sensors_isactive = cur_focus
+        L.info('switched to tab sensor: previous=' + str(self.tab_sensors_isactive) + ", current=" + str(cur_focus))
+        self.tab_sensors_isactive = cur_focus
         self.buttons_sensors_request()
 
     # the state machine for controling the wheel's movement
@@ -841,15 +1097,59 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
 
     # the periodical routine for the widgets of Sensors
     def buttons_sensors_request(self):
-        if self.buttons_sensors_isactive:
+        if self.tab_sensors_isactive:
             if self.serv_cli != None:
                 if self.mid_query_digitalsensors < 0 :
                     L.info('create mid_query_digitalsensors')
                     self.mid_query_digitalsensors = self.serv_cli.mailbox.declair()
-                if self.mid_query_digitalsensors >= 0 and self.buttons_sensors_request_full == False and self.sensors_update_isactive:
+
+                if self.mid_query_analogysensors < 0 :
+                    L.info('create mid_query_analogsensors')
+                    self.mid_query_analogysensors = self.serv_cli.mailbox.declair()
+
+                if self.mid_query_buttonssensors < 0 :
+                    L.info('create mid_query_buttonssensors')
+                    self.mid_query_buttonssensors = self.serv_cli.mailbox.declair()
+
+                if self.mid_query_motorssensors < 0 :
+                    L.info('create mid_query_motorssensors')
+                    self.mid_query_motorssensors = self.serv_cli.mailbox.declair()
+
+                if self.mid_query_accelsensors < 0 :
+                    L.info('create mid_query_accelsensors')
+                    self.mid_query_accelsensors = self.serv_cli.mailbox.declair()
+
+                L.debug(
+                    "sensor flags[digital]: mid=" + str(self.mid_query_digitalsensors)
+                    + "; req full=" + str(self.sensors_request_full_digital)
+                    + "; update isopen=" + str(self.sensors_update_isopen_digital)
+                    + "; update isactive=" + str(self.sensors_update_isactive)
+                    )
+                if self.mid_query_digitalsensors >= 0 and self.sensors_request_full_digital == False and self.sensors_update_isopen_digital and self.sensors_update_isactive:
                     L.info('Request GetDigitalSensors ...')
-                    self.buttons_sensors_request_full = True
+                    self.sensors_request_full_digital = True
                     self.serv_cli.request(["GetDigitalSensors\n", self.mid_query_digitalsensors])
+
+                if self.mid_query_analogysensors >= 0 and self.sensors_request_full_analogy == False and self.sensors_update_isopen_analogy and self.sensors_update_isactive:
+                    L.info('Request GetAnalogSensors ...')
+                    self.sensors_request_full_analogy = True
+                    self.serv_cli.request(["GetAnalogSensors\n", self.mid_query_analogysensors])
+
+                if self.mid_query_buttonssensors >= 0 and self.sensors_request_full_buttons == False and self.sensors_update_isopen_buttons and self.sensors_update_isactive:
+                    L.info('Request GetButtons ...')
+                    self.sensors_request_full_buttons = True
+                    self.serv_cli.request(["GetButtons\n", self.mid_query_buttonssensors])
+
+                if self.mid_query_motorssensors >= 0 and self.sensors_request_full_motors == False and self.sensors_update_isopen_motors and self.sensors_update_isactive:
+                    L.info('Request GetMotors ...')
+                    self.sensors_request_full_motors = True
+                    self.serv_cli.request(["GetMotors\n", self.mid_query_motorssensors])
+
+                if self.mid_query_accelsensors >= 0 and self.sensors_request_full_accel == False and self.sensors_update_isopen_accel and self.sensors_update_isactive:
+                    L.info('Request GetAccel ...')
+                    self.sensors_request_full_accel = True
+                    self.serv_cli.request(["GetAccel\n", self.mid_query_accelsensors])
+
             #L.info('setup next call buttons_sensors_request ...')
             self.after(500, self.buttons_sensors_request)
 
@@ -875,17 +1175,17 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
             #self.canvas_lidar_isactive = False
             #self.serv_cli.mailbox.close(self.mid_query_lidar)
 
-    def mailpipe_process_digitalsensors(self):
-        if self.serv_cli != None and self.mid_query_digitalsensors >= 0:
+    def _process_treeview_sensors(self, trtype, mid):
+        if self.serv_cli != None and mid >= 0:
             try:
                 pre=None
                 while True:
                     # remove all of items in the queue
                     try:
-                        respstr = self.serv_cli.mailbox.get(self.mid_query_digitalsensors, False)
+                        respstr = self.serv_cli.mailbox.get(mid, False)
                         if respstr == None:
                             break
-                        L.info('digital sensors data pulled out!')
+                        L.info('sensors data pulled out!')
                         pre = respstr
                     except queue.Empty:
                         # ignore
@@ -893,64 +1193,36 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
                 respstr = pre
                 if respstr == None:
                     return
-                retlines = respstr.strip() + '\n'
-                responses = retlines.split('\n')
-                for i in range(0,len(responses)):
-                    response = responses[i].strip()
-                    if len(response) < 1:
-                        break
-                    lst = response.split(',')
-                    if len(lst) < 2:
-                        continue
-                    label = lst[0].strip().lower()
-                    if label == 'SNSR_DC_JACK_CONNECT'.lower():
-                        # do power dc jack ...
-                        if lst[1].strip() == "1":
-                            self.btn_status_powerdc.config(relief='sunken')
-                        else:
-                            self.btn_status_powerdc.config(relief='raised')
-                    elif label == 'SNSR_DUSTBIN_IS_IN'.lower():
-                        # do dustbin ...
-                        if lst[1].strip() == "1":
-                            self.btn_status_dustbin.config(relief='sunken')
-                        else:
-                            self.btn_status_dustbin.config(relief='raised')
-                    elif label == 'SNSR_LEFT_WHEEL_EXTENDED'.lower():
-                        if lst[1].strip() == "1":
-                            self.btn_status_leftwheel.config(relief='sunken')
-                        else:
-                            self.btn_status_leftwheel.config(relief='raised')
-                    elif label == 'SNSR_RIGHT_WHEEL_EXTENDED'.lower():
-                        if lst[1].strip() == "1":
-                            self.btn_status_rightwheel.config(relief='sunken')
-                        else:
-                            self.btn_status_rightwheel.config(relief='raised')
-                    elif label == 'LSIDEBIT'.lower():
-                        if lst[1].strip() == "1":
-                            self.btn_status_leftsidekey.config(relief='sunken')
-                        else:
-                            self.btn_status_leftsidekey.config(relief='raised')
-                    elif label == 'LFRONTBIT'.lower():
-                        if lst[1].strip() == "1":
-                            self.btn_status_leftfrontkey.config(relief='sunken')
-                        else:
-                            self.btn_status_leftfrontkey.config(relief='raised')
-                    elif label == 'RSIDEBIT'.lower():
-                        if lst[1].strip() == "1":
-                            self.btn_status_rightsidekey.config(relief='sunken')
-                        else:
-                            self.btn_status_rightsidekey.config(relief='raised')
-                    elif label == 'RFRONTBIT'.lower():
-                        if lst[1].strip() == "1":
-                            self.btn_status_rightfrontkey.config(relief='sunken')
-                        else:
-                            self.btn_status_rightfrontkey.config(relief='raised')
+
+                if trtype == "digital":
+                    self.sensor_tree_status.updateDigitalSensors(respstr)
+                elif trtype == "analogy":
+                    self.sensor_tree_status.updateAnalogSensors(respstr)
+                elif trtype == "buttons":
+                    self.sensor_tree_status.updateButtons(respstr)
+                elif trtype == "motors":
+                    self.sensor_tree_status.updateMotors(respstr)
+                elif trtype == "accel":
+                    self.sensor_tree_status.updateAccel(respstr)
 
                 L.info('digital sensors updated!')
+                return True
             except queue.Empty:
                 # ignore
                 pass
-            self.buttons_sensors_request_full = False
+            return False
+
+    def mailpipe_process_digitalsensors(self):
+        if self._process_treeview_sensors("digital", self.mid_query_digitalsensors):
+            self.sensors_request_full_digital = False
+        if self._process_treeview_sensors("analogy", self.mid_query_analogysensors):
+            self.sensors_request_full_analogy = False
+        if self._process_treeview_sensors("buttons", self.mid_query_buttonssensors):
+            self.sensors_request_full_buttons = False
+        if self._process_treeview_sensors("accel", self.mid_query_accelsensors):
+            self.sensors_request_full_accel = False
+        if self._process_treeview_sensors("motors", self.mid_query_motorssensors):
+            self.sensors_request_full_motors = False
 
     def mailpipe_process_lidar(self):
         if self.serv_cli != None and self.mid_query_lidar >= 0:
@@ -1104,9 +1376,18 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
         self.mid_query_battery = -1
         self.mid_query_lidar = -1
         self.mid_query_digitalsensors = -1
+        self.mid_query_analogysensors = -1
+        self.mid_query_buttonssensors = -1
+        self.mid_query_motorssensors = -1
+        self.mid_query_accelsensors = -1
 
-        self.buttons_sensors_request_full = False # flag to signal the command is finished
+        # flag to signal the command is finished
         self.canvas_lidar_request_full = False
+        self.sensors_request_full_digital = False
+        self.sensors_request_full_analogy = False
+        self.sensors_request_full_buttons = False
+        self.sensors_request_full_motors = False
+        self.sensors_request_full_accel = False
 
         self.btn_cli_connect.config(state=tk.NORMAL)
         self.btn_cli_disconnect.config(state=tk.DISABLED)

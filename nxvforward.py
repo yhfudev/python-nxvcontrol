@@ -1,15 +1,12 @@
 #!/usr/bin/env python3
 
-import os
-import sys
-if sys.version_info[0] < 3:
+try:
     import Tkinter as tk
     import ttk
     import ScrolledText
     import tkFileDialog as fd
     import Queue
-
-else:
+except ImportError:
     import tkinter as tk
     from tkinter import ttk
     from tkinter.scrolledtext import ScrolledText
@@ -17,6 +14,8 @@ else:
     import multiprocessing
     from multiprocessing import Queue
 
+import os
+import sys
 import importlib.util as importutil
 #if None != importlib.find_loader("intl"):
 #if None != importutil.find_spec("intl"):
@@ -235,10 +234,10 @@ class MyTkAppFrame(ttk.Notebook):
 
         # page for server
         page_server = ttk.Frame(nb)
-        lbl_svr_head = tk.Label(page_server, text="Server", font=LARGE_FONT)
+        lbl_svr_head = tk.Label(page_server, text=_("Server"), font=LARGE_FONT)
         lbl_svr_head.pack(side="top", fill="x", pady=10)
 
-        frame_svr = ttk.LabelFrame(page_server, text='Setup')
+        frame_svr = ttk.LabelFrame(page_server, text=_("Setup"))
 
         line=0
         bind_port_history = ('localhost:3333', '127.0.0.1:4444', '0.0.0.0:3333')
