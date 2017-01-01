@@ -539,7 +539,8 @@ class NCIService(object):
         if isrun:
             while self.th_sche.isAlive():
                 time.sleep(1)
-        self.api.close()
+        if self.api != None:
+            self.api.close()
         self.api = None
         self.sche = None
         self.th_sche = None

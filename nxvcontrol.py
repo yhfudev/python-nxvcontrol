@@ -162,12 +162,17 @@ class SensorTreeview(ttk.Treeview):
         self.subtree_buttons = tree.insert('', 'end', "buttons", text=_("Buttons"))
         self.subtree_motors  = tree.insert('', 'end', "motors", text=_("Motors"))
         self.subtree_accel  = tree.insert('', 'end', "accel", text=_("Accelerometer"))
+        self.subtree_charger  = tree.insert('', 'end', "charger", text=_("Charger"))
         self.updateDigitalSensors("")
         self.updateButtons("")
         self.updateAnalogSensors("")
         self.updateMotors("")
         self.updateAccel("")
-        # <<TreeviewOpen>> <<TreeviewClose>>
+        self.updateCharger("")
+        # colors
+        tree.tag_configure('digiudef', background='grey')
+        tree.tag_configure('digion',   background='red')
+        tree.tag_configure('digioff',  background='white')
 
     def getType(self, node):
         if node == self.subtree_digital:
@@ -180,6 +185,8 @@ class SensorTreeview(ttk.Treeview):
             return "motors"
         elif node == self.subtree_accel:
             return "accel"
+        elif node == self.subtree_charger:
+            return "charger"
         return "unknown"
 
     def _updateDigitalSensors(self, nxvretstr, subtree, nxvretstr_default, list_keys, list_values):
@@ -210,10 +217,12 @@ class SensorTreeview(ttk.Treeview):
                 if columnlst[0] in list_keys:
                     idx = list_keys[columnlst[0]]
                     value = _("Unknown")
+                    tag = "digiudef"
                     if columnlst[1] in list_values:
-                        value = list_values[columnlst[1]]
+                        value = list_values[columnlst[1]][0]
+                        tag = list_values[columnlst[1]][1]
                     L.debug("Digital Sensors add key value: [" + str(idx) + "] " + str(items_children[idx]) + ": " + columnlst[0] + "=" + columnlst[1])
-                    tree.item(items_children[idx], values=(value), text=columnlst[0])
+                    tree.item(items_children[idx], values=(value), tags = (tag,), text=columnlst[0])
         pass
 
     def updateDigitalSensors(self, nxvretstr):
@@ -239,19 +248,19 @@ RFRONTBIT,-1
             "RFRONTBIT":7,
             }
         list_values = {
-            "0": _("Released"),
-            "1": _("Pressed"),
+            "0": (_("Released"), "digioff"),
+            "1": (_("Pressed"), "digion"),
             }
         self._updateDigitalSensors(nxvretstr, subtree, nxvretstr_default, list_keys, list_values)
 
     def updateButtons(self, nxvretstr):
         subtree = self.subtree_buttons
         nxvretstr_default="""Button Name,Pressed
-BTN_SOFT_KEY,0
-BTN_SCROLL_UP,0
-BTN_START,0
-BTN_BACK,0
-BTN_SCROLL_DOWN,0
+BTN_SOFT_KEY,-1
+BTN_SCROLL_UP,-1
+BTN_START,-1
+BTN_BACK,-1
+BTN_SCROLL_DOWN,-1
 """
 
         list_keys = {
@@ -262,8 +271,8 @@ BTN_SCROLL_DOWN,0
             "BTN_SCROLL_DOWN":4,
             }
         list_values = {
-            "0": _("Released"),
-            "1": _("Pressed"),
+            "0": (_("Released"), "digioff"),
+            "1": (_("Pressed"), "digion"),
             }
 
         self._updateDigitalSensors(nxvretstr, subtree, nxvretstr_default, list_keys, list_values)
@@ -394,6 +403,46 @@ SumInG,0.000
             "YInG":3,
             "ZInG":4,
             "SumInG%":5,
+            }
+        self._updateAnalogSensors(nxvretstr, subtree, nxvretstr_default, list_keys)
+
+    def updateCharger(self, nxvretstr):
+        subtree = self.subtree_charger
+        nxvretstr_default="""Label,Value
+FuelPercent,-1
+BatteryOverTemp,-1
+ChargingActive,-1
+ChargingEnabled,-1
+ConfidentOnFuel,-1
+OnReservedFuel,-1
+EmptyFuel,-1
+BatteryFailure,-1
+ExtPwrPresent,-1
+ThermistorPresent[0],-1
+ThermistorPresent[1],-1
+BattTempCAvg[0],-1
+BattTempCAvg[1],-1
+VBattV,-1
+VExtV,-1
+Charger_mAH,-1
+"""
+        list_keys = {
+            "FuelPercent":0,
+            "BatteryOverTemp":1,
+            "ChargingActive":2,
+            "ChargingEnabled":3,
+            "ConfidentOnFuel":4,
+            "OnReservedFuel":5,
+            "EmptyFuel":6,
+            "BatteryFailure":7,
+            "ExtPwrPresent":8,
+            "ThermistorPresent[0]":9,
+            "ThermistorPresent[1]":10,
+            "BattTempCAvg[0]":11,
+            "BattTempCAvg[1]":12,
+            "VBattV":13,
+            "VExtV":14,
+            "Charger_mAH":15,
             }
         self._updateAnalogSensors(nxvretstr, subtree, nxvretstr_default, list_keys)
 
@@ -671,11 +720,13 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
         self.sensors_request_full_buttons = False
         self.sensors_request_full_motors = False
         self.sensors_request_full_accel = False
+        self.sensors_request_full_charger = False
         self.sensors_update_isopen_digital = False # if the tree is open?
         self.sensors_update_isopen_analogy = False
         self.sensors_update_isopen_buttons = False
         self.sensors_update_isopen_motors = False
         self.sensors_update_isopen_accel = False
+        self.sensors_update_isopen_charger = False
 
         self.sensors_update_isactive = False
         devstr = _("Update Sensors")
@@ -801,6 +852,8 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
             self.sensors_update_isopen_motors = isopen
         elif node == "accel":
             self.sensors_update_isopen_accel = isopen
+        elif node == "charger":
+            self.sensors_update_isopen_charger = isopen
         pass
 
     def guiloop_sensors_update_enable(self):
@@ -1119,6 +1172,10 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
                     L.info('create mid_query_accelsensors')
                     self.mid_query_accelsensors = self.serv_cli.mailbox.declair()
 
+                if self.mid_query_chargersensors < 0 :
+                    L.info('create mid_query_chargersensors')
+                    self.mid_query_chargersensors = self.serv_cli.mailbox.declair()
+
                 L.debug(
                     "sensor flags[digital]: mid=" + str(self.mid_query_digitalsensors)
                     + "; req full=" + str(self.sensors_request_full_digital)
@@ -1149,6 +1206,11 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
                     L.info('Request GetAccel ...')
                     self.sensors_request_full_accel = True
                     self.serv_cli.request(["GetAccel\n", self.mid_query_accelsensors])
+
+                if self.mid_query_chargersensors >= 0 and self.sensors_request_full_charger == False and self.sensors_update_isopen_charger and self.sensors_update_isactive:
+                    L.info('Request GetCharger ...')
+                    self.sensors_request_full_charger = True
+                    self.serv_cli.request(["GetCharger\n", self.mid_query_chargersensors])
 
             #L.info('setup next call buttons_sensors_request ...')
             self.after(500, self.buttons_sensors_request)
@@ -1204,6 +1266,8 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
                     self.sensor_tree_status.updateMotors(respstr)
                 elif trtype == "accel":
                     self.sensor_tree_status.updateAccel(respstr)
+                elif trtype == "charger":
+                    self.sensor_tree_status.updateCharger(respstr)
 
                 L.info('digital sensors updated!')
                 return True
@@ -1219,10 +1283,12 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
             self.sensors_request_full_analogy = False
         if self._process_treeview_sensors("buttons", self.mid_query_buttonssensors):
             self.sensors_request_full_buttons = False
-        if self._process_treeview_sensors("accel", self.mid_query_accelsensors):
-            self.sensors_request_full_accel = False
         if self._process_treeview_sensors("motors", self.mid_query_motorssensors):
             self.sensors_request_full_motors = False
+        if self._process_treeview_sensors("accel", self.mid_query_accelsensors):
+            self.sensors_request_full_accel = False
+        if self._process_treeview_sensors("charger", self.mid_query_chargersensors):
+            self.sensors_request_full_charger = False
 
     def mailpipe_process_lidar(self):
         if self.serv_cli != None and self.mid_query_lidar >= 0:
@@ -1380,6 +1446,7 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
         self.mid_query_buttonssensors = -1
         self.mid_query_motorssensors = -1
         self.mid_query_accelsensors = -1
+        self.mid_query_chargersensors = -1
 
         # flag to signal the command is finished
         self.canvas_lidar_request_full = False
@@ -1388,6 +1455,7 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
         self.sensors_request_full_buttons = False
         self.sensors_request_full_motors = False
         self.sensors_request_full_accel = False
+        self.sensors_request_full_charger = False
 
         self.btn_cli_connect.config(state=tk.NORMAL)
         self.btn_cli_disconnect.config(state=tk.DISABLED)
