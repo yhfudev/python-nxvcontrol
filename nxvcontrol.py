@@ -152,8 +152,8 @@ class ScheduleTreeview(et.EditableTreeview):
     def initUI(self):
         tree = self
         tree["columns"]=("time")
-        tree.column('#0', anchor='e', width=30)
-        tree.heading('#0', text=_("Day of Week"), anchor='e')
+        tree.column('#0', anchor='w', width=30)
+        tree.heading('#0', text=_("Day of Week"), anchor='w')
         tree.heading("time", text=_("Time"))
         tree.bind('<<TreeviewInplaceEdit>>', self.on_row_edit)
         tree.bind('<<TreeviewCellEdited>>', self.on_cell_changed)

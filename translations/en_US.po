@@ -205,9 +205,8 @@ msgid "Disabled: "
 msgstr "Disabled: "
 
 #: nxvcontrol.py:825
-#, fuzzy
 msgid "Enabled: "
-msgstr "Extended: "
+msgstr "Enabled: "
 
 #: nxvcontrol.py:827
 msgid "Save schedule"
