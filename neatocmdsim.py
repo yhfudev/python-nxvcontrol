@@ -4394,7 +4394,10 @@ def fake_respose(requestline="Help"):
     global tm_lidar_motor_start
     response = ""
     requestlist = requestline.split(' ')
-    request = requestlist[0]
+    request = requestlist[0].strip()
+    if request == "":
+        return ""
+
     if request.lower() == "Help".lower():
         response = """Help Strlen = 1840
 Help - Without any argument, this prints a list of all possible cmds.
