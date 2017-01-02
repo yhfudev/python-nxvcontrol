@@ -985,9 +985,10 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
 
     def guiloop_save_schedule(self):
         if self.serv_cli != None and self.mid_query_schedule >= 0:
-            cmdstr = self.etv_schedule.packSchedule()
-            self.serv_cli.request([cmdstr, self.mid_2b_ignored])
-            self.guiloop_get_schedule()
+            cmdstr = self.etv_schedule.packSchedule().strip()
+            if cmdstr != "":
+                self.serv_cli.request([cmdstr, self.mid_2b_ignored])
+                self.guiloop_get_schedule()
 
     def setup_schedule_enable(self, isenable):
         btn = self.btn_enable_schedule
