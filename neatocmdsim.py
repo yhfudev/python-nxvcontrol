@@ -8824,4 +8824,8 @@ SumInG,0.000
 552,LS_A2D15,50,-13,-13,0xfffffffffffffd76,0x0000000000002102
 552,LS_LDROP_MM,50,60,60,0x0000000000000bb8,0x000000000002bf20
 """
+    else:
+        response = "Unknown Cmd: '" + request + "'\n"
     return requestline.strip() + "\n" + response.strip() + "\n\n"
+
+

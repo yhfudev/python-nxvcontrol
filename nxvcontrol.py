@@ -35,8 +35,10 @@ def gettext_init():
     if (lc):
         langs += [lc]
     language = os.environ.get('LANGUAGE', None)
+
     # we know that we have
-    langs += ["zh_CN"]
+    langs += ["en_US", "zh_CN"]
+
     if (language):
         langs += language.split(":")
     local_path = "languages/"
@@ -981,9 +983,9 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
         if self.serv_cli != None and self.mid_2b_ignored >= 0:
             self.set_robot_testmode(True)
             if enable:
-                self.serv_cli.request(["SetMotor BrushEnable\nSetMotor Brush RPM 250", self.mid_2b_ignored])
+                self.serv_cli.request(["SetMotor SidebrushEnable\nSetMotor SidebrushOn", self.mid_2b_ignored])
             else:
-                self.serv_cli.request(["SetMotor BrushDisable", self.mid_2b_ignored])
+                self.serv_cli.request(["SetMotor SidebrushOff\nSetMotor SidebrushDisable", self.mid_2b_ignored])
 
     # called by GUI when the tab is changed
     def guiloop_nb_tabchanged(self, event):
