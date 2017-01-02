@@ -183,6 +183,7 @@ class ScheduleTreeview(et.EditableTreeview):
         pass
 
     def _updateItems(self, nxvretstr, subtree, nxvretstr_default, list_keys):
+        daytransmap={'Sun':_('Sunday'), 'Mon':_('Monday'), 'Tue':_('Tuesday'), 'Tues':_('Tuesday'), 'Wed':_('Wednesday'), 'Thu':_('Thursday'), 'Thur':_('Thursday'), 'Fri':_('Friday'), 'Sat':_('Saturday')}
         tree = self
         subtree=''
         if nxvretstr == "":
@@ -213,7 +214,7 @@ class ScheduleTreeview(et.EditableTreeview):
                     #L.debug("len(lst) = " + str(len(columnlst)))
                     #L.debug("idx = " + str(idx))
                     #L.debug("val = " + val)
-                    tree.item(items_children[idx], values=(val,), text=columnlst[0])
+                    tree.item(items_children[idx], values=(val,), text=daytransmap[columnlst[0]])
 
     def updateSchedule(self, nxvretstr):
         subtree = self
@@ -241,8 +242,7 @@ Sat 00:00 H
     # pack the schedule to commands, split by \n
     def packSchedule(self):
         tree = self
-        #daymap={'Sun':'Sunday', 'Mon':'Monday', 'Tues':'Tuesday', 'Wed':'Wednesday', 'Thur':'Thursday', 'Fri':'Friday', 'Sat':'Saturday'}
-        daymap={'Sun':0, 'Mon':1, 'Tues':2, 'Wed':3, 'Thur':4, 'Fri':5, 'Sat':6}
+        daymap={_('Sunday'):0, _('Monday'):1, _('Tuesday'):2, _('Wednesday'):3, _('Thursday'):4, _('Friday'):5, _('Saturday'):6}
         retstr = ""
         for item in self.changed:
             day = self.changed[item]

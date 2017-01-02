@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version:  00job-2015\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-02 15:06-0500\n"
+"POT-Creation-Date: 2017-01-02 15:29-0500\n"
 "PO-Revision-Date: 2016-12-31 14:10-0500\n"
 "Last-Translator: yhfu <yhfudev@gmail.com>\n"
 "Language-Team: Chinese (simplified)\n"
@@ -23,6 +23,34 @@ msgstr "星期"
 #: nxvcontrol.py:157
 msgid "Time"
 msgstr "时间"
+
+#: nxvcontrol.py:186
+msgid "Friday"
+msgstr "周五"
+
+#: nxvcontrol.py:186
+msgid "Monday"
+msgstr "周一"
+
+#: nxvcontrol.py:186
+msgid "Saturday"
+msgstr "周六"
+
+#: nxvcontrol.py:186
+msgid "Sunday"
+msgstr "周日"
+
+#: nxvcontrol.py:186
+msgid "Thursday"
+msgstr "周四"
+
+#: nxvcontrol.py:186
+msgid "Tuesday"
+msgstr "周二"
+
+#: nxvcontrol.py:186
+msgid "Wednesday"
+msgstr "周三"
 
 #: nxvcontrol.py:271 nxvcontrol.py:837 nxvcontrol.py:962
 msgid "Sensors"
