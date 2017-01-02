@@ -1602,13 +1602,14 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
 
     def set_robot_testmode (self, istest = False):
         L.info('call set_robot_testmode("' + str(istest) + '")!')
-        if self.serv_cli != None and self.mid_2b_ignored >= 0:
-            if istest:
-                self.serv_cli.request(["TestMode On", self.mid_2b_ignored])
-            else:
-                self.serv_cli.request(["SetLDSRotation Off\nSetMotor LWheelDisable RWheelDisable BrushDisable VacuumOff\nTestMode Off", self.mid_2b_ignored])
-        self.istestmode = istest
-        self.show_robot_testmode(istest)
+        if self.istestmode != istest:
+            if self.serv_cli != None and self.mid_2b_ignored >= 0:
+                if istest:
+                    self.serv_cli.request(["TestMode On", self.mid_2b_ignored])
+                else:
+                    self.serv_cli.request(["SetLDSRotation Off\nSetMotor LWheelDisable RWheelDisable BrushDisable VacuumOff\nTestMode Off", self.mid_2b_ignored])
+                self.istestmode = istest
+                self.show_robot_testmode(istest)
 
 def nxvcontrol_main():
     guilog.set_log_stderr()
