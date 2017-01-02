@@ -142,11 +142,124 @@ MAXDIST=16700 # the maxmium allowed of the distance value of lidar
 MAXDIST=4000 # the maxmium allowed of the distance value of lidar
 CONST_RAD=math.pi / 180
 
+import editabletreeview as et
+
+class ScheduleTreeview(et.EditableTreeview):
+
+    def __init__(self, parent):
+        et.EditableTreeview.__init__(self, parent)
+
+    def initUI(self):
+        tree = self
+        tree["columns"]=("time")
+        tree.column('#0', anchor='e', width=30)
+        tree.heading('#0', text=_("Day of Week"), anchor='e')
+        tree.heading("time", text=_("Time"))
+        tree.bind('<<TreeviewInplaceEdit>>', self.on_row_edit)
+        tree.bind('<<TreeviewCellEdited>>', self.on_cell_changed)
+        self.updateSchedule("")
+        tree.tag_configure('schedis', background='grey')
+        tree.tag_configure('scheon', background='white')
+        tree.tag_configure('scheoff', background='grey')
+        pass
+
+    def on_row_edit(self, event):
+        tree = self
+        col, item = tree.get_event_info()
+
+        if col in ("time",):
+            #tree.inplace_entry(col, item)
+            tree.inplace_combobox(col, item, ("00:00 - None -", "00:00 R", "00:00 H"), readonly=False)
+
+    def on_cell_changed(self, event):
+        tree = self
+        col, item = tree.get_event_info()
+        L.debug('Column {0} of item {1} was changed={2}'.format(col, item, tree.item(item)["values"]))
+        if col in ("time",):
+           self.changed[item] = tree.item(item)["text"]
+
+    def on_row_selected(self, event):
+        #print('Rows selected', event.widget.selection())
+        pass
+
+    def _updateItems(self, nxvretstr, subtree, nxvretstr_default, list_keys):
+        tree = self
+        subtree=''
+        if nxvretstr == "":
+            # remove all of items in the tree
+            tree.delete(*tree.get_children(subtree))
+            # init the structure
+            nxvretstr=nxvretstr_default
+
+        items_children = self.get_children(subtree)
+        if items_children == None or len(items_children) < 1:
+            # create children
+            for itemstr in list_keys:
+                tree.insert(subtree, 'end', text=itemstr, values=(""))
+            items_children = self.get_children(subtree)
+
+        # parse the string
+        linestr = nxvretstr.strip() + '\n'
+        linelst = linestr.split('\n')
+        for i in range(0, len(linelst)):
+            line = linelst[i].strip()
+            if len(line) < 1:
+                break
+            columnlst = line.split(' ')
+            if len(columnlst) > 1:
+                if columnlst[0] in list_keys:
+                    idx = list_keys[columnlst[0]]
+                    val = " ".join(columnlst[1:len(columnlst)])
+                    #L.debug("len(lst) = " + str(len(columnlst)))
+                    #L.debug("idx = " + str(idx))
+                    #L.debug("val = " + val)
+                    tree.item(items_children[idx], values=(val,), text=columnlst[0])
+
+    def updateSchedule(self, nxvretstr):
+        subtree = self
+        nxvretstr_default="""Schedule is Enabled
+Sun 00:00 - None -
+Mon 00:00 - None -
+Tue 00:00 R
+Wed 00:00 R
+Thu 00:00 R
+Fri 00:00 H
+Sat 00:00 H
+"""
+        list_keys = {
+            "Sun":0,
+            "Mon":1,
+            "Tue":2,
+            "Wed":3,
+            "Thu":4,
+            "Fri":5,
+            "Sat":6,
+            }
+        self._updateItems(nxvretstr, subtree, nxvretstr_default, list_keys)
+        self.changed={}
+
+    # pack the schedule to commands, split by \n
+    def packSchedule(self):
+        tree = self
+        #daymap={'Sun':'Sunday', 'Mon':'Monday', 'Tues':'Tuesday', 'Wed':'Wednesday', 'Thur':'Thursday', 'Fri':'Friday', 'Sat':'Saturday'}
+        daymap={'Sun':0, 'Mon':1, 'Tues':2, 'Wed':3, 'Thur':4, 'Fri':5, 'Sat':6}
+        retstr = ""
+        for item in self.changed:
+            day = self.changed[item]
+            scheline = tree.item(item)["values"][0].strip()
+            schelst = scheline.split(' ')
+            tmlst = schelst[0].split(':')
+            stype = "None"
+            if schelst[1] == "H":
+                stype = "House"
+            retstr += "SetSchedule Day " + str(daymap[day]) + " Hour " + tmlst[0] + " Min " + tmlst[1] + " " + stype + "\n"
+        L.debug("save schedule: " + retstr)
+        return retstr
+
 class SensorTreeview(ttk.Treeview):
 
     def __init__(self, parent):
         ttk.Treeview.__init__(self, parent)
-        self.parent = parent
 
     def initUI(self):
         tree = self
@@ -224,7 +337,7 @@ class SensorTreeview(ttk.Treeview):
                         value = list_values[columnlst[1]][0]
                         tag = list_values[columnlst[1]][1]
                     L.debug("Digital Sensors add key value: [" + str(idx) + "] " + str(items_children[idx]) + ": " + columnlst[0] + "=" + columnlst[1])
-                    tree.item(items_children[idx], values=(value), tags = (tag,), text=columnlst[0])
+                    tree.item(items_children[idx], values=(value,), tags = (tag,), text=columnlst[0])
         pass
 
     def updateDigitalSensors(self, nxvretstr):
@@ -305,7 +418,7 @@ BTN_SCROLL_DOWN,-1
             if len(columnlst) > 1:
                 if columnlst[0] in list_keys:
                     idx = list_keys[columnlst[0]]
-                    tree.item(items_children[idx], values=(columnlst[1]), text=columnlst[0])
+                    tree.item(items_children[idx], values=(columnlst[1],), text=columnlst[0])
         pass
 
     def updateAnalogSensors(self, nxvretstr):
@@ -694,8 +807,27 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
         #   indicator, enable/disable button
         #   save/load file
         #   the list of scheduler
-        #lbl_sche_head = tk.Label(page_sche, text=_("Schedule"), font=LARGE_FONT)
-        #lbl_sche_head.pack(side="top", fill="x", pady=10)
+        lbl_sche_head = tk.Label(page_sche, text=_("Schedule"), font=LARGE_FONT)
+        lbl_sche_head.pack(side="top", fill="x", pady=10)
+
+        frame_top = tk.Frame(page_sche)#, background="green")
+        frame_bottom = tk.Frame(page_sche)#, background="yellow")
+        frame_top.pack(side="top", fill="both", expand=True)
+        frame_bottom.pack(side="bottom", fill="x", expand=False)
+
+        self.mid_query_schedule = -1
+        self.etv_schedule = ScheduleTreeview(frame_top)
+        self.etv_schedule.initUI()
+        self.etv_schedule.pack(pady=5, fill="both", side="left", expand=True)
+
+        self.schedule_isenabled = False
+        devstr = _("Schedule")
+        self.btn_enable_schedule = guilog.ToggleButton(frame_bottom, txtt=_("Enabled: ")+devstr, txtr=_("Disabled: ")+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, command=self.guiloop_schedule_enable)
+        self.btn_enable_schedule.pack(pady=5, side="left")
+        btn_save_schedule = tk.Button(frame_bottom, text=_("Save schedule"), command=lambda: (btn_save_schedule.focus_set(), self.guiloop_save_schedule(), ))
+        btn_save_schedule.pack(side="right", fill="x", padx=5, pady=5, expand=False)
+        btn_get_schedule = tk.Button(frame_bottom, text=_("Get schedule"), command=lambda: (btn_get_schedule.focus_set(), self.guiloop_get_schedule(), ))
+        btn_get_schedule.pack(side="right", fill="x", padx=5, pady=5, expand=False)
 
         # page for sensors
         page_sensors = tk.Frame(nb)
@@ -832,7 +964,7 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
         self.tabtxt_status = _("Connection")
         nb.add(page_conn, text=self.tabtxt_status)
         nb.add(page_command, text=_("Commands"))
-        #nb.add(page_sche, text='Schedule')
+        nb.add(page_sche, text=_("Schedule"))
         nb.add(page_moto, text=_("Motors"))
         nb.add(page_sensors, text=self.tabtxt_sensors)
         nb.add(page_lidar, text=self.tabtxt_lidar)
@@ -843,6 +975,42 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
         nb.bind('<<NotebookTabChanged>>', self.guiloop_nb_tabchanged)
 
         self.do_cli_disconnect()
+
+    #
+    # schedule: support functions
+    #
+    def guiloop_get_schedule(self):
+        if self.serv_cli != None and self.mid_query_schedule >= 0:
+            self.serv_cli.request(["GetSchedule", self.mid_query_schedule])
+
+    def guiloop_save_schedule(self):
+        if self.serv_cli != None and self.mid_query_schedule >= 0:
+            cmdstr = self.etv_schedule.packSchedule()
+            self.serv_cli.request([cmdstr, self.mid_2b_ignored])
+            self.guiloop_get_schedule()
+
+    def setup_schedule_enable(self, isenable):
+        btn = self.btn_enable_schedule
+        if isenable:
+            btn.config(relief='sunken')
+        else:
+            btn.config(relief='raised')
+
+    def guiloop_schedule_enable(self):
+        btn = self.btn_enable_schedule
+        btn.focus_set()
+        if btn.config('relief')[-1] == 'sunken':
+            btn['fg'] = "red"
+            self.schedule_isenabled=True
+        else:
+            btn['fg'] = "green"
+            self.schedule_isenabled=False
+
+        if self.serv_cli != None and self.mid_2b_ignored >= 0:
+            if self.schedule_isenabled:
+                self.serv_cli.request(["SetSchedule ON", self.mid_2b_ignored])
+            else:
+                self.serv_cli.request(["SetSchedule OFF", self.mid_2b_ignored])
 
     #
     # lidar: support functions
@@ -1247,6 +1415,39 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
             #self.canvas_lidar_isactive = False
             #self.serv_cli.mailbox.close(self.mid_query_lidar)
 
+    def mailpipe_process_schedule(self):
+        mid = self.mid_query_schedule
+        if self.serv_cli != None and mid >= 0:
+            try:
+                pre=None
+                while True:
+                    # remove all of items in the queue
+                    try:
+                        respstr = self.serv_cli.mailbox.get(mid, False)
+                        if respstr == None:
+                            break
+                        L.info('schedule data pulled out!')
+                        pre = respstr
+                    except queue.Empty:
+                        # ignore
+                        break
+                respstr = pre
+                if respstr == None:
+                    return
+
+                self.etv_schedule.updateSchedule(respstr)
+                if respstr.find("Schedule is Enabled") >= 0:
+                    self.setup_schedule_enable(True)
+                else:
+                    self.setup_schedule_enable(False)
+
+                L.info('Schedule updated!')
+                return True
+            except queue.Empty:
+                # ignore
+                pass
+            return False
+
     def _process_treeview_sensors(self, trtype, mid):
         if self.serv_cli != None and mid >= 0:
             try:
@@ -1425,9 +1626,11 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
         self.mid_query_version = self.serv_cli.mailbox.declair() # the index of the return data Queue for version textarea
         self.mid_query_time = self.serv_cli.mailbox.declair()    # the index of the return data Queue for robot time label
         self.mid_query_battery = self.serv_cli.mailbox.declair() # the index of the return data Queue for robot battery % ratio
+        self.mid_query_schedule = self.serv_cli.mailbox.declair()
 
         self.serv_cli.request(["GetVersion", self.mid_query_version])
         self.serv_cli.request(["GetWarranty", self.mid_query_version])
+        self.guiloop_get_schedule()
         self.guiloop_check_rightnow()
         self.guiloop_check_per1sec()
         self.guiloop_check_per30sec()
@@ -1457,6 +1660,7 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
         self.mid_query_motorssensors = -1
         self.mid_query_accelsensors = -1
         self.mid_query_chargersensors = -1
+        self.mid_query_schedule = -1
 
         # flag to signal the command is finished
         self.canvas_lidar_request_full = False
@@ -1571,6 +1775,7 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
             self.mailpipe_process_conn_cmd()
             self.mailpipe_process_lidar()
             self.mailpipe_process_digitalsensors()
+            self.mailpipe_process_schedule()
             # setup next
             self.after(100, self.guiloop_check_rightnow)
         return
