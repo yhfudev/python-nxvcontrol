@@ -4621,12 +4621,12 @@ UIPanelRev,1,,
 """
     elif request.lower() == "GetAccel".lower():
         response = """Label,Value
-PitchInDegrees,0.00
-RollInDegrees,0.00
-XInG,0.000
-YInG,0.000
-ZInG,0.000
-SumInG,0.000
+PitchInDegrees,  0.67
+RollInDegrees, -1.73
+XInG, 0.012
+YInG,-0.031
+ZInG, 1.026
+SumInG, 1.027
 """
     elif request.lower() == "PlaySound".lower():
         if int(requestlist[1]) > 4:

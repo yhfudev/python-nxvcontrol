@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version:  00job-2015\n"
-"POT-Creation-Date: 2017-01-02 15:29-0500\n"
+"POT-Creation-Date: 2017-01-02 19:24-0500\n"
 "PO-Revision-Date: 2016-12-31 16:48-0500\n"
 "Last-Translator: yhfu <yhfudev@gmail.com>\n"
 "Language-Team: English\n"
@@ -24,247 +24,247 @@ msgstr "Day of Week"
 msgid "Time"
 msgstr "Time"
 
-#: nxvcontrol.py:186
+#: nxvcontrol.py:196 nxvcontrol.py:255
 msgid "Friday"
 msgstr "Friday"
 
-#: nxvcontrol.py:186
+#: nxvcontrol.py:196 nxvcontrol.py:255
 msgid "Monday"
 msgstr "Monday"
 
-#: nxvcontrol.py:186
+#: nxvcontrol.py:196 nxvcontrol.py:255
 msgid "Saturday"
 msgstr "Saturday"
 
-#: nxvcontrol.py:186
+#: nxvcontrol.py:196 nxvcontrol.py:255
 msgid "Sunday"
 msgstr "Sunday"
 
-#: nxvcontrol.py:186
+#: nxvcontrol.py:196 nxvcontrol.py:255
 msgid "Thursday"
 msgstr "Thursday"
 
-#: nxvcontrol.py:186
+#: nxvcontrol.py:196 nxvcontrol.py:255
 msgid "Tuesday"
 msgstr "Tuesday"
 
-#: nxvcontrol.py:186
+#: nxvcontrol.py:196 nxvcontrol.py:255
 msgid "Wednesday"
 msgstr "Wednesday"
 
-#: nxvcontrol.py:271 nxvcontrol.py:837 nxvcontrol.py:962
+#: nxvcontrol.py:281 nxvcontrol.py:848 nxvcontrol.py:973
 msgid "Sensors"
 msgstr "Sensors"
 
-#: nxvcontrol.py:272
+#: nxvcontrol.py:282
 msgid "Value"
 msgstr "Value"
 
-#: nxvcontrol.py:275
+#: nxvcontrol.py:285
 msgid "Digital Sensors"
 msgstr "Digital Sensors"
 
-#: nxvcontrol.py:276
+#: nxvcontrol.py:286
 msgid "Analog Sensors"
 msgstr "Analog Sensors"
 
-#: nxvcontrol.py:277
+#: nxvcontrol.py:287
 msgid "Buttons"
 msgstr "Buttons"
 
-#: nxvcontrol.py:278 nxvcontrol.py:928 nxvcontrol.py:968
+#: nxvcontrol.py:288 nxvcontrol.py:939 nxvcontrol.py:979
 msgid "Motors"
 msgstr "Motors"
 
-#: nxvcontrol.py:279
+#: nxvcontrol.py:289
 msgid "Accelerometer"
 msgstr "Accelerometer"
 
-#: nxvcontrol.py:280
+#: nxvcontrol.py:290
 msgid "Charger"
 msgstr "Charger"
 
-#: nxvcontrol.py:334 nxvcontrol.py:715
+#: nxvcontrol.py:344 nxvcontrol.py:725
 msgid "Unknown"
 msgstr "Unknown"
 
-#: nxvcontrol.py:366 nxvcontrol.py:389
+#: nxvcontrol.py:376 nxvcontrol.py:399
 msgid "Released"
 msgstr "Released"
 
-#: nxvcontrol.py:367 nxvcontrol.py:390
+#: nxvcontrol.py:377 nxvcontrol.py:400
 msgid "Pressed"
 msgstr "Pressed"
 
-#: nxvcontrol.py:582
+#: nxvcontrol.py:592
 msgid "ON"
 msgstr "ON"
 
-#: nxvcontrol.py:585
+#: nxvcontrol.py:595
 msgid "OFF"
 msgstr "OFF"
 
-#: nxvcontrol.py:616
+#: nxvcontrol.py:626
 msgid "Text files"
 msgstr "Text files"
 
-#: nxvcontrol.py:617
+#: nxvcontrol.py:627
 msgid "All files"
 msgstr "All files"
 
-#: nxvcontrol.py:651 nxvcontrol.py:972 nxvforward.py:221 nxvforward.py:347
+#: nxvcontrol.py:661 nxvcontrol.py:983 nxvforward.py:221 nxvforward.py:347
 msgid "About"
 msgstr "About"
 
-#: nxvcontrol.py:656
+#: nxvcontrol.py:666
 msgid "Setup your Neato Robot"
 msgstr "Setup your Neato Robot"
 
-#: nxvcontrol.py:658
+#: nxvcontrol.py:668
 msgid "Copyright © 2015-2016 The nxvControl Authors"
 msgstr "Copyright © 2015–2016 The nxvControl Authors"
 
-#: nxvcontrol.py:660 nxvforward.py:230
+#: nxvcontrol.py:670 nxvforward.py:230
 msgid "This program comes with absolutely no warranty."
 msgstr "This program comes with absolutely no warranty."
 
-#: nxvcontrol.py:661 nxvforward.py:231
+#: nxvcontrol.py:671 nxvforward.py:231
 msgid "See the GNU General Public License, version 3 or later for details."
 msgstr "See the GNU General Public License, version 3 or later for details."
 
-#: nxvcontrol.py:675 nxvcontrol.py:964 nxvforward.py:292
+#: nxvcontrol.py:685 nxvcontrol.py:975 nxvforward.py:292
 msgid "Connection"
 msgstr "Connection"
 
-#: nxvcontrol.py:677
+#: nxvcontrol.py:687
 msgid "Status"
 msgstr "Status"
 
-#: nxvcontrol.py:681
+#: nxvcontrol.py:691
 msgid "Conection"
 msgstr "Connection"
 
-#: nxvcontrol.py:685 nxvforward.py:255 nxvforward.py:297
+#: nxvcontrol.py:695 nxvforward.py:255 nxvforward.py:297
 msgid "Connect to:"
 msgstr "Connect to:"
 
-#: nxvcontrol.py:692 nxvforward.py:304
+#: nxvcontrol.py:702 nxvforward.py:304
 msgid "Connect"
 msgstr "Connect"
 
-#: nxvcontrol.py:695 nxvforward.py:308
+#: nxvcontrol.py:705 nxvforward.py:308
 msgid "Disconnect"
 msgstr "Disconnect"
 
-#: nxvcontrol.py:704
+#: nxvcontrol.py:714
 msgid "Robot Time:"
 msgstr "Robot Time:"
 
-#: nxvcontrol.py:709
+#: nxvcontrol.py:719
 msgid "Sync PC time to robot"
 msgstr "Sync PC time to robot"
 
-#: nxvcontrol.py:713
+#: nxvcontrol.py:723
 msgid "Test Mode:"
 msgstr "Test Mode:"
 
-#: nxvcontrol.py:717
+#: nxvcontrol.py:727
 msgid "Test ON"
 msgstr "Test ON"
 
-#: nxvcontrol.py:718
+#: nxvcontrol.py:728
 msgid "Test OFF"
 msgstr "Test OFF"
 
-#: nxvcontrol.py:722
+#: nxvcontrol.py:732
 msgid "Battery Status:"
 msgstr "Battery Status:"
 
-#: nxvcontrol.py:738
+#: nxvcontrol.py:749
 msgid "Version:"
 msgstr "Version:"
 
-#: nxvcontrol.py:776 nxvcontrol.py:966
+#: nxvcontrol.py:787 nxvcontrol.py:977
 msgid "Commands"
 msgstr "Commands"
 
-#: nxvcontrol.py:793 nxvforward.py:283 nxvforward.py:329
+#: nxvcontrol.py:804 nxvforward.py:283 nxvforward.py:329
 msgid "Clear"
 msgstr "Clear"
 
-#: nxvcontrol.py:802 nxvforward.py:338
+#: nxvcontrol.py:813 nxvforward.py:338
 msgid "Run"
 msgstr "Run"
 
-#: nxvcontrol.py:810 nxvcontrol.py:824 nxvcontrol.py:967
+#: nxvcontrol.py:821 nxvcontrol.py:835 nxvcontrol.py:978
 msgid "Schedule"
 msgstr "Schedule"
 
-#: nxvcontrol.py:825
+#: nxvcontrol.py:836
 msgid "Disabled: "
 msgstr "Disabled: "
 
-#: nxvcontrol.py:825
+#: nxvcontrol.py:836
 msgid "Enabled: "
 msgstr "Enabled: "
 
-#: nxvcontrol.py:827
+#: nxvcontrol.py:838
 msgid "Save schedule"
 msgstr "Save schedule"
 
-#: nxvcontrol.py:829
+#: nxvcontrol.py:840
 msgid "Get schedule"
 msgstr "Get schedule"
 
-#: nxvcontrol.py:866
+#: nxvcontrol.py:877
 msgid "Update Sensors"
 msgstr "Update Sensors"
 
-#: nxvcontrol.py:867 nxvcontrol.py:915 nxvcontrol.py:921 nxvcontrol.py:933
-#: nxvcontrol.py:937 nxvcontrol.py:941 nxvcontrol.py:945 nxvcontrol.py:949
-#: nxvcontrol.py:953
+#: nxvcontrol.py:878 nxvcontrol.py:926 nxvcontrol.py:932 nxvcontrol.py:944
+#: nxvcontrol.py:948 nxvcontrol.py:952 nxvcontrol.py:956 nxvcontrol.py:960
+#: nxvcontrol.py:964
 msgid "OFF: "
 msgstr "OFF: "
 
-#: nxvcontrol.py:867 nxvcontrol.py:915 nxvcontrol.py:921 nxvcontrol.py:933
-#: nxvcontrol.py:937 nxvcontrol.py:941 nxvcontrol.py:945 nxvcontrol.py:949
-#: nxvcontrol.py:953
+#: nxvcontrol.py:878 nxvcontrol.py:926 nxvcontrol.py:932 nxvcontrol.py:944
+#: nxvcontrol.py:948 nxvcontrol.py:952 nxvcontrol.py:956 nxvcontrol.py:960
+#: nxvcontrol.py:964
 msgid "ON: "
 msgstr "ON: "
 
-#: nxvcontrol.py:890 nxvcontrol.py:914 nxvcontrol.py:963
+#: nxvcontrol.py:901 nxvcontrol.py:925 nxvcontrol.py:974
 msgid "LiDAR"
 msgstr "LiDAR"
 
-#: nxvcontrol.py:920
-msgid "Wheels Controled by Keypad"
-msgstr "Wheels Controled by Keypad"
+#: nxvcontrol.py:931
+msgid "Wheels Controlled by Keypad"
+msgstr "Wheels Controlled by Keypad"
 
-#: nxvcontrol.py:932
+#: nxvcontrol.py:943
 msgid "Left Wheel"
 msgstr "Left Wheel"
 
-#: nxvcontrol.py:936
+#: nxvcontrol.py:947
 msgid "Right Wheel"
 msgstr "Right Wheel"
 
-#: nxvcontrol.py:940
+#: nxvcontrol.py:951
 msgid "LiDAR Motor"
 msgstr "LiDAR Motor"
 
-#: nxvcontrol.py:944
+#: nxvcontrol.py:955
 msgid "Vacuum"
 msgstr "Vacuum"
 
-#: nxvcontrol.py:948
+#: nxvcontrol.py:959
 msgid "Brush"
 msgstr "Brush"
 
-#: nxvcontrol.py:952
+#: nxvcontrol.py:963
 msgid "Side Brush"
 msgstr "Side Brush"
 
-#: nxvcontrol.py:959
+#: nxvcontrol.py:970
 msgid "Recharge"
 msgstr "Recharge"
 

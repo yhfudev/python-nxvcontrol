@@ -169,18 +169,28 @@ class ScheduleTreeview(et.EditableTreeview):
 
         if col in ("time",):
             #tree.inplace_entry(col, item)
-            tree.inplace_combobox(col, item, ("00:00 - None -", "00:00 R", "00:00 H"), readonly=False)
+            tree.inplace_combobox(col, item, ("00:00 - None -", "00:00 H"), readonly=False)
 
     def on_cell_changed(self, event):
         tree = self
         col, item = tree.get_event_info()
-        L.debug('Column {0} of item {1} was changed={2}'.format(col, item, tree.item(item)["values"]))
+        #L.debug('Column {0} of item {1} was changed={2}'.format(col, item, tree.item(item)["values"]))
         if col in ("time",):
-           self.changed[item] = tree.item(item)["text"]
+            self.changed[item] = tree.item(item)["text"]
+            tag = self.val2tag(tree.item(item)["values"][0])
+            tree.item(item, tags = (tag,) )
 
     def on_row_selected(self, event):
         #print('Rows selected', event.widget.selection())
         pass
+
+    # convert the value to tag
+    def val2tag(self, val):
+        columnlst = val.split(' ')
+        tag = "schedis"
+        if columnlst[1] == "H":
+            tag = "scheon"
+        return tag
 
     def _updateItems(self, nxvretstr, subtree, nxvretstr_default, list_keys):
         daytransmap={'Sun':_('Sunday'), 'Mon':_('Monday'), 'Tue':_('Tuesday'), 'Tues':_('Tuesday'), 'Wed':_('Wednesday'), 'Thu':_('Thursday'), 'Thur':_('Thursday'), 'Fri':_('Friday'), 'Sat':_('Saturday')}
@@ -211,21 +221,21 @@ class ScheduleTreeview(et.EditableTreeview):
                 if columnlst[0] in list_keys:
                     idx = list_keys[columnlst[0]]
                     val = " ".join(columnlst[1:len(columnlst)])
+                    tag = self.val2tag(val)
                     #L.debug("len(lst) = " + str(len(columnlst)))
-                    #L.debug("idx = " + str(idx))
-                    #L.debug("val = " + val)
-                    tree.item(items_children[idx], values=(val,), text=daytransmap[columnlst[0]])
+                    #L.debug("schedule[" + str(idx) + "], val=" + val + "tag=" + tag)
+                    tree.item(items_children[idx], values=(val,), tags = (tag,), text=daytransmap[columnlst[0]])
 
     def updateSchedule(self, nxvretstr):
         subtree = self
-        nxvretstr_default="""Schedule is Enabled
+        nxvretstr_default="""Schedule is Disabled
 Sun 00:00 - None -
 Mon 00:00 - None -
-Tue 00:00 R
-Wed 00:00 R
-Thu 00:00 R
-Fri 00:00 H
-Sat 00:00 H
+Tue 00:00 - None -
+Wed 00:00 - None -
+Thu 00:00 - None -
+Fri 00:00 - None -
+Sat 00:00 - None -
 """
         list_keys = {
             "Sun":0,
@@ -286,7 +296,7 @@ class SensorTreeview(ttk.Treeview):
         self.updateCharger("")
         # colors
         tree.tag_configure('digiudef', background='grey')
-        tree.tag_configure('digion',   background='red')
+        tree.tag_configure('digion',   background='#ff6699')
         tree.tag_configure('digioff',  background='white')
 
     def getType(self, node):
@@ -316,7 +326,7 @@ class SensorTreeview(ttk.Treeview):
         if items_children == None or len(items_children) < 1:
             # create children
             for itemstr in list_keys:
-                L.debug("Digital Sensors add key: " + itemstr)
+                #L.debug("Digital Sensors add key: " + itemstr)
                 tree.insert(subtree, 'end', text=itemstr, values=(""))
             items_children = self.get_children(subtree)
 
@@ -336,7 +346,7 @@ class SensorTreeview(ttk.Treeview):
                     if columnlst[1] in list_values:
                         value = list_values[columnlst[1]][0]
                         tag = list_values[columnlst[1]][1]
-                    L.debug("Digital Sensors add key value: [" + str(idx) + "] " + str(items_children[idx]) + ": " + columnlst[0] + "=" + columnlst[1])
+                    #L.debug("Digital Sensors add key value: [" + str(idx) + "] " + str(items_children[idx]) + ": " + columnlst[0] + "=" + columnlst[1])
                     tree.item(items_children[idx], values=(value,), tags = (tag,), text=columnlst[0])
         pass
 
@@ -379,11 +389,11 @@ BTN_SCROLL_DOWN,-1
 """
 
         list_keys = {
-            "BTN_SOFT_KEY":0,
-            "BTN_SCROLL_UP":1,
-            "BTN_START":2,
-            "BTN_BACK":3,
-            "BTN_SCROLL_DOWN":4,
+            "BTN_SCROLL_UP":0,
+            "BTN_SCROLL_DOWN":1,
+            "BTN_BACK":2,
+            "BTN_START":3,
+            "BTN_SOFT_KEY":4,
             }
         list_values = {
             "0": (_("Released"), "digioff"),
@@ -730,6 +740,7 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
                                 ("LabeledProgressbar.label",
                                 {"sticky": ""})],
                 'sticky': 'nswe'})])
+        self.style_battstat.configure('LabeledProgressbar', foreground='red', background='#00ff00')
         self.progress_batt = ttk.Progressbar(self.frame_status, orient=tk.HORIZONTAL, style="LabeledProgressbar", mode='determinate', length=300)
         self.progress_batt.grid(row=line, column=1, padx=5)
         #btn_battstat = tk.Button(self.frame_status, text="")
@@ -917,7 +928,7 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
         self.setup_keypad_navigate(self.canvas_lidar)
 
         self.wheelctrl_isactive = False
-        devstr = _("Wheels Controled by Keypad")
+        devstr = _("Wheels Controlled by Keypad")
         self.btn_wheelctrl_enable = guilog.ToggleButton(frame_bottom, txtt=_("ON: ")+devstr, txtr=_("OFF: ")+devstr, imgt=self.img_ledon, imgr=self.img_ledoff, command=self.guiloop_wheelctrl_enable)
         self.btn_wheelctrl_enable.pack(pady=5, side="right")
 
