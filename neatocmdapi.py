@@ -111,12 +111,13 @@ class NCISerial(NeatoCommandInterface):
             if len(response) < 1:
                 L.debug('[NCISerial] read null')
                 break
-            response = response.decode('ASCII').strip()
+            response = response.decode('ASCII')
             #L.debug('[NCISerial] received: ' + response)
             #L.debug('read size=' + len(response) )
             if len(response) < 1:
                 L.debug('[NCISerial] read null 2')
                 break
+            response = response.strip()
             if len(response) == 1:
                 if response[0] == '\x1A':
                     break

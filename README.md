@@ -6,7 +6,7 @@ Neato XV Robot Setup Utilities
 
 The tool sets includes the followings
 
-    nxvcontrol -- control Neato XV robot from GUI, supports functions include moto control, show sensors, LiDAR show and move control etc.
+    nxvcontrol -- control Neato XV robot from GUI, supports functions include motor control, show sensors, LiDAR show and wheel move etc.
     nxvforward -- forward the control over network
     nxvlogbatt -- log the battery status
 
