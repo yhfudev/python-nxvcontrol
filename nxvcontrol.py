@@ -30,17 +30,18 @@ def gettext_init():
     global _
     langs = []
 
-    local_path = os.path.realpath(os.path.dirname(sys.argv[0]))
+    language = os.environ.get('LANG', None)
+    if (language):
+        langs += language.split(":")
+    language = os.environ.get('LANGUAGE', None)
+    if (language):
+        langs += language.split(":")
     lc, encoding = locale.getdefaultlocale()
     if (lc):
         langs += [lc]
-    language = os.environ.get('LANGUAGE', None)
-
     # we know that we have
     langs += ["en_US", "zh_CN"]
-
-    if (language):
-        langs += language.split(":")
+    local_path = os.path.realpath(os.path.dirname(sys.argv[0]))
     local_path = "languages/"
     APP_NAME="nxvcontrol"
     gettext.bindtextdomain(APP_NAME, local_path)
@@ -1577,7 +1578,7 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
                     else:
                         off = distmm * MAXCOOD
                         posx = MAXCOODX + off * self.map_cos_lidar[angle]
-                        posy = MAXCOODY + off * self.map_sin_lidar[angle]
+                        posy = MAXCOODY - off * self.map_sin_lidar[angle]
                     #L.info('LiDAR angle=' + str(angle) + ", pos=(" + str(posx) + "," + str(posy) +")" )
 
                     #save to the list
