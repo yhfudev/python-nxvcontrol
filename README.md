@@ -46,9 +46,9 @@ There're three types of connection for Neato XV devices, which are directly seri
 
 ## nxvforward
 
-<img width="350" height="250" src="doc/images/nxvforward-1.png" alt="Connect to /dev/ttyACM0" >
-<img width="350" height="250" src="doc/images/nxvforward-2.png" alt="Connect to COM12" >
-<img width="350" height="250" src="doc/images/nxvforward-4.png" alt="Client Test" >
+<img width="194" height="188" src="doc/images/nxvforward-1.png" alt="Connect to /dev/ttyACM0" >
+<img width="194" height="188" src="doc/images/nxvforward-2.png" alt="Connect to COM12" >
+<img width="194" height="188" src="doc/images/nxvforward-4.png" alt="Client Test" >
 
 This is a TCP server, which is can forward the command and data between the device/simulator and client.
 The bind address can be such as `120.0.0.1:3333` to accept connection from local only or `0.0.0.0:3333` for connections from other hosts.
@@ -81,6 +81,8 @@ The arguments are
 Example:
 
     nxvlogbatt-plotfig.sh nxvlogbatt-data 0 "" "Battery Status" ""
+
+<img width="600" height="300" src="doc/images/fig-nxvlogbatt-data-charging-oem-m2-1.png" alt="Charging" >
 
 
 Implementation Details
