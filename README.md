@@ -17,8 +17,8 @@ The tool sets includes the followings
 
 ### Connection
 
-![alt text](doc/images/nxvcontrol-1.png "Connect to network")
-![alt text](doc/images/nxvcontrol-2.png "Connect to simulator")
+<img src="doc/images/nxvcontrol-1.png" alt="Connect to network" width="350" height="250" >
+<img src="doc/images/nxvcontrol-2.png" alt="Connect to simulator" width="350" height="250" >
 
 Before you control the Neato XV robot, you need to setup your robot so that
 the nxvcontrol can connect to your robot by cliking the *Connect* button in the *Connection* tab of the main program.
@@ -37,17 +37,18 @@ There're three types of connection for Neato XV devices, which are directly seri
 
 * simulator: this feature is for software development or test. just use the "sim:" as the address line, and click "Connect" to start.
 
-![alt text](doc/images/nxvcontrol-3.png "Command line")
-![alt text](doc/images/nxvcontrol-4.png "Schedule")
-![alt text](doc/images/nxvcontrol-5.png "Motors")
-![alt text](doc/images/nxvcontrol-6.png "Sensors")
-![alt text](doc/images/nxvcontrol-7.png "LiDAR")
+<img width="350" height="250" src="doc/images/nxvcontrol-3.png" alt="Command line" >
+<img width="350" height="250" src="doc/images/nxvcontrol-4.png" alt="Schedule" >
+<img width="350" height="250" src="doc/images/nxvcontrol-5.png" alt="Motors" >
+<img width="350" height="250" src="doc/images/nxvcontrol-6.png" alt="Sensors" >
+<img width="350" height="250" src="doc/images/nxvcontrol-7.png" alt="LiDAR">
+
 
 ## nxvforward
 
-![alt text](doc/images/nxvforward-1.png "Connect to /dev/ttyACM0")
-![alt text](doc/images/nxvforward-2.png "Connect to COM12")
-![alt text](doc/images/nxvforward-4.png "Client Test")
+<img width="350" height="250" src="doc/images/nxvforward-1.png" alt="Connect to /dev/ttyACM0" >
+<img width="350" height="250" src="doc/images/nxvforward-2.png" alt="Connect to COM12" >
+<img width="350" height="250" src="doc/images/nxvforward-4.png" alt="Client Test" >
 
 This is a TCP server, which is can forward the command and data between the device/simulator and client.
 The bind address can be such as `120.0.0.1:3333` to accept connection from local only or `0.0.0.0:3333` for connections from other hosts.
