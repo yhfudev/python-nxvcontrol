@@ -44,7 +44,7 @@ set autoscale x
 set autoscale y
 #set autoscale y2
 #set yrange [-500<*:*<2500]
-set yrange [-500:2000]
+set yrange [-400:2100]
 #set y2range [0<*:10<*<50]
 set y2range [0:50]
 
@@ -106,7 +106,7 @@ EOF
 
     cat << EOF >> "${FN_GPOUT}.gp"
 #set xtics 0,.5,10
-set ytics -500,50,2000 nomirror
+set ytics -500,50,2500 nomirror
 set y2tics 0,1,50 nomirror #textcolor rgb "red"
 
 set xlabel 'Time (seconds)'
