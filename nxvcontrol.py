@@ -996,7 +996,7 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
             self.serv_cli.request(["GetSchedule", self.mid_query_schedule])
 
     def guiloop_save_schedule(self):
-        if self.serv_cli != None and self.mid_query_schedule >= 0:
+        if self.serv_cli != None and self.mid_2b_ignored >= 0:
             cmdstr = self.etv_schedule.packSchedule().strip()
             if cmdstr != "":
                 self.serv_cli.request([cmdstr, self.mid_2b_ignored])
@@ -1006,8 +1006,10 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
         btn = self.btn_enable_schedule
         if isenable:
             btn.config(relief='sunken')
+            btn['fg'] = "red"
         else:
             btn.config(relief='raised')
+            btn['fg'] = "green"
 
     def guiloop_schedule_enable(self):
         btn = self.btn_enable_schedule
