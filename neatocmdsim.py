@@ -4384,6 +4384,69 @@ def get_lds_data():
 def get_lds_data_zero():
     return lds_list[0]
 
+is_enabled_schedule = False
+val_schedule = """Sun 00:00 - None -
+Mon 00:00 - None -
+Tue 00:00 - None -
+Wed 00:00 - None -
+Thu 00:00 - None -
+Fri 00:00 - None -
+Sat 00:00 - None -
+"""
+def get_schedule():
+    if is_enabled_schedule:
+        return "Schedule is Enabled\n" + val_schedule
+    else:
+        return "Schedule is Disnabled\n" + val_schedule
+def set_schedule(requestlist):
+    import re
+    global val_schedule
+    global is_enabled_schedule
+
+    ison = is_enabled_schedule
+    day = -1
+    hour = None
+    minute = None
+    stype = "H"
+    i = 1
+    while i < len(requestlist):
+        if requestlist[i].lower() == "day":
+            i += 1
+            day = int(requestlist[i])
+        elif requestlist[i].lower() == "hour":
+            i += 1
+            hour = requestlist[i].lower()
+        elif requestlist[i].lower() == "min":
+            i += 1
+            minute = requestlist[i].lower()
+        elif requestlist[i].lower() == "house":
+            stype = "H"
+        elif requestlist[i].lower() == "none":
+            stype = "R"
+        elif requestlist[i].lower() == "on":
+            ison = True
+        elif requestlist[i].lower() == "off":
+            ison = False
+        i += 1
+
+    is_enabled_schedule = ison
+
+    list_keys = (
+        "Sun",
+        "Mon",
+        "Tue",
+        "Wed",
+        "Thu",
+        "Fri",
+        "Sat",)
+
+    if hour != None or minute != None:
+        if 0 > day or day >= 7:
+            return "'Day' missed"
+        val_schedule =  re.sub(list_keys[day] + r"\b.*\n", list_keys[day] + " " + hour + ":" + minute + " " + stype + "\n", val_schedule.rstrip())
+        L.debug("after update day " + list_keys[day] + "(" + str(day) + ") schedule: " + val_schedule)
+    return "SetSchedule OK"
+
 is_test_mode=False
 is_lidar_motor_running=False
 tm_lidar_motor_start=time.time()
@@ -4573,15 +4636,8 @@ Charger_mAH, 0
 SideBrush_mA,0
 """
     elif request.lower() == "GetSchedule".lower():
-        response = """Schedule is Enabled
-Sun 00:00 - None -
-Mon 00:00 - None -
-Tue 00:00 R
-Wed 00:00 R
-Thu 00:00 R
-Fri 00:00 H
-Sat 00:00 H
-"""
+        response = get_schedule()
+
     elif request.lower() == "GetTime".lower():
         tm_now = time.localtime()
         response = time.strftime("%A %H:%M:%S\n", tm_now)
@@ -4702,7 +4758,8 @@ SumInG, 1.027
         else:
             response = 'SetMotor rejected: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
     elif request.lower() == "SetSchedule".lower():
-        response = 'SetSchedule accepted: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
+        response = set_schedule(requestlist)
+
     elif request.lower() == "SetSystemMode".lower():
         if is_test_mode:
             response = 'SetSystemMode accepted: ' + ' '.join(requestlist[1:len(requestlist)]) + '\n'
