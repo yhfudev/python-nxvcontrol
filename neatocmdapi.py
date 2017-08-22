@@ -468,7 +468,6 @@ class NCIService(object):
         self.th_sche = None
         self.sche = None
         self.isready = False
-        self.mailbox = MailPipe()
 
         result = urlparse(target)
         if result.scheme == "tcp":

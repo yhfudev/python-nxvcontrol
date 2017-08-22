@@ -640,6 +640,7 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
         nb = self
         self.serv_cli = None
         self.istestmode = False
+        self.mailbox = neatocmdapi.MailPipe()
 
         # the images for toggle buttons
         self.img_ledon=tk.PhotoImage(file="ledred-on.gif")
@@ -1347,27 +1348,27 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
             if self.serv_cli != None:
                 if self.mid_query_digitalsensors < 0 :
                     L.info('create mid_query_digitalsensors')
-                    self.mid_query_digitalsensors = self.serv_cli.mailbox.declair()
+                    self.mid_query_digitalsensors = self.mailbox.declair()
 
                 if self.mid_query_analogysensors < 0 :
                     L.info('create mid_query_analogsensors')
-                    self.mid_query_analogysensors = self.serv_cli.mailbox.declair()
+                    self.mid_query_analogysensors = self.mailbox.declair()
 
                 if self.mid_query_buttonssensors < 0 :
                     L.info('create mid_query_buttonssensors')
-                    self.mid_query_buttonssensors = self.serv_cli.mailbox.declair()
+                    self.mid_query_buttonssensors = self.mailbox.declair()
 
                 if self.mid_query_motorssensors < 0 :
                     L.info('create mid_query_motorssensors')
-                    self.mid_query_motorssensors = self.serv_cli.mailbox.declair()
+                    self.mid_query_motorssensors = self.mailbox.declair()
 
                 if self.mid_query_accelsensors < 0 :
                     L.info('create mid_query_accelsensors')
-                    self.mid_query_accelsensors = self.serv_cli.mailbox.declair()
+                    self.mid_query_accelsensors = self.mailbox.declair()
 
                 if self.mid_query_chargersensors < 0 :
                     L.info('create mid_query_chargersensors')
-                    self.mid_query_chargersensors = self.serv_cli.mailbox.declair()
+                    self.mid_query_chargersensors = self.mailbox.declair()
 
                 L.debug(
                     "sensor flags[digital]: mid=" + str(self.mid_query_digitalsensors)
@@ -1424,11 +1425,11 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
             if self.serv_cli != None:
                 if self.mid_query_lidar < 0 :
                     L.info('LiDAR canvas focus <---')
-                    self.mid_query_lidar = self.serv_cli.mailbox.declair()
+                    self.mid_query_lidar = self.mailbox.declair()
                 self.canvas_lidar_request()
         #else:
             #self.canvas_lidar_isactive = False
-            #self.serv_cli.mailbox.close(self.mid_query_lidar)
+            #self.mailbox.close(self.mid_query_lidar)
 
     def mailpipe_process_schedule(self):
         mid = self.mid_query_schedule
@@ -1438,7 +1439,7 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
                 while True:
                     # remove all of items in the queue
                     try:
-                        respstr = self.serv_cli.mailbox.get(mid, False)
+                        respstr = self.mailbox.get(mid, False)
                         if respstr == None:
                             break
                         L.info('schedule data pulled out!')
@@ -1470,7 +1471,7 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
                 while True:
                     # remove all of items in the queue
                     try:
-                        respstr = self.serv_cli.mailbox.get(mid, False)
+                        respstr = self.mailbox.get(mid, False)
                         if respstr == None:
                             break
                         L.info('sensors data pulled out!')
@@ -1523,7 +1524,7 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
                 while True:
                     # remove all of items in the queue
                     try:
-                        respstr = self.serv_cli.mailbox.get(self.mid_query_lidar, False)
+                        respstr = self.mailbox.get(self.mid_query_lidar, False)
                         if respstr == None:
                             break
                         L.info('LiDAR data pulled out!')
@@ -1623,7 +1624,7 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
         resp = self.serv_cli.get_request_block(reqstr)
         if resp != None:
             if resp.strip() != "":
-                self.serv_cli.mailbox.put(req[1], resp.strip())
+                self.mailbox.put(req[1], resp.strip())
         return
 
     def do_cli_connect(self):
@@ -1636,12 +1637,12 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
             return
         L.info ('serial opened')
 
-        self.mid_2b_ignored = self.serv_cli.mailbox.declair()  # the index of the return data Queue for any command that don't need to be parsed the data
-        self.mid_cli_command = self.serv_cli.mailbox.declair() # the index of the return data Queue for 'Commands' tab
-        self.mid_query_version = self.serv_cli.mailbox.declair() # the index of the return data Queue for version textarea
-        self.mid_query_time = self.serv_cli.mailbox.declair()    # the index of the return data Queue for robot time label
-        self.mid_query_battery = self.serv_cli.mailbox.declair() # the index of the return data Queue for robot battery % ratio
-        self.mid_query_schedule = self.serv_cli.mailbox.declair()
+        self.mid_2b_ignored = self.mailbox.declair()  # the index of the return data Queue for any command that don't need to be parsed the data
+        self.mid_cli_command = self.mailbox.declair() # the index of the return data Queue for 'Commands' tab
+        self.mid_query_version = self.mailbox.declair() # the index of the return data Queue for version textarea
+        self.mid_query_time = self.mailbox.declair()    # the index of the return data Queue for robot time label
+        self.mid_query_battery = self.mailbox.declair() # the index of the return data Queue for robot battery % ratio
+        self.mid_query_schedule = self.mailbox.declair()
 
         self.serv_cli.request(["GetVersion", self.mid_query_version])
         self.serv_cli.request(["GetWarranty", self.mid_query_version])
@@ -1710,7 +1711,7 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
                 while True:
                     # remove all of items in the queue
                     try:
-                        respstr = self.serv_cli.mailbox.get(self.mid_2b_ignored, False)
+                        respstr = self.mailbox.get(self.mid_2b_ignored, False)
                         if respstr == None:
                             break
                         L.info('ignore the response: ' + respstr)
@@ -1722,7 +1723,7 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
 
         if self.mid_cli_command >= 0:
             try:
-                resp = self.serv_cli.mailbox.get(self.mid_cli_command, False)
+                resp = self.mailbox.get(self.mid_cli_command, False)
                 respstr = resp.strip() + "\n\n"
                 # put the content to the end of the textarea
                 guilog.textarea_append (self.text_cli_command, respstr)
@@ -1733,7 +1734,7 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
 
         if self.mid_query_version >= 0:
             try:
-                resp = self.serv_cli.mailbox.get(self.mid_query_version, False)
+                resp = self.mailbox.get(self.mid_query_version, False)
                 respstr = resp.strip()
                 self.show_robot_version (respstr)
             except queue.Empty:
@@ -1743,7 +1744,7 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
         if self.mid_query_battery >= 0:
             try:
                 while True:
-                    respstr = self.serv_cli.mailbox.get(self.mid_query_battery, False)
+                    respstr = self.mailbox.get(self.mid_query_battery, False)
                     if respstr == None:
                         break
                     retlines = respstr.strip() + '\n'
@@ -1766,7 +1767,7 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
             import re
             try:
                 while True:
-                    respstr = self.serv_cli.mailbox.get(self.mid_query_time, False)
+                    respstr = self.mailbox.get(self.mid_query_time, False)
                     if respstr == None:
                         break
                     retlines = respstr.strip()
