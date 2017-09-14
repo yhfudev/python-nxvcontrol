@@ -33,8 +33,14 @@ import sys
 
 import queue
 
+# print("arg[0]: " + sys.argv[0])
+# print("program name: " + os.path.basename(__file__))
+#import __main__ as main0
+# print("main: " + main0.__file__)
+PROGRAM_PREFIX = os.path.basename(__file__).split('.')[0]
+
 import logging as L
-L.basicConfig(filename='nxvcontrol.log', level=L.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
+L.basicConfig(filename=PROGRAM_PREFIX+'.log', level=L.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
 
 import neatocmdapi
 import guilog
@@ -43,6 +49,7 @@ import locale
 import gettext
 _=gettext.gettext
 
+APP_NAME="nxvcontrol"
 def gettext_init():
     global _
     langs = []
@@ -60,7 +67,6 @@ def gettext_init():
     langs += ["en_US", "zh_CN"]
     local_path = os.path.realpath(os.path.dirname(sys.argv[0]))
     local_path = "languages/"
-    APP_NAME="nxvcontrol"
     gettext.bindtextdomain(APP_NAME, local_path)
     gettext.textdomain(APP_NAME)
     lang = gettext.translation(APP_NAME, local_path, languages=langs, fallback = True)

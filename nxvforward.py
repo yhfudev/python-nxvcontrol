@@ -41,8 +41,10 @@ import time
 from threading import Thread
 import queue
 
+PROGRAM_PREFIX = os.path.basename(__file__).split('.')[0]
+
 import logging as L
-L.basicConfig(filename='nxvforward.log', level=L.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
+L.basicConfig(filename=PROGRAM_PREFIX+'.log', level=L.DEBUG, format='%(asctime)s %(levelname)s: %(message)s')
 # if we use the textarea to output log. There's problem when multiple threads output to the same textarea
 config_use_textarea_log=False
 
@@ -53,6 +55,7 @@ import locale
 import gettext
 _=gettext.gettext
 
+APP_NAME="nxvcontrol"
 def gettext_init():
     global _
     langs = []
@@ -70,7 +73,6 @@ def gettext_init():
     langs += ["en_US", "zh_CN"]
     local_path = os.path.realpath(os.path.dirname(sys.argv[0]))
     local_path = "languages/"
-    APP_NAME="nxvcontrol"
     gettext.bindtextdomain(APP_NAME, local_path)
     gettext.textdomain(APP_NAME)
     lang = gettext.translation(APP_NAME, local_path, languages=langs, fallback = True)
