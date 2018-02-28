@@ -664,6 +664,9 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
         self.serv_cli = None
         self.istestmode = False
         self.mailbox = neatocmdapi.MailPipe()
+        # the error to disconnect socket
+        self.mid_socket_disconnect = self.mailbox.declair()
+
 
         # the images for toggle buttons
         self.img_ledon=tk.PhotoImage(file="ledred-on.gif")
@@ -1644,11 +1647,45 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
     def cb_task_cli(self, tid, req):
         L.debug("do task: tid=" + str(tid) + ", req=" + str(req))
         reqstr = req[0]
-        resp = self.serv_cli.get_request_block(reqstr)
-        if resp != None:
-            if resp.strip() != "":
-                self.mailbox.put(req[1], resp.strip())
+        try:
+            resp = self.serv_cli.get_request_block(reqstr)
+            if resp != None:
+                if resp.strip() != "":
+                    self.mailbox.put(req[1], resp.strip())
+        except ConnectionResetError:
+            self.mailbox.put(self.mid_socket_disconnect, "ConnectionResetError")
+
         return
+
+    def mailpipe_process_socket_error(self):
+
+        if self.mid_socket_disconnect >= 0:
+            try:
+                pre=None
+                while True:
+                    # remove all of items in the queue
+                    try:
+                        respstr = self.mailbox.get(self.mid_socket_disconnect, False)
+                        if respstr == None:
+                            break
+                        L.info('Socket error pulled out!')
+                        pre = respstr
+
+                    except queue.Empty:
+                        # ignore
+                        break
+
+                respstr = pre
+                if respstr == None:
+                    return
+
+                L.info('LiDAR canvas updated!')
+            except queue.Empty:
+                # ignore
+                pass
+
+            self.do_cli_disconnect()
+
 
     def do_cli_connect(self):
         self.do_cli_disconnect()
@@ -1675,17 +1712,20 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
         self.guiloop_check_per30sec()
         self.btn_cli_connect.config(state=tk.DISABLED)
         self.btn_cli_disconnect.config(state=tk.NORMAL)
+        L.info('do_cli_connect() DONE')
         return
 
     def do_cli_disconnect(self):
         import time
+
+        L.info('do_cli_disconnect() ...')
         if self.serv_cli != None:
-            L.info('client disconnect ...')
             self.set_robot_testmode(False)
             time.sleep(1)
             self.serv_cli.close()
         else:
             L.info('client is not connected, skip.')
+
         self.serv_cli = None
         self.mid_2b_ignored = -1
         self.mid_cli_command = -1
@@ -1712,6 +1752,7 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
 
         self.btn_cli_connect.config(state=tk.NORMAL)
         self.btn_cli_disconnect.config(state=tk.DISABLED)
+        L.info('do_cli_disconnect() DONE')
 
     def do_cli_run(self):
         if self.serv_cli == None:
@@ -1815,6 +1856,7 @@ class MyTkAppFrame(ttk.Notebook): #(tk.Frame):
             self.mailpipe_process_lidar()
             self.mailpipe_process_digitalsensors()
             self.mailpipe_process_schedule()
+            self.mailpipe_process_socket_error()
             # setup next
             self.after(100, self.guiloop_check_rightnow)
         return

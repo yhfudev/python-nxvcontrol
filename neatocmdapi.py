@@ -145,6 +145,7 @@ class NCISerial(NeatoCommandInterface):
         retval = retval.replace('\n\n', '\n')
         return retval.strip() + "\n\n"
 
+import select
 import socket
 class NCINetwork(NeatoCommandInterface):
     "Neato Command Interface for TCP pipe"
@@ -183,32 +184,79 @@ class NCINetwork(NeatoCommandInterface):
         pass
 
     def put(self, line):
+        if self.sock == None:
+            raise ConnectionResetError;
+        cli_log_head = "[NCINetwork] put() NOCONN "
+        #if self.sock:
+        #    cli_log_head = "[NCINetwork] put() " + str(self.sock.getpeername()) + " "
+
         sendcmd = line.strip() + "\n"
-        L.debug ('[NCINetwork] cli snd: ' + sendcmd)
-        self.sock.sendall (bytes(sendcmd, 'ascii'))
-        #self.sock.flush()
+        L.debug (cli_log_head + 'sendcmd: ' + sendcmd)
+
+        ready_to_read = []
+        ready_to_write = []
+        while True:
+            try:
+                L.debug(cli_log_head + "select() ...")
+                ready_to_read, ready_to_write, in_error = select.select([self.sock,], [self.sock,], [self.sock,], 5)
+                #L.debug(cli_log_head + "put select() return read=" + str(ready_to_read))
+                #L.debug(cli_log_head + "put select() return write=" + str(ready_to_write))
+                #L.debug(cli_log_head + "put select() return err=" + str(in_error))
+
+            except select.error:
+                self.sock.shutdown(2)    # 0 = done receiving, 1 = done sending, 2 = both
+                self.sock.close()
+                self.sock = None
+                # connection error event here, maybe reconnect
+                print ('connection error')
+                raise ConnectionResetError
+                break
+            if len(ready_to_write) > 0:
+                break
+
+        if len(ready_to_write) > 0:
+            try:
+                self.sock.sendall (bytes(sendcmd, 'ascii'))
+                #self.sock.flush()
+            except Exception:
+                raise ConnectionResetError
+
         return ""
 
     def get(self):
+
         BUFFER_SIZE = 4096
         #MAXIUM_SIZE = BUFFER_SIZE * 5
 
-        cli_log_head = "[NCINetwork] " + str(self.sock.getpeername())
+        if self.sock == None:
+            raise ConnectionResetError
+
+        cli_log_head = "[NCINetwork] get() NOCONN "
+        #if self.sock:
+        #    cli_log_head = "[NCINetwork] get() " + str(self.sock.getpeername()) + " "
+
         while True:
+
             try:
+                L.debug(cli_log_head + 'recv()...')
                 recvdat = self.sock.recv(BUFFER_SIZE)
             except socket.timeout:
                 L.debug(cli_log_head + 'timeout read')
                 if len(self.data) > 0:
                     break
                 continue
-            except os.ConnectionResetError:
-                L.debug(cli_log_head + 'peer reset')
+            except (socket.error, socket.gaierror, ConnectionResetError) as e:
+                L.debug(cli_log_head + 'cannot deliver remote keyfiles: {}'.format(e), file=sys.stderr)
                 break
+            except Exception:
+                raise ConnectionResetError
+
             if not recvdat:
                 # EOF, client closed, just return
-                L.info(cli_log_head + " disconnected: " + str(self.sock.getpeername()))
-                self.data += "\n\n"
+                L.info(cli_log_head + "disconnected, datalen=" + str(len(self.data)))
+                #self.data += "\n\n"
+                if len(self.data) <= 0:
+                    raise ConnectionResetError
             else:
                 #L.debug(cli_log_head + "recv  size=" + str(len(recvdat)))
                 recvstr = str(recvdat, 'ascii')
@@ -223,9 +271,11 @@ class NCINetwork(NeatoCommandInterface):
 
         pos = self.data.find("\n\n")
         if pos < 0:
-            retstr = self.data
+            retstr = self.data.strip()
             self.data = ""
-            return retstr.strip() + "\n\n"
+            if len(retstr) > 0:
+                return retstr + "\n\n"
+            return ""
         else:
             # end mode:
             self.data = self.data.lstrip()
