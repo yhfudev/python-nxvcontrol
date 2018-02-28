@@ -102,7 +102,7 @@ class MyTkAppFrame(ttk.Notebook):
         resp = self.serv.get_request_block(reqstr)
         if resp != None:
             if resp.strip() != "":
-                self.serv.mailbox.put(req[1], resp)
+                self.mymailbox.mailbox_serv.put(req[1], resp)
 
     def do_stop(self):
         isrun = False;
@@ -132,12 +132,11 @@ class MyTkAppFrame(ttk.Notebook):
         class ThreadedTCPRequestHandler(ss.BaseRequestHandler):
             # override base class handle method
             def handle(self):
-                self.serv = self.server.serv
                 BUFFER_SIZE = 4096
                 MAXIUM_SIZE = BUFFER_SIZE * 5
                 data = ""
                 L.info("server connectd by client: " + str(self.client_address))
-                mbox_id = self.serv.mailbox.declair()
+                mbox_id = self.server.mydata.mailbox_serv.declair()
 
                 cli_log_head = "CLI" + str(self.client_address)
                 while 1:
@@ -161,8 +160,8 @@ class MyTkAppFrame(ttk.Notebook):
                             # for each line:
                             request = requests[i].strip()
                             L.info(cli_log_head + " request [" + str(i+1) + "/" + str(cntdata) + "] '" + request + "'")
-                            self.serv.request ([request, mbox_id])
-                            response = self.serv.mailbox.get(mbox_id)
+                            self.server.serv.request ([request, mbox_id])
+                            response = self.server.mydata.mailbox_serv.get(mbox_id)
                             if response != "":
                                 L.debug(cli_log_head + 'send data back: sz=' + str(len(response)))
                                 self.request.sendall(bytes(response, 'ascii'))
@@ -180,15 +179,20 @@ class MyTkAppFrame(ttk.Notebook):
                         break
 
                 L.error (cli_log_head + 'close: ' + str(self.client_address))
-                self.serv.mailbox.close(mbox_id)
+                self.server.mydata.mailbox_serv.close(mbox_id)
+
+
+        # pass the data strcture from main frame to all of subclasses
+        # mailbox_serv, mailbox_servcli
 
         class ThreadedTCPServer(ss.ThreadingMixIn, ss.TCPServer):
             daemon_threads = True
             allow_reuse_address = True
             # pass the serv to handler
-            def __init__(self, host_port_tuple, streamhandler, serv):
+            def __init__(self, host_port_tuple, streamhandler, serv, mydata):
                 super().__init__(host_port_tuple, streamhandler)
                 self.serv = serv
+                self.mydata = mydata
 
         if self.runth_svr != None:
             if self.runth_svr.isAlive():
@@ -210,7 +214,7 @@ class MyTkAppFrame(ttk.Notebook):
             PORT=int(b[1])
         L.info('server is running ...')
         try:
-            self.server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler, self.serv)
+            self.server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler, self.serv, self.mymailbox)
         except Exception as e:
             L.error("Error in starting service: " + str(e))
             return False
@@ -235,6 +239,14 @@ class MyTkAppFrame(ttk.Notebook):
         self.runth_svr = None
         self.serv = None
         self.serv_cli = None
+
+        class MyMailbox(object):
+            "mymailbox"
+            def __init__(self):
+                self.mailbox_serv = neatocmdapi.MailPipe()
+                self.mailbox_servcli = neatocmdapi.MailPipe()
+
+        self.mymailbox = MyMailbox()
 
         guilog.rClickbinder(tk_frame_parent)
 
@@ -387,7 +399,7 @@ class MyTkAppFrame(ttk.Notebook):
         resp = self.serv_cli.get_request_block(reqstr)
         if resp != None:
             if resp.strip() != "":
-                self.serv_cli.mailbox.put(req[1], resp.strip())
+                self.mymailbox.mailbox_servcli.put(req[1], resp.strip())
         return
 
     def do_cli_connect(self):
@@ -398,7 +410,7 @@ class MyTkAppFrame(ttk.Notebook):
         if self.serv_cli.open(self.cb_task_cli) == False:
             L.error ('Error in open serial')
             return
-        self.mid_cli_command = self.serv_cli.mailbox.declair();
+        self.mid_cli_command = self.mymailbox.mailbox_servcli.declair();
         L.info ('serial opened')
         self.btn_cli_connect.config(state=tk.DISABLED)
         self.btn_cli_disconnect.config(state=tk.NORMAL)
@@ -433,7 +445,7 @@ class MyTkAppFrame(ttk.Notebook):
     def check_mid_cli_command(self):
         if self.serv_cli != None and self.mid_cli_command >= 0:
             try:
-                resp = self.serv_cli.mailbox.get(self.mid_cli_command, False)
+                resp = self.mymailbox.mailbox_servcli.get(self.mid_cli_command, False)
                 respstr = resp.strip() + "\n\n"
                 # put the content to the end of the textarea
                 guilog.textarea_append (self.text_cli_command, respstr)
