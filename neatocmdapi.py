@@ -453,7 +453,7 @@ class AtomTaskScheduler(object):
 
     def do_work_once (self):
         # move tasks from queue_priority to heap_priority
-        while self.queue_priority.qsize() > 0:
+        while not self.queue_priority.empty():
             newreq = None
             try:
                 newreq = self.queue_priority.get()
@@ -462,7 +462,7 @@ class AtomTaskScheduler(object):
                 break;
             self.heap_priority.push (newreq)
         # move tasks from queue_time to heap_time
-        while self.queue_time.qsize() > 0:
+        while not self.queue_time.empty():
             newreq = None
             try:
                 newreq = self.queue_time.get()
