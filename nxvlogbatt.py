@@ -63,9 +63,10 @@ def cb_task(tid, req):
     resp = serv.get_request_block(reqstr)
     if resp != None:
         if resp.strip() != "":
-            serv.mailbox.put(req[1], resp.strip())
+            mbox.put(req[1], resp.strip())
 
-mbox_id = serv.mailbox.declair()
+mbox = neatocmdapi.MailPipe()
+mbox_id = mbox.declair()
 
 if serv.open(cb_task) == False:
     L.error ('time out for connection')
@@ -139,7 +140,7 @@ try:
 
         tm_now = datetime.now()
         #record = [-1] * 16
-        respstr = serv.mailbox.get(mbox_id)
+        respstr = mbox.get(mbox_id)
         retlines = respstr.strip() + '\n'
         responses = retlines.split('\n')
         for i in range(0,len(responses)):
